@@ -1,0 +1,152 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: RRZE Notices\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-11-08 15:07+0000\n"
+"PO-Revision-Date: 2019-11-08 15:20+0000\n"
+"Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
+"Language-Team: \n"
+"Language: de_DE_formal\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.3.1; wp-5.2.4\n"
+"X-Loco-Template: languages/rrze-notices-de_DE.po"
+
+#: includes/CPT.php:33
+msgid "Add New"
+msgstr "Neue hinzufügen"
+
+#: includes/CPT.php:34
+msgid "Add New Notice"
+msgstr "Neue Benachrichtigung hinzufügen"
+
+#: includes/CPT.php:32
+msgctxt "add new on admin bar"
+msgid "Notice"
+msgstr "Benachrichtigung"
+
+#: includes/CPT.php:31
+msgctxt "admin menu"
+msgid "Notices"
+msgstr "Benachrichtigungen"
+
+#: includes/MetaBoxes.php:84 includes/MetaBoxes.php:135
+#: includes/ShowNotices.php:54 includes/AdminBar.php:56
+msgid "All"
+msgstr "Alle"
+
+#: includes/CPT.php:38
+msgid "All Notices"
+msgstr "Alle Benachrichtigungen"
+
+#. Description of the plugin
+msgid "Basic template for all WordPress CMS plugins."
+msgstr ""
+
+#: includes/MetaBoxes.php:40
+msgid "Display"
+msgstr "Anzeige"
+
+#: includes/CPT.php:36 includes/Notice.php:172
+msgid "Edit Notice"
+msgstr "Benachrichtigung bearbeiten"
+
+#: includes/MetaBoxes.php:70
+msgid "Hide Title"
+msgstr "Titel ausblenden"
+
+#. Author URI of the plugin
+msgid "https://blogs.fau.de/webworking/"
+msgstr "https://blogs.fau.de/webworking/"
+
+#. URI of the plugin
+msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
+msgstr "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
+
+#: includes/Util.php:23
+msgid "Info"
+msgstr "Info"
+
+#: includes/CPT.php:35
+msgid "New Notice"
+msgstr "Neue Benachrichtigung"
+
+#: includes/CPT.php:42
+msgid "No notices found in Trash."
+msgstr "Keine Benachrichtigung im Papierkorb gefunden."
+
+#: includes/CPT.php:41
+msgid "No notices found."
+msgstr "Keine Benachrichtigungen gefunden."
+
+#: includes/AdminBar.php:86
+msgid "Notices"
+msgstr "Benachrichtigungen"
+
+#: includes/CPT.php:40
+msgid "Parent Noticess:"
+msgstr ""
+
+#: rrze-notices.php:118
+#, php-format
+msgid "Plugins: %1$s: %2$s"
+msgstr "Plugins: %1$s: %2$s"
+
+#: includes/CPT.php:29
+msgctxt "post type general name"
+msgid "Notices"
+msgstr "Benachrichtigungen"
+
+#: includes/CPT.php:30
+msgctxt "post type singular name"
+msgid "Notice"
+msgstr ""
+
+#: includes/MetaBoxes.php:49
+msgid "Role visibility"
+msgstr "Sichtbarkeit der Rollen"
+
+#. Name of the plugin
+msgid "RRZE Notices"
+msgstr "RRZE Notices"
+
+#. Author of the plugin
+msgid "RRZE Webteam"
+msgstr "RRZE Webteam"
+
+#: includes/CPT.php:39
+msgid "Search Notices"
+msgstr "Suche nach Benachrichtigungen"
+
+#: rrze-notices.php:63
+#, php-format
+msgid ""
+"The server is running PHP version %1$s. The Plugin requires at least PHP "
+"version %2$s."
+msgstr ""
+"Auf dem Server läuft PHP Version %1$s. Das Plugin benötigt mindestens PHP "
+"Version %2$s."
+
+#: rrze-notices.php:66
+#, php-format
+msgid ""
+"The server is running WordPress version %1$s. The Plugin requires at least "
+"WordPress version %2$s."
+msgstr ""
+"Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
+"WordPress Version %2$s."
+
+#: includes/MetaBoxes.php:74
+msgid "Use alternative style"
+msgstr "Alternativer Stil verwenden"
+
+#: includes/CPT.php:37
+msgid "View Notice"
+msgstr "Benachrichtigung anzeigen"
+
+#: includes/Util.php:24
+msgid "Warning"
+msgstr "Warnhinweis"
