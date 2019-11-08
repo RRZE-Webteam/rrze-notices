@@ -6,6 +6,8 @@ defined('ABSPATH') || exit;
 
 class EditNotice
 {
+    protected $notices;
+
     protected $customPostType;
 
     protected $userMeta = 'rrze_notice_edit_dismissed';
@@ -21,6 +23,7 @@ class EditNotice
     }
 
     public function adminHead() {
+        $this->notices = new Notices();
         $this->previewNotice();
     }
 
@@ -45,8 +48,7 @@ class EditNotice
         $currentUserId = get_current_user_id();
         delete_user_meta($currentUserId, $this->userMeta);
         
-        $notices = new Notices();
-        $notices->add(
+        $this->notices->add(
             $id,
             $title,
             $content,
@@ -58,7 +60,8 @@ class EditNotice
                 'option_prefix' => $this->userMeta
             ]
         );
-        $notices->boot();
+
+        $this->notices->boot();
     }
 
     public function disableRichedit($can) {
