@@ -1,3 +1,3 @@
 # rrze-notices
 
-Management and listing of admin notices through a dashboard widget.
+Management and listing of admin notices.
