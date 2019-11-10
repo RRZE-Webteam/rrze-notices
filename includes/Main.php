@@ -34,12 +34,15 @@ class Main
     public function onLoaded()
     {
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
-
+                
         $cpt = new CPT;
         $cpt->onLoaded();
 
         $metaBoxes = new MetaBoxes();
         $metaBoxes->onLoaded();
+
+        $columns = new Columns();
+        $columns->onLoaded();        
 
         $editNotice = new EditNotice;
         $editNotice->onLoaded();
@@ -55,7 +58,6 @@ class Main
     }
 
     public function adminEnqueueScripts() {
-        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));
-        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));          
+        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));        
     }
 }

@@ -31,22 +31,22 @@ class ShowNotices
 
     protected function setNotices()
     {
-        $args = [
+        $posts = get_posts([
             'post_type' => $this->customPostType,
             'post_status' => 'publish',
-            'posts_per_page' => -1
-        ];
-        $posts = new WP_Query($args);
-        if ($posts->have_posts()) {
-            while ($posts->have_posts()) {
-                $posts->the_post(); 
-                $postId = get_the_ID();
-                $postTitle = get_the_title();
-                $postContent = get_the_content();
-                $this->addNotices($postId, $postTitle, $postContent);
+            'numberposts' => -1
+        ]);          
+
+        if ($posts) {
+            foreach ($posts as $post) {
+                $postId = $post->ID;
+                $postTitle = $post->post_title;
+                $postContent = $post->post_content;
+                if ($postContent) {
+                    $this->addNotices($postId, $postTitle, $postContent);
+                }
             }
         }
-        wp_reset_postdata();
     }
 
     protected function addNotices($postId, $postTitle, $postContent)
@@ -68,9 +68,9 @@ class ShowNotices
         $id = $postId;
         $title = get_post_meta($postId,'rrze_notices_hide_title', false) ? false : $postTitle;
         $content = $postContent;   
-        $noticeType = get_post_meta($postId,'rrze_notices_type', 'info');
-        $type = in_array($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-        $altStyle = ! get_post_meta($postId,'rrze_notices_alt_style', 0) ? false : true;
+        $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
+        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+        $altStyle = ! get_post_meta($postId, 'rrze_notices_alt_style', 0) ? false : true;
 
         $this->notices->add(
             $id,

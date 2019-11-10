@@ -4,8 +4,6 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Notices\MetaBoxes;
-
 class CPT
 {
     /**
@@ -55,7 +53,16 @@ class CPT
             'menu_position'         => null,
             'menu_icon'             => 'dashicons-warning',
             'capability_type'       => 'page',
-            //'capabilities'          => 'publish_posts',
+            'capabilities'          => [
+                'edit_post'          => 'manage_options', 
+                'read_post'          => 'manage_options', 
+                'delete_post'        => 'manage_options', 
+                'edit_posts'         => 'manage_options', 
+                'edit_others_posts'  => 'manage_options', 
+                'publish_posts'      => 'manage_options',       
+                'read_private_posts' => 'manage_options', 
+                'create_posts'       => 'manage_options' 
+            ],
             //'map_meta_cap'          => null,
             'hierarchical'          => false,
             'supports'              => ['title', 'editor'],

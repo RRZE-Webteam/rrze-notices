@@ -18,8 +18,8 @@ class EditNotice
     }
 
     public function onLoaded() {
-        add_action('admin_head', [$this, 'adminHead']);
-        add_filter('user_can_richedit', [$this, 'disableRichedit']);
+        add_action('admin_head', [$this, 'adminHead'], 99);
+        //add_filter('user_can_richedit', [$this, 'disableRichedit']);
     }
 
     public function adminHead() {
@@ -33,21 +33,28 @@ class EditNotice
             return;
         }        
         
+        global $pagenow;
+        if ($pagenow == 'post-new.php') {
+            return;
+        }
+
         global $post;
-        
         $notice = $post;
         $noticeId = $post->ID;
 
         $id = $noticeId;
         $title = get_post_meta($noticeId,'rrze_notices_hide_title', false) ? false : $notice->post_title;
-        $content = $notice->post_content;        
+        $content = $notice->post_content;   
         $noticeType = get_post_meta($noticeId,'rrze_notices_type', 'info');
-        $type = in_array($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
         $altStyle = ! get_post_meta($noticeId,'rrze_notices_alt_style', 0) ? false : true;
 
         $currentUserId = get_current_user_id();
         delete_user_meta($currentUserId, $this->userMeta);
         
+        if (! $content) {
+            return;
+        }
         $this->notices->add(
             $id,
             $title,

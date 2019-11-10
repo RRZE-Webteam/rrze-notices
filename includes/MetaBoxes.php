@@ -10,6 +10,12 @@ use RRZE\Notices\Util;
 class MetaBoxes
 {
     /**
+     * [META_TYPE_BOX description]
+     * @var string
+     */
+    const META_TYPE_BOX = 'rrze_notices_type_box';
+
+    /**
      * [META_DISPLAY_BOX description]
      * @var string
      */
@@ -36,6 +42,15 @@ class MetaBoxes
     public function addMetaBoxes()
     {
         add_meta_box(
+            static::META_TYPE_BOX,
+            __('Type', 'rrze-notices'),
+            [$this, 'typeFields'],
+            $this->customPostType,
+            'side',
+            'default'
+        );
+
+        add_meta_box(
             static::META_DISPLAY_BOX,
             __('Display', 'rrze-notices'),
             [$this, 'displayFields'],
@@ -54,14 +69,36 @@ class MetaBoxes
         );       
     }
 
+    public function typeFields()
+    {
+        global $post;
+
+        wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
+
+        $noticeType = get_post_meta($post->ID, 'rrze_notices_type', true);
+        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+        
+        echo '<ul>';
+        
+        echo '<li><label>';
+        echo '<input name="rrze_notices_type" type="radio" value="info" ' . checked($type, 'info', false) . '>';
+        echo __('Info', 'rrze-notices').'</label></li>';
+
+        echo '<li><label>';
+        echo '<input name="rrze_notices_type" type="radio" value="warning" ' . checked($type, 'warning', false) . '>';
+        echo __('Warning', 'rrze-notices').'</label></li>';
+        
+        echo '</ul>';
+    }
+
     public function displayFields()
     {
         global $post;
 
         wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
 
-        $hideTitle = get_post_meta($post->ID,'rrze_notices_hide_title') ? 1 : 0;
-        $altStyle = get_post_meta($post->ID,'rrze_notices_alt_style') ? 1 : 0;
+        $hideTitle = get_post_meta($post->ID, 'rrze_notices_hide_title', true) ? 1 : 0;
+        $altStyle = get_post_meta($post->ID, 'rrze_notices_alt_style', true) ? 1 : 0;
         
         echo '<ul>';
         
@@ -129,16 +166,24 @@ class MetaBoxes
             return;
         }
 
+        $noticeType = $_POST['rrze_notices_type'];
+        $noticeMetas['rrze_notices_type'] = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+
         $noticeMetas['rrze_notices_hide_title'] = isset($_POST['rrze_notices_hide_title']) ? 1 : 0;
         $noticeMetas['rrze_notices_alt_style'] = isset($_POST['rrze_notices_alt_style']) ? 1 : 0;
 
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $allRoles = array_keys($availableRoles);
         $roleVisibility = isset($_POST['rrze_notices_role_visibility']) ? $_POST['rrze_notices_role_visibility'] : null;
-        $noticeMetas['rrze_notices_role_visibility'] = in_array($roleVisibility, $allRoles) ? $roleVisibility : ['administrator'];
+        $roles = [];
+        foreach ($roleVisibility as $k) {
+            if (isset($availableRoles[$k])) {
+                $roles[] = $k;
+            }
+        }
+        $noticeMetas['rrze_notices_role_visibility'] = !empty($roles) ? $roles : ['administrator'];
 
         foreach ($noticeMetas as $key => $value) {
-            if (get_post_meta($postId, $key, false)) {
+            if (get_post_meta($postId, $key, true)) {
                 update_post_meta($postId, $key, $value);
             } else {
                 add_post_meta($postId, $key, $value);

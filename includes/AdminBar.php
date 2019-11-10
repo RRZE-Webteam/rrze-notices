@@ -27,20 +27,18 @@ class AdminBar
 
     public function setNotices()
     {
-        $args = [
+        $posts = get_posts([
             'post_type' => $this->customPostType,
             'post_status' => 'publish',
-            'posts_per_page' => -1
-        ];
-        $posts = new WP_Query($args);
+            'numberposts' => -1
+          ]);        
         
-        if ($posts->have_posts()) {
-            while ($posts->have_posts()) {
-                $posts->the_post(); 
-                $postId = get_the_ID();
-                $postTitle = get_the_title();
-                $postContent = get_the_content();
-                if (! $this->isDismissed($postId)) {
+        if ($posts) {
+            foreach ($posts as $post) {
+                $postId = $post->ID;
+                $postTitle = $post->post_title;
+                $postContent = $post->post_content;
+                if ($postContent && ! $this->isDismissed($postId)) {
                     $this->addNotices($postId, $postTitle, $postContent);
                 }
             }
@@ -48,7 +46,6 @@ class AdminBar
                 add_action('admin_bar_menu', [$this, 'addItems'], 99);
             }
         }
-        wp_reset_postdata();
     }
 
     protected function addNotices($postId, $postTitle, $postContent)
