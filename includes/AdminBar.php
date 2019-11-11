@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use WP_Query;
 
-class AdminBar 
+class AdminBar
 {
     protected $customPostType;
 
@@ -20,10 +20,11 @@ class AdminBar
         $this->notices = [];
     }
 
-	public function onLoaded() {
+    public function onLoaded()
+    {
         add_action('admin_head', [$this, 'setNotices']);
         add_action('init', [$this, 'redirectRequest']);
-	}
+    }
 
     public function setNotices()
     {
@@ -31,7 +32,7 @@ class AdminBar
             'post_type' => $this->customPostType,
             'post_status' => 'publish',
             'numberposts' => -1
-          ]);        
+          ]);
         
         if ($posts) {
             foreach ($posts as $post) {
@@ -53,11 +54,11 @@ class AdminBar
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
         $roleVisibility = get_post_meta($postId, 'rrze_notices_role_visibility', true);
         
-        if (!empty($roleVisibility)) { 
+        if (!empty($roleVisibility)) {
             $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
         } else {
             $roleVisibility = [];
-        }        
+        }
 
         $current_user = wp_get_current_user();
         if (!Util::arrayValInArray($current_user->roles, $roleVisibility) && ! in_array('all', $roleVisibility)) {
@@ -76,15 +77,16 @@ class AdminBar
      * @param object \WP_Admin_Bar $wp_admin_bar
      * @return void
      */
-    public function addItems( &$wp_admin_bar ) 
+    public function addItems(&$wp_admin_bar)
     {
-		$title = sprintf(
+        $title = sprintf(
             '<span class="ab-icon dashicons"></span><span class="ab-label">%s</span> <span class="notices-count">%s</span>',
-            esc_html__('Notices', 'rrze-notices'), 
+            esc_html__('Notices', 'rrze-notices'),
             count($this->notices)
         );
 
-		$wp_admin_bar->add_menu([
+        $wp_admin_bar->add_menu(
+            [
                 'id'     => 'rrze-notices',
                 'parent' => 'top-secondary',
                 'title'  => $title,
@@ -95,11 +97,14 @@ class AdminBar
         $i = 0;
         foreach ($this->notices as $notice) {
             $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice['id']), 'rrze_notices_redirect_nonce');
-            $metaClass = implode( ' ', array_map( function ( $type ) {
-                return 'wpnc-' . $type;
-            }, ['info', 'warning'] ) );
+            
+            $noticeType = get_post_meta($notice['id'], 'rrze_notices_type', true);
+            $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+            
+            $metaClass = 'notices-' . $type;
 
-            $wp_admin_bar->add_menu([
+            $wp_admin_bar->add_menu(
+                [
                     'id'     => 'rrze-notices-item-' . $i,
                     'parent' => 'rrze-notices',
                     'title'  => $notice['title'],
@@ -112,7 +117,7 @@ class AdminBar
 
             $i ++;
         }
-	}
+    }
 
     public function redirectRequest()
     {
@@ -134,9 +139,10 @@ class AdminBar
 
         wp_safe_redirect($href);
         exit();
-    }    
+    }
 
-	protected function isDismissed($id) {
-		return ( get_user_meta( get_current_user_id(), "{$this->userMeta}_{$id}", true ) );
-	}    
+    protected function isDismissed($id)
+    {
+        return (get_user_meta(get_current_user_id(), "{$this->userMeta}_{$id}", true));
+    }
 }
