@@ -10,7 +10,7 @@ class CPT
      * [CPT_NAME description]
      * @var string
      */    
-    const CPT_NAME = 'notices';
+    const CPT_NAME = 'notice';
 
     public function onLoaded()
     {
