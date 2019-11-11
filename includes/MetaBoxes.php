@@ -173,14 +173,14 @@ class MetaBoxes
         $noticeMetas['rrze_notices_alt_style'] = isset($_POST['rrze_notices_alt_style']) ? 1 : 0;
 
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $roleVisibility = isset($_POST['rrze_notices_role_visibility']) ? $_POST['rrze_notices_role_visibility'] : null;
+        $roleVisibility = isset($_POST['rrze_notices_role_visibility']) ? $_POST['rrze_notices_role_visibility'] : [];
         $roles = [];
         foreach ($roleVisibility as $k) {
             if (isset($availableRoles[$k])) {
                 $roles[] = $k;
             }
         }
-        $noticeMetas['rrze_notices_role_visibility'] = !empty($roles) ? $roles : ['administrator'];
+        $noticeMetas['rrze_notices_role_visibility'] = $roles;
 
         foreach ($noticeMetas as $key => $value) {
             if (get_post_meta($postId, $key, true)) {
