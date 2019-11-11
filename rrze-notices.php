@@ -3,7 +3,7 @@
 /*
 Plugin Name:     RRZE Notices
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
-Description:     Basic template for all WordPress CMS plugins.
+Description:     Management and listing of admin notices.
 Version:         1.0.0
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
