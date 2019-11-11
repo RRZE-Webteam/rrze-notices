@@ -152,6 +152,10 @@ class MetaBoxes
             return;
         }
 
+        if (!isset($_POST['notice_meta_fields']) || !wp_verify_nonce($_POST['notice_meta_fields'], basename(__FILE__))) {
+            return;
+        }
+        
         if (!isset($post->post_type) || $this->customPostType != $post->post_type) {
             return;
         }
@@ -159,10 +163,6 @@ class MetaBoxes
         $postTypeObject = get_post_type_object($post->post_type);
 
         if (!current_user_can($postTypeObject->cap->edit_post, $postId)) {
-            return;
-        }
-
-        if (!wp_verify_nonce($_POST['notice_meta_fields'], basename(__FILE__))) {
             return;
         }
 
