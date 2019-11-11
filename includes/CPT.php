@@ -28,7 +28,7 @@ class CPT
             'singular_name'      => _x('Notice', 'post type singular name', 'rrze-notices'),
             'menu_name'          => _x('Notices', 'admin menu', 'rrze-notices'),
             'name_admin_bar'     => _x('Notice', 'add new on admin bar', 'rrze-notices'),
-            'add_new'            => _x('Add New', static::CPT_NAME, 'rrze-notices'),
+            'add_new'            => _x('Add New', 'notice', 'rrze-notices'),
             'add_new_item'       => __('Add New Notice', 'rrze-notices'),
             'new_item'           => __('New Notice', 'rrze-notices'),
             'edit_item'          => __('Edit Notice', 'rrze-notices'),
