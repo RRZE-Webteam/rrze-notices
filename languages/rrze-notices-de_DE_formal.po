@@ -3,9 +3,9 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-11 09:44+0000\n"
-"PO-Revision-Date: 2019-11-11 09:45+0000\n"
+"PO-Revision-Date: 2019-11-11 09:55+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
-"Language-Team: Deutsch (Sie)\n"
+"Language-Team: \n"
 "Language: de_DE_formal\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
@@ -41,22 +41,22 @@ msgstr "Plugins: %1$s: %2$s"
 #: includes/CPT.php:27
 msgctxt "post type general name"
 msgid "Notices"
-msgstr "Benachrichtigungen"
+msgstr "Nachrichten"
 
 #: includes/CPT.php:28
 msgctxt "post type singular name"
 msgid "Notice"
-msgstr ""
+msgstr "Nachricht"
 
 #: includes/CPT.php:29
 msgctxt "admin menu"
 msgid "Notices"
-msgstr "Benachrichtigungen"
+msgstr "Nachrichten"
 
 #: includes/CPT.php:30
 msgctxt "add new on admin bar"
 msgid "Notice"
-msgstr "Benachrichtigung"
+msgstr "Nachricht"
 
 #: includes/CPT.php:31
 msgid "Add New"
@@ -64,43 +64,43 @@ msgstr "Neue hinzufügen"
 
 #: includes/CPT.php:32
 msgid "Add New Notice"
-msgstr "Neue Benachrichtigung hinzufügen"
+msgstr "Neue Nachricht hinzufügen"
 
 #: includes/CPT.php:33
 msgid "New Notice"
-msgstr "Neue Benachrichtigung"
+msgstr "Neue Nachricht"
 
 #: includes/CPT.php:34 includes/Notice.php:172
 msgid "Edit Notice"
-msgstr "Benachrichtigung bearbeiten"
+msgstr "Nachricht bearbeiten"
 
 #: includes/CPT.php:35
 msgid "View Notice"
-msgstr "Benachrichtigung anzeigen"
+msgstr "Nachricht anzeigen"
 
 #: includes/CPT.php:36
 msgid "All Notices"
-msgstr "Alle Benachrichtigungen"
+msgstr "Alle Nachrichten"
 
 #: includes/CPT.php:37
 msgid "Search Notices"
-msgstr "Suche nach Benachrichtigungen"
+msgstr "Suche nach Nachrichten"
 
 #: includes/CPT.php:38
 msgid "Parent Notices:"
-msgstr "Elternbenachrichtigungen:"
+msgstr "Elternnachrichten:"
 
 #: includes/CPT.php:39
 msgid "No notices found."
-msgstr "Keine Benachrichtigungen gefunden."
+msgstr "Keine Nachrichten gefunden."
 
 #: includes/CPT.php:40
 msgid "No notices found in Trash."
-msgstr "Keine Benachrichtigung im Papierkorb gefunden."
+msgstr "Keine Nachrichten im Papierkorb gefunden."
 
 #: includes/Columns.php:28
 msgid "Notice"
-msgstr "Benachrichtigung"
+msgstr "Nachricht"
 
 #: includes/Columns.php:29 includes/MetaBoxes.php:46
 msgid "Type"
@@ -146,15 +146,15 @@ msgstr "Alternativer Stil verwenden"
 
 #: includes/AdminBar.php:83
 msgid "Notices"
-msgstr "Benachrichtigungen"
+msgstr "Nachrichten"
 
 #. Name of the plugin
 msgid "RRZE Notices"
-msgstr "RRZE Notices"
+msgstr "RRZE Nachrichten"
 
 #. Description of the plugin
 msgid "Management and listing of admin notices."
-msgstr "Verwaltung und Auflistung von Benachrichtigungen."
+msgstr "Verwaltung und Auflistung von Nachrichten."
 
 #. URI of the plugin
 msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
