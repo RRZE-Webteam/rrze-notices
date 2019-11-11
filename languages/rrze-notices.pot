@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-08 15:07+0000\n"
+"POT-Creation-Date: 2019-11-11 09:44+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -14,112 +14,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Loco-Version: 2.3.1; wp-5.2.4"
-
-#: includes/CPT.php:33
-msgid "Add New"
-msgstr ""
-
-#: includes/CPT.php:34
-msgid "Add New Notice"
-msgstr ""
-
-#: includes/CPT.php:32
-msgctxt "add new on admin bar"
-msgid "Notice"
-msgstr ""
-
-#: includes/CPT.php:31
-msgctxt "admin menu"
-msgid "Notices"
-msgstr ""
-
-#: includes/MetaBoxes.php:84 includes/MetaBoxes.php:135
-#: includes/ShowNotices.php:54 includes/AdminBar.php:56
-msgid "All"
-msgstr ""
-
-#: includes/CPT.php:38
-msgid "All Notices"
-msgstr ""
-
-#. Description of the plugin
-msgid "Basic template for all WordPress CMS plugins."
-msgstr ""
-
-#: includes/MetaBoxes.php:40
-msgid "Display"
-msgstr ""
-
-#: includes/CPT.php:36 includes/Notice.php:172
-msgid "Edit Notice"
-msgstr ""
-
-#: includes/MetaBoxes.php:70
-msgid "Hide Title"
-msgstr ""
-
-#. Author URI of the plugin
-msgid "https://blogs.fau.de/webworking/"
-msgstr ""
-
-#. URI of the plugin
-msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
-msgstr ""
-
-#: includes/Util.php:23
-msgid "Info"
-msgstr ""
-
-#: includes/CPT.php:35
-msgid "New Notice"
-msgstr ""
-
-#: includes/CPT.php:42
-msgid "No notices found in Trash."
-msgstr ""
-
-#: includes/CPT.php:41
-msgid "No notices found."
-msgstr ""
-
-#: includes/AdminBar.php:86
-msgid "Notices"
-msgstr ""
-
-#: includes/CPT.php:40
-msgid "Parent Noticess:"
-msgstr ""
-
-#: rrze-notices.php:118
-#, php-format
-msgid "Plugins: %1$s: %2$s"
-msgstr ""
-
-#: includes/CPT.php:29
-msgctxt "post type general name"
-msgid "Notices"
-msgstr ""
-
-#: includes/CPT.php:30
-msgctxt "post type singular name"
-msgid "Notice"
-msgstr ""
-
-#: includes/MetaBoxes.php:49
-msgid "Role visibility"
-msgstr ""
-
-#. Name of the plugin
-msgid "RRZE Notices"
-msgstr ""
-
-#. Author of the plugin
-msgid "RRZE Webteam"
-msgstr ""
-
-#: includes/CPT.php:39
-msgid "Search Notices"
-msgstr ""
 
 #: rrze-notices.php:63
 #, php-format
@@ -135,14 +29,137 @@ msgid ""
 "WordPress version %2$s."
 msgstr ""
 
-#: includes/MetaBoxes.php:74
-msgid "Use alternative style"
+#: rrze-notices.php:118
+#, php-format
+msgid "Plugins: %1$s: %2$s"
 msgstr ""
 
-#: includes/CPT.php:37
+#: includes/CPT.php:27
+msgctxt "post type general name"
+msgid "Notices"
+msgstr ""
+
+#: includes/CPT.php:28
+msgctxt "post type singular name"
+msgid "Notice"
+msgstr ""
+
+#: includes/CPT.php:29
+msgctxt "admin menu"
+msgid "Notices"
+msgstr ""
+
+#: includes/CPT.php:30
+msgctxt "add new on admin bar"
+msgid "Notice"
+msgstr ""
+
+#: includes/CPT.php:31
+msgid "Add New"
+msgstr ""
+
+#: includes/CPT.php:32
+msgid "Add New Notice"
+msgstr ""
+
+#: includes/CPT.php:33
+msgid "New Notice"
+msgstr ""
+
+#: includes/CPT.php:34 includes/Notice.php:172
+msgid "Edit Notice"
+msgstr ""
+
+#: includes/CPT.php:35
 msgid "View Notice"
 msgstr ""
 
-#: includes/Util.php:24
+#: includes/CPT.php:36
+msgid "All Notices"
+msgstr ""
+
+#: includes/CPT.php:37
+msgid "Search Notices"
+msgstr ""
+
+#: includes/CPT.php:38
+msgid "Parent Notices:"
+msgstr ""
+
+#: includes/CPT.php:39
+msgid "No notices found."
+msgstr ""
+
+#: includes/CPT.php:40
+msgid "No notices found in Trash."
+msgstr ""
+
+#: includes/Columns.php:28
+msgid "Notice"
+msgstr ""
+
+#: includes/Columns.php:29 includes/MetaBoxes.php:46
+msgid "Type"
+msgstr ""
+
+#: includes/Columns.php:30
+msgid "Visibility"
+msgstr ""
+
+#: includes/Columns.php:31
+msgid "Date"
+msgstr ""
+
+#: includes/Columns.php:45 includes/MetaBoxes.php:121
+#: includes/MetaBoxes.php:175 includes/ShowNotices.php:54
+#: includes/AdminBar.php:53
+msgid "All"
+msgstr ""
+
+#: includes/MetaBoxes.php:55
+msgid "Display"
+msgstr ""
+
+#: includes/MetaBoxes.php:64
+msgid "Role visibility"
+msgstr ""
+
+#: includes/MetaBoxes.php:85 includes/Util.php:23
+msgid "Info"
+msgstr ""
+
+#: includes/MetaBoxes.php:89 includes/Util.php:24
 msgid "Warning"
+msgstr ""
+
+#: includes/MetaBoxes.php:107
+msgid "Hide Title"
+msgstr ""
+
+#: includes/MetaBoxes.php:111
+msgid "Use alternative style"
+msgstr ""
+
+#: includes/AdminBar.php:83
+msgid "Notices"
+msgstr ""
+
+#. Name of the plugin
+msgid "RRZE Notices"
+msgstr ""
+
+#. Description of the plugin
+msgid "Management and listing of admin notices."
+msgstr ""
+
+#. URI of the plugin
+msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
+msgstr ""
+
+#. Author of the plugin
+msgid "RRZE Webteam"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://blogs.fau.de/webworking/"
 msgstr ""
