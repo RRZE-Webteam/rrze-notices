@@ -35,7 +35,7 @@ class CPT
             'view_item'          => __('View Notice', 'rrze-notices'),
             'all_items'          => __('All Notices', 'rrze-notices'),
             'search_items'       => __('Search Notices', 'rrze-notices'),
-            'parent_item_colon'  => __('Parent Noticess:', 'rrze-notices'),
+            'parent_item_colon'  => __('Parent Notices:', 'rrze-notices'),
             'not_found'          => __('No notices found.', 'rrze-notices'),
             'not_found_in_trash' => __('No notices found in Trash.', 'rrze-notices')
         );
@@ -56,7 +56,7 @@ class CPT
             'capabilities'          => [
                 'edit_post'          => 'manage_options', 
                 'read_post'          => 'manage_options', 
-                'delete_post'        => 'manage_options', 
+                'delete_posts'       => 'manage_options', 
                 'edit_posts'         => 'manage_options', 
                 'edit_others_posts'  => 'manage_options', 
                 'publish_posts'      => 'manage_options',       
