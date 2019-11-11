@@ -1,0 +1,88 @@
+<?php
+
+namespace RRZE\Notices;
+
+defined('ABSPATH') || exit;
+
+class Columns
+{
+    protected $customPostType;
+
+    public function __construct()
+    {
+        $this->customPostType = CPT::getPostTypeName();
+    }
+
+    public function onLoaded()
+    {
+        add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageEdit']);
+        add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'managePosts'], 10, 2);
+        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortale']);
+        add_action('load-edit.php', [$this, 'loadEdit']);
+    }
+
+    public function manageEdit($columns)
+    {
+        return [
+            'cb' => '<input type="checkbox">',
+            'title' => __('Notice', 'rrze-notices'),
+            'type' => __('Type', 'rrze-notices'),
+            'visibility' => __('Visibility', 'rrze-notices'),
+            'date' => __('Date', 'rrze-notices')
+        ];
+    }
+
+    public function managePosts($column, $postId)
+    {
+        switch ($column) {
+            case 'type':
+                $allTypes = Util::getNoticeTypes();
+                $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
+                $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
+                echo $type;
+                break;
+            case 'visibility':
+                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+                $roleVisibility = get_post_meta($postId, 'rrze_notices_role_visibility', true);
+                if (!empty($roleVisibility)) {
+                    $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+                } else {
+                    $roleVisibility = [];
+                }
+                $roles = [];
+                foreach ($roleVisibility as $k) {
+                    if (isset($availableRoles[$k])) {
+                        $roles[] = $availableRoles[$k];
+                    }
+                }
+                echo implode(', ', $roles);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public function manageSortale($columns)
+    {
+        $columns['type'] = 'type';
+        return $columns;
+    }
+
+    public function loadEdit()
+    {
+        add_action('pre_get_posts', [$this, 'columnOrderby']);
+    }
+
+    public function columnOrderby($query)
+    {
+        if ($this->customPostType != $query->get('post_type')) {
+            return;
+        }
+        $orderBy = $query->get('orderby');
+
+        if ('type' == $orderBy) {
+            $query->set('meta_key', 'rrze_notices_type');
+            $query->set('orderby', 'meta_value');
+        }
+    }
+}
