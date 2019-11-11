@@ -17,6 +17,7 @@ class ShowNotices
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
+        $this->notices = new Notices;
     }
 
     public function onLoaded() {
@@ -24,7 +25,6 @@ class ShowNotices
     }
     
     public function adminInit() {
-        $this->notices = new Notices();
         $this->setNotices();
         $this->showNotices();    
     }
@@ -71,7 +71,7 @@ class ShowNotices
         $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
         $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
         $altStyle = ! get_post_meta($postId, 'rrze_notices_alt_style', 0) ? false : true;
-
+        
         $this->notices->add(
             $id,
             $title,
@@ -81,6 +81,7 @@ class ShowNotices
                 'screens'       => ['dashboard'],
                 'type'          => $type,
                 'alt_style'     => $altStyle,
+                'capability'    => 'read',
                 'edit_link'     => current_user_can('manage_options') ? true : false,
                 'option_prefix' => $this->userMeta
             ]

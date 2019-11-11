@@ -64,6 +64,7 @@ class EditNotice
                 'screens'       => [$this->customPostType],
                 'type'          => $type,
                 'alt_style'     => $altStyle,
+                'capability'    => 'read',
                 'option_prefix' => $this->userMeta
             ]
         );
