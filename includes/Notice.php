@@ -54,12 +54,12 @@ class Notice {
 	 */
 	private $options = [
 		'scope'         => 'global',
+		'screens'       => [],
 		'type'          => 'info',
 		'alt_style'     => false,
 		'edit_link'     => false,
 		'capability'    => 'edit_theme_options',
-		'option_prefix' => 'rrze_notice_dismissed',
-		'screens'       => [],
+		'option_prefix' => 'rrze_notice_dismissed'
 	];
 
 	/**
