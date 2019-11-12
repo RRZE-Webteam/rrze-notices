@@ -9,7 +9,7 @@ class CPT
     /**
      * [CPT_NAME description]
      * @var string
-     */    
+     */
     const CPT_NAME = 'notice';
 
     public function onLoaded()
@@ -17,7 +17,8 @@ class CPT
         add_action('init', [$this, 'registerCPT']);
     }
 
-    public static function getPostTypeName() {
+    public static function getPostTypeName()
+    {
         return static::CPT_NAME;
     }
 
@@ -54,14 +55,14 @@ class CPT
             'menu_icon'             => 'dashicons-warning',
             'capability_type'       => 'page',
             'capabilities'          => [
-                'edit_post'          => 'manage_options', 
-                'read_post'          => 'manage_options', 
-                'delete_posts'       => 'manage_options', 
-                'edit_posts'         => 'manage_options', 
-                'edit_others_posts'  => 'manage_options', 
-                'publish_posts'      => 'manage_options',       
-                'read_private_posts' => 'manage_options', 
-                'create_posts'       => 'manage_options' 
+                'edit_post'          => 'manage_options',
+                'read_post'          => 'manage_options',
+                'delete_posts'       => 'manage_options',
+                'edit_posts'         => 'manage_options',
+                'edit_others_posts'  => 'manage_options',
+                'publish_posts'      => 'manage_options',
+                'read_private_posts' => 'manage_options',
+                'create_posts'       => 'manage_options'
             ],
             //'map_meta_cap'          => null,
             'hierarchical'          => false,
@@ -70,7 +71,7 @@ class CPT
             //'taxonomies'            => [],
             'has_archive'           => false,
             'rewrite'               => false,
-            //'permalink_epmask'    => EP_PERMALINK,  
+            //'permalink_epmask'    => EP_PERMALINK,
             'query_var'             => true,
             'can_export'            => true,
             'delete_with_user'      => null,
@@ -82,9 +83,9 @@ class CPT
         register_post_type(static::CPT_NAME, $args);
     }
 
-    public function addMetaBoxes() {
+    public function addMetaBoxes()
+    {
         $metaBoxes = new MetaBoxes();
         $metaBoxes->addMetaBoxes();
     }
-
- }
+}
