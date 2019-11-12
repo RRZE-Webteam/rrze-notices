@@ -11,22 +11,71 @@ class AdminBar
     protected $customPostType;
 
     protected $notices;
+    
+    protected $siteOptions;
 
     protected $userMeta = 'rrze_notice_dismissed';
 
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
+        $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
     }
 
     public function onLoaded()
     {
-        add_action('admin_head', [$this, 'setNotices']);
+        add_action('admin_head', [$this, 'adminHead']);
         add_action('init', [$this, 'redirectRequest']);
     }
 
-    public function setNotices()
+    public function adminHead()
+    {
+        $this->setNetworkWideNotices();
+        $this->setNotices();
+    }
+    
+    protected function setNetworkWideNotices()
+    {
+        $notices = $this->siteOptions->network_wide;
+        if (Util::isMainWebsite() || empty($notices)) {
+            return;
+        }
+        
+        foreach ($notices as $id => $notice) {
+            $title = $notice->title;
+            $content = $notice->content;
+            if (!$content) {
+                continue;
+            }
+            $type = $notice->type;
+            
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $roleVisibility = $notice->visibility;
+            if (!empty($roleVisibility)) {
+                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+            } else {
+                $roleVisibility = [];
+            }            
+            $visibility = [];
+            foreach ($roleVisibility as $k) {
+                if (isset($availableRoles[$k])) {
+                    $visibility[] = $k;
+                }
+            }
+            if (!empty($visibility)) {
+                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
+            } else {
+                $visibility = [];
+            }
+            $this->addNotices($id, $title, $content, $type, $visibility);
+        }
+        if (! empty($this->notices)) {
+            add_action('admin_bar_menu', [$this, 'addItems'], 99);
+        }
+    }
+    
+    protected function setNotices()
     {
         $posts = get_posts([
             'post_type' => $this->customPostType,
@@ -36,38 +85,51 @@ class AdminBar
         
         if ($posts) {
             foreach ($posts as $post) {
-                $postId = $post->ID;
-                $postTitle = $post->post_title;
-                $postContent = $post->post_content;
-                if ($postContent && ! $this->isDismissed($postId)) {
-                    $this->addNotices($postId, $postTitle, $postContent);
+                $id = $post->ID;
+                $title = $post->post_title;
+                $content = $post->post_content;
+                if (!$content) {
+                    continue;
                 }
+                $noticeType = get_post_meta($id, 'rrze_notices_type', true);
+                $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+                
+                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+                $roleVisibility = get_post_meta($id, 'rrze_notices_role_visibility', true);
+                if (!empty($roleVisibility)) {
+                    $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+                } else {
+                    $roleVisibility = [];
+                }
+                $visibility = [];
+                foreach ($roleVisibility as $k) {
+                    if (isset($availableRoles[$k])) {
+                        $visibility[] = $k;
+                    }
+                }                
+                $this->addNotices($id, $title, $content, $type, $visibility);
             }
-            if (! empty($this->notices)) {
+            if (!empty($this->notices)) {
                 add_action('admin_bar_menu', [$this, 'addItems'], 99);
             }
         }
     }
 
-    protected function addNotices($postId, $postTitle, $postContent)
+    protected function addNotices($id, $title, $content, $type, $visibility)
     {
-        $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $roleVisibility = get_post_meta($postId, 'rrze_notices_role_visibility', true);
-        
-        if (!empty($roleVisibility)) {
-            $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-        } else {
-            $roleVisibility = [];
+        if (!$content || $this->isDismissed($id)) {
+            return;
         }
-
+                
         $current_user = wp_get_current_user();
-        if (!Util::arrayValInArray($current_user->roles, $roleVisibility) && ! in_array('all', $roleVisibility)) {
+        if (!Util::arrayValInArray($current_user->roles, $visibility) && ! in_array('all', $visibility)) {
             return;
         }
 
-        $this->notices[] = [
-            'id' => $postId,
-            'title' => $postTitle,
+        $this->notices[] = (object)[
+            'id' => $id,
+            'title' => $title,
+            'type' => $type
         ];
     }
 
@@ -96,18 +158,14 @@ class AdminBar
 
         $i = 0;
         foreach ($this->notices as $notice) {
-            $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice['id']), 'rrze_notices_redirect_nonce');
-            
-            $noticeType = get_post_meta($notice['id'], 'rrze_notices_type', true);
-            $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-            
-            $metaClass = 'notices-' . $type;
+            $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice->id), 'rrze_notices_redirect_nonce');
+            $metaClass = 'notices-' . $notice->type;
 
             $wp_admin_bar->add_menu(
                 [
                     'id'     => 'rrze-notices-item-' . $i,
                     'parent' => 'rrze-notices',
-                    'title'  => $notice['title'],
+                    'title'  => $notice->title,
                     'href'   => $href,
                     'meta'   => [
                         'class' => $metaClass
@@ -124,18 +182,12 @@ class AdminBar
         if (empty($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'rrze_notices_redirect_nonce')) {
             return;
         }
-
         if (empty($_GET['rrze-notices-id'])) {
             return;
         }
 
-        $postId = absint($_GET['rrze-notices-id']);
-        $postType = get_post_type($postId);
-        if (!$postType || $postType != $this->customPostType) {
-            return;
-        }
-
-        $href = add_query_arg('rrze-notices-id', $postId, get_dashboard_url());
+        $id = absint($_GET['rrze-notices-id']);
+        $href = add_query_arg('rrze-notices-id', $id, get_dashboard_url());
 
         wp_safe_redirect($href);
         exit();

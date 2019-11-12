@@ -7,10 +7,13 @@ defined('ABSPATH') || exit;
 class Columns
 {
     protected $customPostType;
-
+    
+    protected $siteOptions;
+    
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
+        $this->siteOptions = Options::getSiteOptions();
     }
 
     public function onLoaded()
@@ -23,13 +26,18 @@ class Columns
 
     public function manageEdit($columns)
     {
-        return [
+        $columns = [
             'cb' => '<input type="checkbox">',
             'title' => __('Notice', 'rrze-notices'),
             'type' => __('Type', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
+            'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
+        if (!Util::isAllowedNetworkWide()) {
+            unset($columns['network_wide']);
+        }
+        return $columns;
     }
 
     public function managePosts($column, $postId)
@@ -40,6 +48,12 @@ class Columns
                 $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
                 $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
                 echo $type;
+                break;
+            case 'network_wide':
+                $id = sprintf('network-wide-%d', $postId);
+                if (isset($this->siteOptions->network_wide[$id])) {
+                    echo '<span class="dashicons dashicons-yes"></span>';
+                }
                 break;
             case 'visibility':
                 $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
