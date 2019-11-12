@@ -172,7 +172,7 @@ class Notice
         $html  = $this->get_title();
         $html .= $this->get_message();
         if ($this->options['edit_link']) {
-            $html .= '<a style="float: right; position: relative; bottom: 26px;" href="'.admin_url('post.php?post=' . esc_attr($this->id) . '&action=edit').'">'.__('Edit Notice', 'rrze-notices').'</a>';
+            $html .= '<a style="float: right; position: relative; bottom: 26px;" href="'.admin_url('post.php?post=' . esc_attr($this->id) . '&action=edit').'">'.__('Edit', 'rrze-notices').'</a>';
         }
 
         // Print the notice.
