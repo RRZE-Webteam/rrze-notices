@@ -22,10 +22,10 @@ class MetaBoxes
     const META_DISPLAY_BOX = 'rrze_notices_display_box';
 
     /**
-     * [META_ROLE_BOX description]
+     * [META_VISIBILITY_BOX description]
      * @var string
      */
-    const META_ROLE_BOX = 'rrze_notices_role_visibility_box';
+    const META_VISIBILITY_BOX = 'rrze_notices_role_visibility_box';
 
     protected $customPostType;
     
@@ -67,9 +67,9 @@ class MetaBoxes
         );
 
         add_meta_box(
-            static::META_ROLE_BOX,
-            __('Role visibility', 'rrze-notices'),
-            [$this, 'roleFields'],
+            static::META_VISIBILITY_BOX,
+            __('Visibility', 'rrze-notices'),
+            [$this, 'visibilityFields'],
             $this->customPostType,
             'side',
             'default'
@@ -128,7 +128,7 @@ class MetaBoxes
         echo '</ul>';
     }
 
-    public function roleFields()
+    public function visibilityFields()
     {
         global $post;
 
@@ -136,23 +136,26 @@ class MetaBoxes
 
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
         $roleVisibility = get_post_meta($post->ID, 'rrze_notices_role_visibility', true);
-        $count_users = count_users();
-        
         if (!empty($roleVisibility)) {
             $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            $allRoles = array_unique(array_merge(array_keys($availableRoles), array_values($roleVisibility)));
         } else {
             $roleVisibility = [];
-            $allRoles = array_keys($availableRoles);
+        }
+        $visibility = [];
+        foreach ($roleVisibility as $k) {
+            if (isset($availableRoles[$k])) {
+                $visibility[] = $k;
+            }
         }
         
+        $count_users = count_users();
+        
         echo '<ul>';
-        foreach ($allRoles as $role) {
+        foreach ($availableRoles as $role => $name) {
             $count = isset($count_users['avail_roles'][$role]) ? $count_users['avail_roles'][$role]: '-';
             $count = 'all' === $role ? $count_users['total_users']: $count;
-            $name = isset($availableRoles[$role]) ? $availableRoles[$role]: ucfirst($role);
             echo '<li><label>';
-            printf('<input name="rrze_notices_role_visibility[]" type="checkbox" value="%s" %s> %s (%d)', $role, checked($role, in_array($role, $roleVisibility) ? $role : '', false), $name, $count);
+            printf('<input name="rrze_notices_role_visibility[]" type="checkbox" value="%s" %s> %s (%d)', $role, checked($role, in_array($role, $visibility) ? $role : '', false), $name, $count);
             echo '</label></li>';
         }
         echo '</ul>';
@@ -190,6 +193,11 @@ class MetaBoxes
         
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
         $roleVisibility = isset($_POST['rrze_notices_role_visibility']) ? $_POST['rrze_notices_role_visibility'] : [];
+        if (!empty($roleVisibility)) {
+            $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+        } else {
+            $roleVisibility = [];
+        }        
         $visibility = [];
         foreach ($roleVisibility as $k) {
             if (isset($availableRoles[$k])) {
