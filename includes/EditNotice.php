@@ -17,21 +17,24 @@ class EditNotice
         $this->customPostType = CPT::getPostTypeName();
     }
 
-    public function onLoaded() {
+    public function onLoaded()
+    {
         add_action('admin_head', [$this, 'adminHead'], 99);
         //add_filter('user_can_richedit', [$this, 'disableRichedit']);
     }
 
-    public function adminHead() {
+    public function adminHead()
+    {
         $this->notices = new Notices();
         $this->previewNotice();
     }
 
-    protected function previewNotice() {
+    protected function previewNotice()
+    {
         $screen = get_current_screen();
         if ($screen->id != $this->customPostType) {
             return;
-        }        
+        }
         
         global $pagenow;
         if ($pagenow == 'post-new.php') {
@@ -43,11 +46,11 @@ class EditNotice
         $noticeId = $post->ID;
 
         $id = $noticeId;
-        $title = get_post_meta($noticeId,'rrze_notices_hide_title', false) ? false : $notice->post_title;
-        $content = $notice->post_content;   
-        $noticeType = get_post_meta($noticeId,'rrze_notices_type', 'info');
+        $title = get_post_meta($noticeId, 'rrze_notices_hide_title', false) ? false : $notice->post_title;
+        $content = $notice->post_content;
+        $noticeType = get_post_meta($noticeId, 'rrze_notices_type', 'info');
         $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-        $altStyle = ! get_post_meta($noticeId,'rrze_notices_alt_style', 0) ? false : true;
+        $altStyle = ! get_post_meta($noticeId, 'rrze_notices_alt_style', 0) ? false : true;
 
         $currentUserId = get_current_user_id();
         delete_user_meta($currentUserId, $this->userMeta);
@@ -72,12 +75,13 @@ class EditNotice
         $this->notices->boot();
     }
 
-    public function disableRichedit($can) {
+    public function disableRichedit($can)
+    {
         global $post;
 
         if ($this->customPostType == $post->post_type) {
             return false;
         }
         return $can;
-    }   
+    }
 }

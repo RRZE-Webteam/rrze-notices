@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-11 11:33+0000\n"
-"PO-Revision-Date: 2019-11-11 11:36+0000\n"
+"POT-Creation-Date: 2019-11-12 15:50+0000\n"
+"PO-Revision-Date: 2019-11-12 15:50+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -37,114 +37,114 @@ msgstr ""
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/CPT.php:27
+#: includes/CPT.php:28
 msgctxt "post type general name"
 msgid "Notices"
 msgstr "Nachrichten"
 
-#: includes/CPT.php:28
+#: includes/CPT.php:29
 msgctxt "post type singular name"
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/CPT.php:29
+#: includes/CPT.php:30
 msgctxt "admin menu"
 msgid "Notices"
 msgstr "Nachrichten"
 
-#: includes/CPT.php:30
+#: includes/CPT.php:31
 msgctxt "add new on admin bar"
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/CPT.php:31
+#: includes/CPT.php:32
 msgctxt "notice"
 msgid "Add New"
 msgstr "Erstellen"
 
-#: includes/CPT.php:32
+#: includes/CPT.php:33
 msgid "Add New Notice"
 msgstr "Neue Nachricht erstellen"
 
-#: includes/CPT.php:33
+#: includes/CPT.php:34
 msgid "New Notice"
 msgstr "Neue Nachricht"
 
-#: includes/CPT.php:34 includes/Notice.php:172
+#: includes/CPT.php:35 includes/Notice.php:175
 msgid "Edit Notice"
 msgstr "Nachricht bearbeiten"
 
-#: includes/CPT.php:35
+#: includes/CPT.php:36
 msgid "View Notice"
 msgstr "Nachricht anzeigen"
 
-#: includes/CPT.php:36
+#: includes/CPT.php:37
 msgid "All Notices"
 msgstr "Alle Nachrichten"
 
-#: includes/CPT.php:37
+#: includes/CPT.php:38
 msgid "Search Notices"
 msgstr "Suche nach Nachrichten"
 
-#: includes/CPT.php:38
+#: includes/CPT.php:39
 msgid "Parent Notices:"
 msgstr "Elternnachrichten:"
 
-#: includes/CPT.php:39
+#: includes/CPT.php:40
 msgid "No notices found."
 msgstr "Keine Nachrichten gefunden."
 
-#: includes/CPT.php:40
+#: includes/CPT.php:41
 msgid "No notices found in Trash."
 msgstr "Keine Nachrichten im Papierkorb gefunden."
 
-#: includes/Columns.php:28
+#: includes/Columns.php:31
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/Columns.php:29 includes/MetaBoxes.php:46
+#: includes/Columns.php:32 includes/MetaBoxes.php:53
 msgid "Type"
 msgstr "Art"
 
-#: includes/Columns.php:30
+#: includes/Columns.php:33 includes/MetaBoxes.php:71
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-#: includes/Columns.php:31
+#: includes/Columns.php:34 includes/MetaBoxes.php:125
+msgid "Network-Wide"
+msgstr "Netzwerkweit"
+
+#: includes/Columns.php:35
 msgid "Date"
 msgstr "Datum"
 
-#: includes/Columns.php:45 includes/MetaBoxes.php:121
-#: includes/MetaBoxes.php:175 includes/ShowNotices.php:54
-#: includes/AdminBar.php:53
+#: includes/Columns.php:59 includes/MetaBoxes.php:137
+#: includes/MetaBoxes.php:195 includes/ShowNotices.php:98
+#: includes/AdminBar.php:53 includes/AdminBar.php:97
 msgid "All"
 msgstr "Alle"
 
-#: includes/MetaBoxes.php:55
+#: includes/MetaBoxes.php:62
 msgid "Display"
 msgstr "Anzeige"
 
-#: includes/MetaBoxes.php:64
-msgid "Role visibility"
-msgstr "Sichtbarkeit der Rollen"
-
-#: includes/MetaBoxes.php:85 includes/Util.php:23
+#: includes/MetaBoxes.php:92 includes/Util.php:33
 msgid "Info"
 msgstr "Info"
 
-#: includes/MetaBoxes.php:89 includes/Util.php:24
+#: includes/MetaBoxes.php:96 includes/Util.php:34
 msgid "Warning"
 msgstr "Warnhinweis"
 
-#: includes/MetaBoxes.php:107
+#: includes/MetaBoxes.php:114
 msgid "Hide Title"
 msgstr "Titel ausblenden"
 
-#: includes/MetaBoxes.php:111
+#: includes/MetaBoxes.php:118
 msgid "Use alternative style"
 msgstr "Alternativer Stil verwenden"
 
-#: includes/AdminBar.php:83
+#: includes/AdminBar.php:146
 msgid "Notices"
 msgstr "Nachrichten"
 

@@ -22,16 +22,23 @@ class MetaBoxes
     const META_DISPLAY_BOX = 'rrze_notices_display_box';
 
     /**
-     * [META_ROLE_BOX description]
+     * [META_VISIBILITY_BOX description]
      * @var string
      */
-    const META_ROLE_BOX = 'rrze_notices_role_visibility_box';
+    const META_VISIBILITY_BOX = 'rrze_notices_role_visibility_box';
 
     protected $customPostType;
+    
+    protected $siteOptionsName;
+    
+    protected $siteOptions;
 
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
+        
+        $this->siteOptionsName = Options::getSiteOptionName();
+        $this->siteOptions = Options::getSiteOptions();
     }
 
     public function onLoaded()
@@ -60,13 +67,13 @@ class MetaBoxes
         );
 
         add_meta_box(
-            static::META_ROLE_BOX,
-            __('Role visibility', 'rrze-notices'),
-            [$this, 'roleFields'],
+            static::META_VISIBILITY_BOX,
+            __('Visibility', 'rrze-notices'),
+            [$this, 'visibilityFields'],
             $this->customPostType,
             'side',
             'default'
-        );       
+        );
     }
 
     public function typeFields()
@@ -99,7 +106,7 @@ class MetaBoxes
 
         $hideTitle = get_post_meta($post->ID, 'rrze_notices_hide_title', true) ? 1 : 0;
         $altStyle = get_post_meta($post->ID, 'rrze_notices_alt_style', true) ? 1 : 0;
-        
+                
         echo '<ul>';
         
         echo '<li><label>';
@@ -110,33 +117,45 @@ class MetaBoxes
         echo '<input name="rrze_notices_alt_style" type="checkbox" value="1" ' . checked($altStyle, 1, false) . '>';
         echo __('Use alternative style', 'rrze-notices').'</label></li>';
         
+        if (Util::isAllowedNetworkWide()) {
+            $id = sprintf('network-wide-%d', $post->ID);
+            $networkWide = isset($this->siteOptions->network_wide[$id]) ? 1 : 0;            
+            echo '<li><label>';
+            echo '<input name="rrze_notices_network_wide" type="checkbox" value="1" ' . checked($networkWide, 1, false) . '>';
+            echo __('Network-Wide', 'rrze-notices').'</label></li>';
+        }
+                
         echo '</ul>';
     }
 
-    public function roleFields() {
+    public function visibilityFields()
+    {
         global $post;
 
         wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
 
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
         $roleVisibility = get_post_meta($post->ID, 'rrze_notices_role_visibility', true);
-        $count_users = count_users();
-        
-        if (!empty($roleVisibility)) { 
+        if (!empty($roleVisibility)) {
             $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            $allRoles = array_unique(array_merge(array_keys($availableRoles), array_values($roleVisibility)));
         } else {
             $roleVisibility = [];
-            $allRoles = array_keys($availableRoles);
+        }
+        $visibility = [];
+        foreach ($roleVisibility as $k) {
+            if (isset($availableRoles[$k])) {
+                $visibility[] = $k;
+            }
         }
         
+        $count_users = count_users();
+        
         echo '<ul>';
-        foreach($allRoles as $role) {
+        foreach ($availableRoles as $role => $name) {
             $count = isset($count_users['avail_roles'][$role]) ? $count_users['avail_roles'][$role]: '-';
             $count = 'all' === $role ? $count_users['total_users']: $count;
-            $name = isset($availableRoles[$role]) ? $availableRoles[$role]: ucfirst($role);
             echo '<li><label>';
-            printf('<input name="rrze_notices_role_visibility[]" type="checkbox" value="%s" %s> %s (%d)', $role, checked($role, in_array($role, $roleVisibility) ? $role : '', false), $name, $count);
+            printf('<input name="rrze_notices_role_visibility[]" type="checkbox" value="%s" %s> %s (%d)', $role, checked($role, in_array($role, $visibility) ? $role : '', false), $name, $count);
             echo '</label></li>';
         }
         echo '</ul>';
@@ -171,16 +190,21 @@ class MetaBoxes
 
         $noticeMetas['rrze_notices_hide_title'] = isset($_POST['rrze_notices_hide_title']) ? 1 : 0;
         $noticeMetas['rrze_notices_alt_style'] = isset($_POST['rrze_notices_alt_style']) ? 1 : 0;
-
+        
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
         $roleVisibility = isset($_POST['rrze_notices_role_visibility']) ? $_POST['rrze_notices_role_visibility'] : [];
-        $roles = [];
+        if (!empty($roleVisibility)) {
+            $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+        } else {
+            $roleVisibility = [];
+        }        
+        $visibility = [];
         foreach ($roleVisibility as $k) {
             if (isset($availableRoles[$k])) {
-                $roles[] = $k;
+                $visibility[] = $k;
             }
         }
-        $noticeMetas['rrze_notices_role_visibility'] = $roles;
+        $noticeMetas['rrze_notices_role_visibility'] = $visibility;
 
         foreach ($noticeMetas as $key => $value) {
             if (get_post_meta($postId, $key, true)) {
@@ -192,6 +216,23 @@ class MetaBoxes
                 delete_post_meta($postId, $key);
             }
         }
+        
+        if (Util::isAllowedNetworkWide()) {
+            $id = sprintf('network-wide-%d', $postId);
+            $networkWide = Util::isAllowedNetworkWide() && isset($_POST['rrze_notices_network_wide']) ? 1 : 0;
+            if ($networkWide) {
+                $this->siteOptions->network_wide[$id] = (object)[
+                    'title' => $post->post_title,
+                    'content' => $post->post_content,
+                    'type' => $noticeMetas['rrze_notices_type'],
+                    'hide_title' => $noticeMetas['rrze_notices_hide_title'],
+                    'alt_style' => $noticeMetas['rrze_notices_alt_style'],
+                    'visibility' => $noticeMetas['rrze_notices_role_visibility']
+                ];
+            } elseif (isset($this->siteOptions->network_wide[$id])) {
+                unset($this->siteOptions->network_wide[$id]);
+            }
+            update_site_option($this->siteOptionsName, $this->siteOptions);
+        }
     }
-
- }
+}

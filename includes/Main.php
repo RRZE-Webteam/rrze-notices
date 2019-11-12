@@ -42,13 +42,13 @@ class Main
         $metaBoxes->onLoaded();
 
         $columns = new Columns();
-        $columns->onLoaded();        
+        $columns->onLoaded();
 
         $editNotice = new EditNotice;
         $editNotice->onLoaded();
 
         $showNotices = new ShowNotices;
-        $showNotices->onLoaded();     
+        $showNotices->onLoaded();
 
         $adminBar = new AdminBar;
         $adminBar->onLoaded();
@@ -57,7 +57,8 @@ class Main
         //$dashboard->onLoaded();
     }
 
-    public function adminEnqueueScripts() {
-        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));        
+    public function adminEnqueueScripts()
+    {
+        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));
     }
 }

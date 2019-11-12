@@ -13,15 +13,13 @@ class Options
     protected static function deafaultOptions()
     {
         return [
-            'notices_per_page' => 10,
-            'notices' => []
         ];
     }
 
     protected static function defaultSiteOptiones()
     {
         return [
-            'active' => 1
+            'network_wide' => []
         ];
     }
 
