@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-12 15:50+0000\n"
-"PO-Revision-Date: 2019-11-12 15:50+0000\n"
+"POT-Creation-Date: 2019-11-12 16:03+0000\n"
+"PO-Revision-Date: 2019-11-12 16:04+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de_DE_formal\n"
@@ -71,7 +71,7 @@ msgstr "Neue Nachricht erstellen"
 msgid "New Notice"
 msgstr "Neue Nachricht"
 
-#: includes/CPT.php:35 includes/Notice.php:175
+#: includes/CPT.php:35
 msgid "Edit Notice"
 msgstr "Nachricht bearbeiten"
 
@@ -120,7 +120,7 @@ msgid "Date"
 msgstr "Datum"
 
 #: includes/Columns.php:59 includes/MetaBoxes.php:137
-#: includes/MetaBoxes.php:195 includes/ShowNotices.php:98
+#: includes/MetaBoxes.php:194 includes/ShowNotices.php:98
 #: includes/AdminBar.php:53 includes/AdminBar.php:97
 msgid "All"
 msgstr "Alle"
@@ -148,6 +148,10 @@ msgstr "Alternativer Stil verwenden"
 #: includes/AdminBar.php:146
 msgid "Notices"
 msgstr "Nachrichten"
+
+#: includes/Notice.php:175
+msgid "Edit"
+msgstr "Bearbeiten"
 
 #. Name of the plugin
 msgid "RRZE Notices"

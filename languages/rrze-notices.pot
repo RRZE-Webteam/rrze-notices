@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-12 15:50+0000\n"
+"POT-Creation-Date: 2019-11-12 16:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -67,7 +67,7 @@ msgstr ""
 msgid "New Notice"
 msgstr ""
 
-#: includes/CPT.php:35 includes/Notice.php:175
+#: includes/CPT.php:35
 msgid "Edit Notice"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgid "Date"
 msgstr ""
 
 #: includes/Columns.php:59 includes/MetaBoxes.php:137
-#: includes/MetaBoxes.php:195 includes/ShowNotices.php:98
+#: includes/MetaBoxes.php:194 includes/ShowNotices.php:98
 #: includes/AdminBar.php:53 includes/AdminBar.php:97
 msgid "All"
 msgstr ""
@@ -143,6 +143,10 @@ msgstr ""
 
 #: includes/AdminBar.php:146
 msgid "Notices"
+msgstr ""
+
+#: includes/Notice.php:175
+msgid "Edit"
 msgstr ""
 
 #. Name of the plugin
