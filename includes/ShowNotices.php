@@ -37,24 +37,42 @@ class ShowNotices
     
     protected function setNetworkWideNotices()
     {
+        if (!is_multisite()) {
+            return;
+        }
+        
         $notices = $this->siteOptions->network_wide;
-        if (Util::isMainWebsite() || empty($notices)) {
+        if (empty($notices)) {
             return;
         }
 
         foreach ($notices as $id => $notice) {
+            global $wpdb;
+            $idArray = explode('-', $id);
+            if ($wpdb->blogid == $idArray[array_key_first($idArray)]) {
+                continue;
+            }            
             $current_user = wp_get_current_user();
             if (!Util::arrayValInArray($current_user->roles, $notice->visibility) && !in_array('all', $notice->visibility)) {
                 return;
             }
 
-            $title = $notice->title;
+            $title = $notice->hide_title ? false : $notice->title;
             $content = $notice->content;
             if (!$content) {
                 continue;
             }
-            $type = $notice->type;
-            $altStyle = $notice->alt_style;
+            
+            $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
+
+            $allIntervals = Util::getExpirationIntervals();
+            $expiration = array_key_exists($notice->expiration, $allIntervals) ? $notice->expiration : 'week';
+            $expired = Util::isExpired($expiration, $notice->date_gmt);
+            if ($expired) {
+                continue;
+            }
+            
+            $altStyle = $notice->alt_style ? true : false;
             
             $this->notices->add(
                 $id,
@@ -86,7 +104,13 @@ class ShowNotices
                 $postId = $post->ID;
                 $postTitle = $post->post_title;
                 $postContent = $post->post_content;
-                if ($postContent) {
+                
+                $allIntervals = Util::getExpirationIntervals();
+                $noticeExpiration = get_post_meta($postId, 'rrze_notices_expiration', true);
+                $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
+                $expired = Util::isExpired($expiration, $post->post_date_gmt);
+                
+                if ($postContent && !$expired) {
                     $this->addNotices($postId, $postTitle, $postContent);
                 }
             }
@@ -96,7 +120,7 @@ class ShowNotices
     protected function addNotices($postId, $postTitle, $postContent)
     {
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $roleVisibility = get_post_meta($postId, 'rrze_notices_role_visibility', true);
+        $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
         if (!empty($roleVisibility)) {
             $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
         } else {
@@ -115,11 +139,11 @@ class ShowNotices
         }
         
         $id = $postId;
-        $title = get_post_meta($postId, 'rrze_notices_hide_title', false) ? false : $postTitle;
+        $title = get_post_meta($postId, 'rrze_notices_hide_title', true) ? false : $postTitle;
         $content = $postContent;
         $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
         $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-        $altStyle = ! get_post_meta($postId, 'rrze_notices_alt_style', 0) ? false : true;
+        $altStyle = get_post_meta($postId, 'rrze_notices_alt_style', true) ? true : false;
         
         $this->notices->add(
             $id,

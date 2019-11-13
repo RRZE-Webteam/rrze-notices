@@ -37,18 +37,32 @@ class AdminBar
     
     protected function setNetworkWideNotices()
     {
+        if (!is_multisite()) {
+            return;
+        }
+                
         $notices = $this->siteOptions->network_wide;
-        if (Util::isMainWebsite() || empty($notices)) {
+        if (empty($notices)) {
             return;
         }
         
         foreach ($notices as $id => $notice) {
+            global $wpdb;
+            $idArray = explode('-', $id);
+            if ($wpdb->blogid == $idArray[array_key_first($idArray)]) {
+                continue;
+            }
             $title = $notice->title;
             $content = $notice->content;
             if (!$content) {
                 continue;
             }
-            $type = $notice->type;
+
+            $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
+            
+            $allIntervals = Util::getExpirationIntervals();
+            $expiration = array_key_exists($notice->expiration, $allIntervals) ? $notice->expiration : 'week';
+            $expired = Util::isExpired($expiration, $notice->date_gmt);
             
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
             $roleVisibility = $notice->visibility;
@@ -56,7 +70,7 @@ class AdminBar
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
                 $roleVisibility = [];
-            }            
+            }
             $visibility = [];
             foreach ($roleVisibility as $k) {
                 if (isset($availableRoles[$k])) {
@@ -68,7 +82,7 @@ class AdminBar
             } else {
                 $visibility = [];
             }
-            $this->addNotices($id, $title, $content, $type, $visibility);
+            $this->addNotices($id, $title, $content, $type, $expired, $visibility);
         }
         if (! empty($this->notices)) {
             add_action('admin_bar_menu', [$this, 'addItems'], 99);
@@ -94,8 +108,13 @@ class AdminBar
                 $noticeType = get_post_meta($id, 'rrze_notices_type', true);
                 $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
                 
+                $allIntervals = Util::getExpirationIntervals();
+                $noticeExpiration = get_post_meta($id, 'rrze_notices_expiration', true);
+                $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
+                $expired = Util::isExpired($expiration, $post->post_date_gmt);
+                
                 $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-                $roleVisibility = get_post_meta($id, 'rrze_notices_role_visibility', true);
+                $roleVisibility = get_post_meta($id, 'rrze_notices_visibility', true);
                 if (!empty($roleVisibility)) {
                     $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
                 } else {
@@ -106,8 +125,8 @@ class AdminBar
                     if (isset($availableRoles[$k])) {
                         $visibility[] = $k;
                     }
-                }                
-                $this->addNotices($id, $title, $content, $type, $visibility);
+                }
+                $this->addNotices($id, $title, $content, $type, $expired, $visibility);
             }
             if (!empty($this->notices)) {
                 add_action('admin_bar_menu', [$this, 'addItems'], 99);
@@ -115,9 +134,9 @@ class AdminBar
         }
     }
 
-    protected function addNotices($id, $title, $content, $type, $visibility)
+    protected function addNotices($id, $title, $content, $type, $expired, $visibility)
     {
-        if (!$content || $this->isDismissed($id)) {
+        if (!$content || $expired || $this->isDismissed($id)) {
             return;
         }
                 

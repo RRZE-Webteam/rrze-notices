@@ -34,17 +34,24 @@ class Util
             'warning' => __('Warning', 'rrze-notices')
         ];
     }
-    
-    public static function isMainWebsite()
+
+    public static function getExpirationIntervals()
     {
-        global $wpdb;
-        return is_multisite() && $wpdb->blogid == 1 ? true : false;
+        return [
+            'week' => __('1 Week', 'rrze_notices'),
+            'month' => __('1 Month', 'rrze_notices'),
+        ];
     }
         
     public static function isAllowedNetworkWide()
     {
         global $wpdb;
-        return is_super_admin() && is_multisite() && $wpdb->blogid == 1 ? true : false;
+        return is_super_admin() && is_multisite() ? true : false;
+    }
+    
+    public static function isExpired($interval, $relative)
+    {
+        return (time() - strtotime('+1 ' . $interval, strtotime($relative))) > 0 ? true : false;
     }
     
     public static function arrayValInArray($needle, $haystack)
