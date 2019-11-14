@@ -51,13 +51,19 @@ class Columns
                 echo $type;
                 break;
             case 'expiration':
-                    $post = get_post($postId);
-                    $allIntervals = Util::getExpirationIntervals();
-                    $expiration = get_post_meta($postId, 'rrze_notices_expiration', true);
-                    $expiration = isset($allIntervals[$expiration]) ? $allIntervals[$expiration] : $allIntervals[array_key_first($allIntervals)];
-                    $expired = Util::isExpired($expiration, $post->post_date_gmt);
-                    echo !$expired ? $expiration : __('Expired!', 'rrze_notices');
-                    break;
+                $post = get_post($postId);
+                $allIntervals = Util::getExpirationIntervals();
+                $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
+                $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
+                $expired = Util::isExpired($expiration, $post->post_date_gmt);
+                $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+                $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+                if ($expired) {
+                    printf('<span class="expired">%s</span><br><span class="expired" title="%s">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime, $expireDate);
+                } else {
+                    printf('<span title="%s">%s</span>', $expireDateTime, $expireDate);
+                }
+                break;
             case 'network_wide':
                 global $wpdb;
                 $blogId = $wpdb->blogid;
