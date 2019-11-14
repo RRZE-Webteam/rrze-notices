@@ -19,6 +19,8 @@ class Options
     protected static function defaultSiteOptiones()
     {
         return [
+            'enabled' => 0,
+            'access' => 'manage_network_options',            
             'network_wide' => []
         ];
     }

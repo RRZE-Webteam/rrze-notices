@@ -16,6 +16,10 @@ class MetaBoxes
     const META_DISPLAY_BOX = 'rrze_notices_display_box';
 
     const META_VISIBILITY_BOX = 'rrze_notices_visibility_box';
+    
+    protected $pluginFile;
+    
+    protected $pluginBaseName;
 
     protected $customPostType;
     
@@ -23,8 +27,10 @@ class MetaBoxes
     
     protected $siteOptions;
 
-    public function __construct()
+    public function __construct($pluginFile)
     {
+        $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->customPostType = CPT::getPostTypeName();
         
         $this->siteOptionsName = Options::getSiteOptionName();
@@ -154,7 +160,7 @@ class MetaBoxes
         echo '<input name="rrze_notices_alt_style" type="checkbox" value="1" ' . checked($altStyle, 1, false) . '>';
         echo __('Use alternative style', 'rrze-notices').'</label></li>';
         
-        if (Util::isAllowedNetworkWide()) {
+        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
             global $wpdb;
             $blogId = $wpdb->blogid;
             $id = sprintf('%d-%d', $blogId, $post->ID);
@@ -257,11 +263,11 @@ class MetaBoxes
             }
         }
         
-        if (Util::isAllowedNetworkWide()) {
+        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
             global $wpdb;
             $blogId = $wpdb->blogid;
             $id = sprintf('%d-%d', $blogId, $postId);
-            $networkWide = Util::isAllowedNetworkWide() && isset($_POST['rrze_notices_network_wide']) ? 1 : 0;
+            $networkWide = is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName) && isset($_POST['rrze_notices_network_wide']) ? 1 : 0;
             if ($networkWide && $post->post_status == 'publish') {
                 $this->siteOptions->network_wide[$id] = (object)[
                     'title' => $post->post_title,
@@ -299,7 +305,7 @@ class MetaBoxes
             return;
         }
 
-        if (Util::isAllowedNetworkWide() && $postAfter->post_status != 'publish') {
+        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName) && $postAfter->post_status != 'publish') {
             global $wpdb;
             $blogId = $wpdb->blogid;
             $id = sprintf('%d-%d', $blogId, $postId);
@@ -330,7 +336,7 @@ class MetaBoxes
             return;
         }
         
-        if (Util::isAllowedNetworkWide()) {
+        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
             global $wpdb;
             $blogId = $wpdb->blogid;
             $id = sprintf('%d-%d', $blogId, $postId);

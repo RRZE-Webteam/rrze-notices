@@ -9,15 +9,21 @@ use WP_Query;
 class ShowNotices
 {
     protected $notices;
-
+    
+    protected $pluginFile;
+    
+    protected $pluginBaseName;
+    
     protected $customPostType;
     
     protected $siteOptions;
 
     protected $userMeta = 'rrze_notice_dismissed';
 
-    public function __construct()
+    public function __construct($pluginFile)
     {
+        $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->customPostType = CPT::getPostTypeName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = new Notices;
@@ -37,7 +43,7 @@ class ShowNotices
     
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite()) {
+        if (!is_multisite() || !is_plugin_active_for_network($this->pluginBaseName)) {
             return;
         }
                 
@@ -98,7 +104,7 @@ class ShowNotices
             $altStyle = $notice->alt_style ? true : false;
             
             $editLink = '';
-            if (Util::isAllowedNetworkWide()) {
+            if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
                 $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
                 $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
                 switch_to_blog($blogId);
@@ -166,7 +172,7 @@ class ShowNotices
             $adminLink = admin_url('post.php?post=' . esc_attr($id) . '&action=edit');
             $editText = __('Edit', 'rrze-notices');
             
-            if (Util::isAllowedNetworkWide()) {
+            if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
                 global $wpdb;
                 $blogId = $wpdb->blogid;
                 $networkWideid = sprintf('%d-%d', $blogId, $id);
@@ -174,8 +180,9 @@ class ShowNotices
                     $editText = isset($this->siteOptions->network_wide[$networkWideid]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
                 }
             }
-                   
-            if (current_user_can('manage_options')) {
+            
+            $capablity = is_plugin_active_for_network($this->pluginBaseName) ? $this->siteOptions->access : 'manage_options';
+            if (current_user_can($capablity)) {
                 $editLink = sprintf('<a style="float: right; position: relative; bottom: 26px;" href="%1$s">%2$s</a>', $adminLink, $editText);
             }
             

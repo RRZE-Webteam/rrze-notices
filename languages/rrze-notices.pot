@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-14 10:05+0000\n"
+"POT-Creation-Date: 2019-11-14 16:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -34,135 +34,172 @@ msgstr ""
 msgid "Plugins: %1$s: %2$s"
 msgstr ""
 
-#: includes/CPT.php:28
+#: includes/CPT.php:44
 msgctxt "post type general name"
 msgid "Notices"
 msgstr ""
 
-#: includes/CPT.php:29
+#: includes/CPT.php:45
 msgctxt "post type singular name"
 msgid "Notice"
 msgstr ""
 
-#: includes/CPT.php:30
+#: includes/CPT.php:46
 msgctxt "admin menu"
 msgid "Notices"
 msgstr ""
 
-#: includes/CPT.php:31
+#: includes/CPT.php:47
 msgctxt "add new on admin bar"
 msgid "Notice"
 msgstr ""
 
-#: includes/CPT.php:32
+#: includes/CPT.php:48
 msgctxt "notice"
 msgid "Add New"
 msgstr ""
 
-#: includes/CPT.php:33
+#: includes/CPT.php:49
 msgid "Add New Notice"
 msgstr ""
 
-#: includes/CPT.php:34
+#: includes/CPT.php:50
 msgid "New Notice"
 msgstr ""
 
-#: includes/CPT.php:35
+#: includes/CPT.php:51
 msgid "Edit Notice"
 msgstr ""
 
-#: includes/CPT.php:36
+#: includes/CPT.php:52
 msgid "View Notice"
 msgstr ""
 
-#: includes/CPT.php:37
+#: includes/CPT.php:53
 msgid "All Notices"
 msgstr ""
 
-#: includes/CPT.php:38
+#: includes/CPT.php:54
 msgid "Search Notices"
 msgstr ""
 
-#: includes/CPT.php:39
+#: includes/CPT.php:55
 msgid "Parent Notices:"
 msgstr ""
 
-#: includes/CPT.php:40
+#: includes/CPT.php:56
 msgid "No notices found."
 msgstr ""
 
-#: includes/CPT.php:41
+#: includes/CPT.php:57
 msgid "No notices found in Trash."
 msgstr ""
 
-#: includes/Columns.php:31
+#: includes/Settings.php:44
+msgid "Settings"
+msgstr ""
+
+#: includes/Settings.php:72 includes/Settings.php:73 includes/Settings.php:82
+#: includes/Settings.php:115 includes/AdminBar.php:198
+msgid "Notices"
+msgstr ""
+
+#: includes/Settings.php:84
+msgid "Enable Notices"
+msgstr ""
+
+#: includes/Settings.php:85
+msgid "Access"
+msgstr ""
+
+#: includes/Settings.php:92
+msgid "Notices is enabled."
+msgstr ""
+
+#: includes/Settings.php:95
+msgid "Notices is disabled."
+msgstr ""
+
+#: includes/Settings.php:104
+msgid "Superadmins"
+msgstr ""
+
+#: includes/Settings.php:108
+msgid "Administrators"
+msgstr ""
+
+#: includes/Settings.php:121
+msgid "Save Changes"
+msgstr ""
+
+#: includes/Columns.php:37
 msgid "Notice"
 msgstr ""
 
-#: includes/Columns.php:32 includes/MetaBoxes.php:45
+#: includes/Columns.php:38 includes/MetaBoxes.php:51
 msgid "Type"
 msgstr ""
 
-#: includes/Columns.php:33 includes/MetaBoxes.php:54
+#: includes/Columns.php:39 includes/MetaBoxes.php:60
 msgid "Expiration"
 msgstr ""
 
-#: includes/Columns.php:34 includes/MetaBoxes.php:72
+#: includes/Columns.php:40 includes/MetaBoxes.php:78
 msgid "Visibility"
 msgstr ""
 
-#: includes/Columns.php:35 includes/MetaBoxes.php:164
+#: includes/Columns.php:41 includes/MetaBoxes.php:170
 msgid "Network-Wide"
 msgstr ""
 
-#: includes/Columns.php:36
+#: includes/Columns.php:42
 msgid "Date"
 msgstr ""
 
-#: includes/Columns.php:59 includes/MetaBoxes.php:112
+#: includes/Columns.php:65 includes/MetaBoxes.php:118
 msgid "Y/m/d"
 msgstr ""
 
-#: includes/Columns.php:60 includes/MetaBoxes.php:113
+#: includes/Columns.php:66 includes/MetaBoxes.php:119
 msgid "Y/m/d H:s:i"
 msgstr ""
 
-#: includes/Columns.php:62
+#: includes/Columns.php:68
 msgid "Expired"
 msgstr ""
 
-#: includes/Columns.php:76 includes/MetaBoxes.php:176
-#: includes/MetaBoxes.php:234 includes/ShowNotices.php:68
-#: includes/ShowNotices.php:136 includes/AdminBar.php:75
-#: includes/AdminBar.php:138
+#: includes/Columns.php:82 includes/MetaBoxes.php:182
+#: includes/MetaBoxes.php:240 includes/ShowNotices.php:74
+#: includes/ShowNotices.php:142 includes/AdminBar.php:81
+#: includes/AdminBar.php:144
 msgid "All"
 msgstr ""
 
-#: includes/MetaBoxes.php:63
+#: includes/MetaBoxes.php:69
 msgid "Display"
 msgstr ""
 
-#: includes/MetaBoxes.php:93 includes/Util.php:33
+#: includes/MetaBoxes.php:99 includes/Util.php:33
 msgid "Info"
 msgstr ""
 
-#: includes/MetaBoxes.php:97 includes/Util.php:34
+#: includes/MetaBoxes.php:103 includes/Util.php:34
 msgid "Warning"
 msgstr ""
 
-#: includes/MetaBoxes.php:151
+#: includes/MetaBoxes.php:157
 msgid "Hide Title"
 msgstr ""
 
-#: includes/MetaBoxes.php:155
+#: includes/MetaBoxes.php:161
 msgid "Use alternative style"
 msgstr ""
 
-#: includes/ShowNotices.php:107 includes/ShowNotices.php:174
+#: includes/ShowNotices.php:113 includes/ShowNotices.php:180
 msgid "Edit (Network-Wide)"
 msgstr ""
 
-#: includes/ShowNotices.php:167
+#: includes/ShowNotices.php:173
 msgid "Edit"
 msgstr ""
 
@@ -176,10 +213,6 @@ msgstr ""
 
 #: includes/Util.php:43
 msgid "1 Month"
-msgstr ""
-
-#: includes/AdminBar.php:192
-msgid "Notices"
 msgstr ""
 
 #. Name of the plugin

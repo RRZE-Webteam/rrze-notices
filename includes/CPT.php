@@ -6,15 +6,31 @@ defined('ABSPATH') || exit;
 
 class CPT
 {
-    /**
-     * [CPT_NAME description]
-     * @var string
-     */
     const CPT_NAME = 'notice';
 
+    protected $pluginFile;
+    
+    protected $siteOptions;
+    
+    protected $metaBoxes;
+    
+    protected $columns;
+    
+    public function __construct($pluginFile)
+    {
+        $this->pluginFile = $pluginFile;
+        $this->siteOptions = Options::getSiteOptions();       
+    }
+    
     public function onLoaded()
     {
         add_action('init', [$this, 'registerCPT']);
+        
+        $this->metaBoxes = new MetaBoxes($this->pluginFile);
+        $this->metaBoxes->onLoaded();
+        
+        $this->columns = new Columns($this->pluginFile);
+        $this->columns->onLoaded();         
     }
 
     public static function getPostTypeName()
@@ -55,19 +71,19 @@ class CPT
             'menu_icon'             => 'dashicons-warning',
             'capability_type'       => 'page',
             'capabilities'          => [
-                'edit_post'          => 'manage_options',
-                'read_post'          => 'manage_options',
-                'delete_posts'       => 'manage_options',
-                'edit_posts'         => 'manage_options',
-                'edit_others_posts'  => 'manage_options',
-                'publish_posts'      => 'manage_options',
-                'read_private_posts' => 'manage_options',
-                'create_posts'       => 'manage_options'
+                'edit_post'          => $this->siteOptions->access,
+                'read_post'          => $this->siteOptions->access,
+                'delete_posts'       => $this->siteOptions->access,
+                'edit_posts'         => $this->siteOptions->access,
+                'edit_others_posts'  => $this->siteOptions->access,
+                'publish_posts'      => $this->siteOptions->access,
+                'read_private_posts' => $this->siteOptions->access,
+                'create_posts'       => $this->siteOptions->access
             ],
             //'map_meta_cap'          => null,
             'hierarchical'          => false,
             'supports'              => ['title', 'editor'],
-            'register_meta_box_cb'  => [$this, 'addMetaBoxes'],
+            'register_meta_box_cb'  => [$this->metaBoxes, 'addMetaBoxes'],
             //'taxonomies'            => [],
             'has_archive'           => false,
             'rewrite'               => false,
@@ -83,9 +99,4 @@ class CPT
         register_post_type(static::CPT_NAME, $args);
     }
 
-    public function addMetaBoxes()
-    {
-        $metaBoxes = new MetaBoxes();
-        $metaBoxes->addMetaBoxes();
-    }
 }

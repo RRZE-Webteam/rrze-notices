@@ -6,12 +6,18 @@ defined('ABSPATH') || exit;
 
 class Columns
 {
+    protected $pluginFile;
+    
+    protected $pluginBaseName;
+    
     protected $customPostType;
     
     protected $siteOptions;
     
-    public function __construct()
-    {
+    public function __construct($pluginFile)
+    {   
+        $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->customPostType = CPT::getPostTypeName();
         $this->siteOptions = Options::getSiteOptions();
     }
@@ -35,7 +41,7 @@ class Columns
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!Util::isAllowedNetworkWide()) {
+        if (!is_super_admin() || !is_multisite() || !is_plugin_active_for_network($this->pluginBaseName)) {
             unset($columns['network_wide']);
         }
         return $columns;
