@@ -1,9 +1,31 @@
+.expiration.column-expiration {
+    span.expired {
+        color: #a00;
+    }
+
+    span[title] {
+        -webkit-text-decoration: dotted underline;
+        text-decoration: dotted underline;
+    }
+}
+
+#rrze_notices_expiration_box {
+    span.expiration {
+        padding-left: 4px;
+        -webkit-text-decoration: dotted underline;
+        text-decoration: dotted underline;
+    }
+
+    span.expired {
+        color: #a00;
+    }
+}
+
 #wp-admin-bar-rrze-notices {
-    
     .ab-icon:before {
         content: "\f534";
         top: 2px;
-        margin: 0
+        margin: 0;
     }
 
     .notices-count {
@@ -17,7 +39,6 @@
     }
 
     .ab-sub-wrapper {
-
         max-height: 500px;
         overflow-y: scroll;
 
@@ -25,14 +46,14 @@
             width: 400px;
             padding: 0;
 
-            &>li {
+            & > li {
                 border-left: 4px solid #32373c;
                 padding: 0;
 
                 &.notices-info {
                     border-left-color: #00a0d1;
                 }
-                
+
                 &.notices-warning {
                     border-left-color: #ffb900;
                 }
@@ -40,19 +61,18 @@
                 .ab-item {
                     height: 100% !important;
                     white-space: normal !important;
-                    padding: .5em 1em;
+                    padding: 0.5em 1em;
                     border-bottom: 1px solid #4a4f55;
-                    line-height: .5em;
+                    line-height: 0.5em;
 
                     a {
                         display: inline;
                         padding: 0;
                         margin: 0;
                         text-decoration: underline;
-                        line-height: .5em;
+                        line-height: 0.5em;
                     }
                 }
-
             }
         }
     }
