@@ -176,7 +176,7 @@ class ShowNotices
             }
                    
             if (current_user_can('manage_options')) {
-                $editLink = sprintf('<a style="float: right; position: relative; bottom: 26px;" href="%1$s">%2$s</a>', $editLink, $editText);
+                $editLink = sprintf('<a style="float: right; position: relative; bottom: 26px;" href="%1$s">%2$s</a>', $adminLink, $editText);
             }
             
             $this->addNotices($id, $title, $content, $type, $altStyle, $editLink);
