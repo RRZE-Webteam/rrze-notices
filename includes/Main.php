@@ -18,7 +18,9 @@ class Main
      * @var string
      */
     protected $pluginFile;
-
+    
+    protected $siteOptions;
+    
     /**
      * Variablen Werte zuweisen.
      * @param string $pluginFile Pfad- und Dateiname der Plugin-Datei
@@ -26,6 +28,7 @@ class Main
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
+        $this->siteOptions = Options::getSiteOptions();
     }
 
     /**
@@ -37,7 +40,10 @@ class Main
         
         $settings = new Settings($this->pluginFile);
         $settings->onLoaded();
-                
+        if (!$this->siteOptions->enabled) {
+            return;
+        }
+        
         $cpt = new CPT($this->pluginFile);
         $cpt->onLoaded();
 
