@@ -109,6 +109,8 @@ class MetaBoxes
         $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
         $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
         $expired = Util::isExpired($expiration, $post->post_date_gmt);
+        $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+        $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
         
         echo '<ul>';
         
@@ -123,7 +125,11 @@ class MetaBoxes
             );
         }
         echo '</select>';
-        echo $expired ? '<span class="expired">' . __('Expired!', 'rrze_notices') . '</span>' : '';
+        if ($expired) {
+            printf ('<span class="expiration expired" title="%s">%s</span>', $expireDateTime, $expireDate);
+        } else {
+            printf('<span class="expiration" title="%s">%s</span>', $expireDateTime, $expireDate);
+        }
         echo '</li>';
         
         echo '</ul>';
