@@ -34,27 +34,21 @@ class Main
     public function onLoaded()
     {
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
+        
+        $settings = new Settings($this->pluginFile);
+        $settings->onLoaded();
                 
-        $cpt = new CPT;
+        $cpt = new CPT($this->pluginFile);
         $cpt->onLoaded();
-
-        $metaBoxes = new MetaBoxes();
-        $metaBoxes->onLoaded();
-
-        $columns = new Columns();
-        $columns->onLoaded();
 
         $editNotice = new EditNotice;
         $editNotice->onLoaded();
 
-        $showNotices = new ShowNotices;
+        $showNotices = new ShowNotices($this->pluginFile);
         $showNotices->onLoaded();
 
-        $adminBar = new AdminBar;
+        $adminBar = new AdminBar($this->pluginFile);
         $adminBar->onLoaded();
-
-        //$dashboard = new Dashboard;
-        //$dashboard->onLoaded();
     }
 
     public function adminEnqueueScripts()

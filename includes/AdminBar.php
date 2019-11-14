@@ -12,14 +12,20 @@ class AdminBar
 
     protected $notices;
     
+    protected $pluginFile;
+    
+    protected $pluginBaseName;
+    
     protected $siteOptionsName;
     
     protected $siteOptions;
 
     protected $userMeta = 'rrze_notice_dismissed';
 
-    public function __construct()
+    public function __construct($pluginFile)
     {
+        $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->customPostType = CPT::getPostTypeName();
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
@@ -40,7 +46,7 @@ class AdminBar
     
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite()) {
+        if (!is_multisite() || !is_plugin_active_for_network($this->pluginBaseName)) {
             return;
         }
                 

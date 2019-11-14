@@ -43,12 +43,6 @@ class Util
             'month' => __('1 Month', 'rrze-notices')
         ];
     }
-        
-    public static function isAllowedNetworkWide()
-    {
-        global $wpdb;
-        return is_super_admin() && is_multisite() ? true : false;
-    }
     
     public static function isExpired($interval, $relative)
     {
