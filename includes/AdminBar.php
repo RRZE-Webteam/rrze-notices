@@ -12,6 +12,8 @@ class AdminBar
 
     protected $notices;
     
+    protected $siteOptionsName;
+    
     protected $siteOptions;
 
     protected $userMeta = 'rrze_notice_dismissed';
@@ -19,6 +21,7 @@ class AdminBar
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
+        $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
     }
@@ -37,26 +40,45 @@ class AdminBar
     
     protected function setNetworkWideNotices()
     {
+        if (!is_multisite()) {
+            return;
+        }
+                
         $notices = $this->siteOptions->network_wide;
-        if (Util::isMainWebsite() || empty($notices)) {
+        if (empty($notices)) {
             return;
         }
         
         foreach ($notices as $id => $notice) {
-            $title = $notice->title;
-            $content = $notice->content;
-            if (!$content) {
+            global $wpdb;
+            $idArray = explode('-', $id);
+            $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
+            if ($wpdb->blogid == $blogId) {
                 continue;
             }
-            $type = $notice->type;
             
+            if ($this->isDismissed($id)) {
+                continue;
+            }
+                        
+            $allIntervals = Util::getExpirationIntervals();
+            $expiration = array_key_exists($notice->expiration, $allIntervals) ? $notice->expiration : 'week';
+            $expired = Util::isExpired($expiration, $notice->date_gmt);
+            if ($expired) {
+                if (isset($this->siteOptions->network_wide[$id])) {
+                    unset($this->siteOptions->network_wide[$id]);
+                    update_site_option($this->siteOptionsName, $this->siteOptions);
+                }
+                continue;
+            }
+                                    
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
             $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
                 $roleVisibility = [];
-            }            
+            }
             $visibility = [];
             foreach ($roleVisibility as $k) {
                 if (isset($availableRoles[$k])) {
@@ -68,7 +90,20 @@ class AdminBar
             } else {
                 $visibility = [];
             }
-            $this->addNotices($id, $title, $content, $type, $visibility);
+            $current_user = wp_get_current_user();
+            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+                continue;
+            }
+                
+            $content = $notice->content;
+            if (!$content) {
+                continue;
+            }
+            
+            $title = $notice->title;
+            $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
+                        
+            $this->addNotices($id, $title, $type);
         }
         if (! empty($this->notices)) {
             add_action('admin_bar_menu', [$this, 'addItems'], 99);
@@ -81,51 +116,62 @@ class AdminBar
             'post_type' => $this->customPostType,
             'post_status' => 'publish',
             'numberposts' => -1
-          ]);
-        
-        if ($posts) {
-            foreach ($posts as $post) {
-                $id = $post->ID;
-                $title = $post->post_title;
-                $content = $post->post_content;
-                if (!$content) {
-                    continue;
-                }
-                $noticeType = get_post_meta($id, 'rrze_notices_type', true);
-                $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-                
-                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-                $roleVisibility = get_post_meta($id, 'rrze_notices_role_visibility', true);
-                if (!empty($roleVisibility)) {
-                    $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-                } else {
-                    $roleVisibility = [];
-                }
-                $visibility = [];
-                foreach ($roleVisibility as $k) {
-                    if (isset($availableRoles[$k])) {
-                        $visibility[] = $k;
-                    }
-                }                
-                $this->addNotices($id, $title, $content, $type, $visibility);
+        ]);
+        if (!$posts) {
+            return;
+        }
+        foreach ($posts as $post) {
+            $id = $post->ID;
+            
+            if ($this->isDismissed($id)) {
+                continue;
             }
-            if (!empty($this->notices)) {
-                add_action('admin_bar_menu', [$this, 'addItems'], 99);
+                          
+            $allIntervals = Util::getExpirationIntervals();
+            $noticeExpiration = get_post_meta($id, 'rrze_notices_expiration', true);
+            $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
+            $expired = Util::isExpired($expiration, $post->post_date_gmt);
+            if ($expired) {
+                continue;
             }
+            
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $roleVisibility = get_post_meta($id, 'rrze_notices_visibility', true);
+            if (!empty($roleVisibility)) {
+                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
+            } else {
+                $roleVisibility = [];
+            }
+            $visibility = [];
+            foreach ($roleVisibility as $k) {
+                if (isset($availableRoles[$k])) {
+                    $visibility[] = $k;
+                }
+            }
+            $current_user = wp_get_current_user();
+            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+                continue;
+            }
+                            
+            $content = $post->post_content;
+            if (!$content) {
+                continue;
+            }
+            
+            $title = $post->post_title;
+                            
+            $noticeType = get_post_meta($id, 'rrze_notices_type', true);
+            $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+                            
+            $this->addNotices($id, $title, $type);
+        }
+        if (!empty($this->notices)) {
+            add_action('admin_bar_menu', [$this, 'addItems'], 99);
         }
     }
 
-    protected function addNotices($id, $title, $content, $type, $visibility)
+    protected function addNotices($id, $title, $type)
     {
-        if (!$content || $this->isDismissed($id)) {
-            return;
-        }
-                
-        $current_user = wp_get_current_user();
-        if (!Util::arrayValInArray($current_user->roles, $visibility) && ! in_array('all', $visibility)) {
-            return;
-        }
-
         $this->notices[] = (object)[
             'id' => $id,
             'title' => $title,

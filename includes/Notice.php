@@ -58,7 +58,7 @@ class Notice
         'screens'       => [],
         'type'          => 'info',
         'alt_style'     => false,
-        'edit_link'     => false,
+        'edit_link'     => '',
         'capability'    => 'edit_theme_options',
         'option_prefix' => 'rrze_notice_dismissed'
     ];
@@ -122,7 +122,7 @@ class Notice
      *                                                        Defaults to false.
      *                            'capability'    => (string) The user capability required to see the notice.
      *                                                        Defaults to "edit_theme_options".
-     * 							  'edit_link	  => (bool)   Whether we want to display the edit link or not.
+     * 							  'edit_link	  => (string) Can be a link or an empty string.
      *                            'option_prefix' => (string) The prefix that will be used to build the option (or post-meta) name.
      *                                                        Can contain lowercase latin letters and underscores.
      *                        ].
@@ -171,9 +171,7 @@ class Notice
 
         $html  = $this->get_title();
         $html .= $this->get_message();
-        if ($this->options['edit_link']) {
-            $html .= '<a style="float: right; position: relative; bottom: 26px;" href="'.admin_url('post.php?post=' . esc_attr($this->id) . '&action=edit').'">'.__('Edit Notice', 'rrze-notices').'</a>';
-        }
+        $html .= $this->options['edit_link'] ? $this->options['edit_link'] : '';
 
         // Print the notice.
         printf(

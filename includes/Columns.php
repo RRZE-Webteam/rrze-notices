@@ -30,6 +30,7 @@ class Columns
             'cb' => '<input type="checkbox">',
             'title' => __('Notice', 'rrze-notices'),
             'type' => __('Type', 'rrze-notices'),
+            'expiration' => __('Expiration', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
@@ -49,15 +50,31 @@ class Columns
                 $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
                 echo $type;
                 break;
+            case 'expiration':
+                $post = get_post($postId);
+                $allIntervals = Util::getExpirationIntervals();
+                $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
+                $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
+                $expired = Util::isExpired($expiration, $post->post_date_gmt);
+                $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+                $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+                if ($expired) {
+                    printf('<span class="expired">%s</span><br><span class="expired" title="%s">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime, $expireDate);
+                } else {
+                    printf('<span title="%s">%s</span>', $expireDateTime, $expireDate);
+                }
+                break;
             case 'network_wide':
-                $id = sprintf('network-wide-%d', $postId);
+                global $wpdb;
+                $blogId = $wpdb->blogid;
+                $id = sprintf('%d-%d', $blogId, $postId);
                 if (isset($this->siteOptions->network_wide[$id])) {
                     echo '<span class="dashicons dashicons-yes"></span>';
                 }
                 break;
             case 'visibility':
                 $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-                $roleVisibility = get_post_meta($postId, 'rrze_notices_role_visibility', true);
+                $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
                 if (!empty($roleVisibility)) {
                     $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
                 } else {
@@ -69,7 +86,7 @@ class Columns
                         $roles[] = $availableRoles[$k];
                     }
                 }
-                echo implode(', ', $roles);
+                echo !empty($roles) ? implode(', ', $roles) : '&#65293;';
                 break;
             default:
                 break;
@@ -79,6 +96,7 @@ class Columns
     public function manageSortale($columns)
     {
         $columns['type'] = 'type';
+        $columns['expiration'] = 'expiration';
         return $columns;
     }
 
@@ -93,10 +111,16 @@ class Columns
             return;
         }
         $orderBy = $query->get('orderby');
-
-        if ('type' == $orderBy) {
-            $query->set('meta_key', 'rrze_notices_type');
-            $query->set('orderby', 'meta_value');
+        switch ($orderBy) {
+            case 'type':
+                $query->set('meta_key', 'rrze_notices_type');
+                break;
+            case 'expiration':
+                $query->set('meta_key', 'rrze_notices_expiration');
+                break;
+            default:
+                break;
         }
+        $query->set('orderby', 'meta_value');
     }
 }
