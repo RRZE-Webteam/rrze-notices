@@ -38,8 +38,9 @@ class Util
     public static function getExpirationIntervals()
     {
         return [
-            'week' => __('1 Week', 'rrze_notices'),
-            'month' => __('1 Month', 'rrze_notices'),
+            'day' => __('1 Day', 'rrze-notices'),
+            'week' => __('1 Week', 'rrze-notices'),
+            'month' => __('1 Month', 'rrze-notices')
         ];
     }
         
@@ -62,5 +63,5 @@ class Util
             }
         }
         return false;
-    }
+    }   
 }
