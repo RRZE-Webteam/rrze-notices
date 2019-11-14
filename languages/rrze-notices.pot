@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-12 16:03+0000\n"
+"POT-Creation-Date: 2019-11-14 10:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -99,54 +99,87 @@ msgstr ""
 msgid "Notice"
 msgstr ""
 
-#: includes/Columns.php:32 includes/MetaBoxes.php:53
+#: includes/Columns.php:32 includes/MetaBoxes.php:45
 msgid "Type"
 msgstr ""
 
-#: includes/Columns.php:33 includes/MetaBoxes.php:71
+#: includes/Columns.php:33 includes/MetaBoxes.php:54
+msgid "Expiration"
+msgstr ""
+
+#: includes/Columns.php:34 includes/MetaBoxes.php:72
 msgid "Visibility"
 msgstr ""
 
-#: includes/Columns.php:34 includes/MetaBoxes.php:125
+#: includes/Columns.php:35 includes/MetaBoxes.php:164
 msgid "Network-Wide"
 msgstr ""
 
-#: includes/Columns.php:35
+#: includes/Columns.php:36
 msgid "Date"
 msgstr ""
 
-#: includes/Columns.php:59 includes/MetaBoxes.php:137
-#: includes/MetaBoxes.php:194 includes/ShowNotices.php:98
-#: includes/AdminBar.php:53 includes/AdminBar.php:97
+#: includes/Columns.php:59 includes/MetaBoxes.php:112
+msgid "Y/m/d"
+msgstr ""
+
+#: includes/Columns.php:60 includes/MetaBoxes.php:113
+msgid "Y/m/d H:s:i"
+msgstr ""
+
+#: includes/Columns.php:62
+msgid "Expired"
+msgstr ""
+
+#: includes/Columns.php:76 includes/MetaBoxes.php:176
+#: includes/MetaBoxes.php:234 includes/ShowNotices.php:68
+#: includes/ShowNotices.php:136 includes/AdminBar.php:75
+#: includes/AdminBar.php:138
 msgid "All"
 msgstr ""
 
-#: includes/MetaBoxes.php:62
+#: includes/MetaBoxes.php:63
 msgid "Display"
 msgstr ""
 
-#: includes/MetaBoxes.php:92 includes/Util.php:33
+#: includes/MetaBoxes.php:93 includes/Util.php:33
 msgid "Info"
 msgstr ""
 
-#: includes/MetaBoxes.php:96 includes/Util.php:34
+#: includes/MetaBoxes.php:97 includes/Util.php:34
 msgid "Warning"
 msgstr ""
 
-#: includes/MetaBoxes.php:114
+#: includes/MetaBoxes.php:151
 msgid "Hide Title"
 msgstr ""
 
-#: includes/MetaBoxes.php:118
+#: includes/MetaBoxes.php:155
 msgid "Use alternative style"
 msgstr ""
 
-#: includes/AdminBar.php:146
-msgid "Notices"
+#: includes/ShowNotices.php:107 includes/ShowNotices.php:174
+msgid "Edit (Network-Wide)"
 msgstr ""
 
-#: includes/Notice.php:175
+#: includes/ShowNotices.php:167
 msgid "Edit"
+msgstr ""
+
+#: includes/Util.php:41
+msgid "1 Day"
+msgstr ""
+
+#: includes/Util.php:42
+msgid "1 Week"
+msgstr ""
+
+#: includes/Util.php:43
+msgid "1 Month"
+msgstr ""
+
+#: includes/AdminBar.php:192
+msgid "Notices"
 msgstr ""
 
 #. Name of the plugin

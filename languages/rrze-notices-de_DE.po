@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-12 16:03+0000\n"
-"PO-Revision-Date: 2019-11-12 16:04+0000\n"
+"POT-Creation-Date: 2019-11-14 10:05+0000\n"
+"PO-Revision-Date: 2019-11-14 10:06+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.3.1; wp-5.2.4"
+"X-Loco-Version: 2.3.1; wp-5.3"
 
 #: rrze-notices.php:63
 #, php-format
@@ -102,55 +102,88 @@ msgstr "Keine Nachrichten im Papierkorb gefunden."
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/Columns.php:32 includes/MetaBoxes.php:53
+#: includes/Columns.php:32 includes/MetaBoxes.php:45
 msgid "Type"
 msgstr "Art"
 
-#: includes/Columns.php:33 includes/MetaBoxes.php:71
+#: includes/Columns.php:33 includes/MetaBoxes.php:54
+msgid "Expiration"
+msgstr "Verfallsdatum"
+
+#: includes/Columns.php:34 includes/MetaBoxes.php:72
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-#: includes/Columns.php:34 includes/MetaBoxes.php:125
+#: includes/Columns.php:35 includes/MetaBoxes.php:164
 msgid "Network-Wide"
 msgstr "Netzwerkweit"
 
-#: includes/Columns.php:35
+#: includes/Columns.php:36
 msgid "Date"
 msgstr "Datum"
 
-#: includes/Columns.php:59 includes/MetaBoxes.php:137
-#: includes/MetaBoxes.php:194 includes/ShowNotices.php:98
-#: includes/AdminBar.php:53 includes/AdminBar.php:97
+#: includes/Columns.php:59 includes/MetaBoxes.php:112
+msgid "Y/m/d"
+msgstr "d.m.Y"
+
+#: includes/Columns.php:60 includes/MetaBoxes.php:113
+msgid "Y/m/d H:s:i"
+msgstr "d.m.Y H:s:i"
+
+#: includes/Columns.php:62
+msgid "Expired"
+msgstr "Verfallen"
+
+#: includes/Columns.php:76 includes/MetaBoxes.php:176
+#: includes/MetaBoxes.php:234 includes/ShowNotices.php:68
+#: includes/ShowNotices.php:136 includes/AdminBar.php:75
+#: includes/AdminBar.php:138
 msgid "All"
 msgstr "Alle"
 
-#: includes/MetaBoxes.php:62
+#: includes/MetaBoxes.php:63
 msgid "Display"
 msgstr "Anzeige"
 
-#: includes/MetaBoxes.php:92 includes/Util.php:33
+#: includes/MetaBoxes.php:93 includes/Util.php:33
 msgid "Info"
 msgstr "Info"
 
-#: includes/MetaBoxes.php:96 includes/Util.php:34
+#: includes/MetaBoxes.php:97 includes/Util.php:34
 msgid "Warning"
 msgstr "Warnhinweis"
 
-#: includes/MetaBoxes.php:114
+#: includes/MetaBoxes.php:151
 msgid "Hide Title"
 msgstr "Titel ausblenden"
 
-#: includes/MetaBoxes.php:118
+#: includes/MetaBoxes.php:155
 msgid "Use alternative style"
 msgstr "Alternativer Stil verwenden"
 
-#: includes/AdminBar.php:146
-msgid "Notices"
-msgstr "Nachrichten"
+#: includes/ShowNotices.php:107 includes/ShowNotices.php:174
+msgid "Edit (Network-Wide)"
+msgstr "Bearbeiten (netzwerkweit)"
 
-#: includes/Notice.php:175
+#: includes/ShowNotices.php:167
 msgid "Edit"
 msgstr "Bearbeiten"
+
+#: includes/Util.php:41
+msgid "1 Day"
+msgstr "1 Tag"
+
+#: includes/Util.php:42
+msgid "1 Week"
+msgstr "1 Woche"
+
+#: includes/Util.php:43
+msgid "1 Month"
+msgstr "1 Monat"
+
+#: includes/AdminBar.php:192
+msgid "Notices"
+msgstr "Nachrichten"
 
 #. Name of the plugin
 msgid "RRZE Notices"
