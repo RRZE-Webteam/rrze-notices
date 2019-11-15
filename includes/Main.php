@@ -19,6 +19,8 @@ class Main
      */
     protected $pluginFile;
     
+    protected $pluginBaseName;
+    
     protected $siteOptions;
     
     /**
@@ -28,6 +30,7 @@ class Main
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->siteOptions = Options::getSiteOptions();
     }
 
@@ -38,10 +41,12 @@ class Main
     {
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
         
-        $settings = new Settings($this->pluginFile);
-        $settings->onLoaded();
-        if (!$this->siteOptions->enabled) {
-            return;
+        if ($this->isPluginActiveForNetwork()) {
+            $settings = new Settings($this->pluginFile);
+            $settings->onLoaded();            
+            if (!$this->siteOptions->enabled) {
+                return;
+            }
         }
         
         $cpt = new CPT($this->pluginFile);
@@ -60,5 +65,17 @@ class Main
     public function adminEnqueueScripts()
     {
         wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));
+    }
+    
+    protected function isPluginActiveForNetwork()
+    {
+        if (!is_multisite()) {
+            return false;
+        }
+        $plugins = get_site_option('active_sitewide_plugins');
+        if (isset($plugins[$this->pluginBaseName])) {
+            return true;
+        }
+        return false;
     }
 }
