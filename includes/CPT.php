@@ -10,6 +10,8 @@ class CPT
 
     protected $pluginFile;
     
+    protected $pluginBaseName;
+    
     protected $siteOptions;
     
     protected $metaBoxes;
@@ -19,6 +21,7 @@ class CPT
     public function __construct($pluginFile)
     {
         $this->pluginFile = $pluginFile;
+        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->siteOptions = Options::getSiteOptions();       
     }
     
@@ -40,6 +43,8 @@ class CPT
 
     public function registerCPT()
     {
+        $capability = is_plugin_active_for_network($this->pluginBaseName) ? $this->siteOptions->access : 'manage_options';
+        
         $labels = array(
             'name'               => _x('Notices', 'post type general name', 'rrze-notices'),
             'singular_name'      => _x('Notice', 'post type singular name', 'rrze-notices'),
@@ -71,14 +76,14 @@ class CPT
             'menu_icon'             => 'dashicons-warning',
             'capability_type'       => 'page',
             'capabilities'          => [
-                'edit_post'          => $this->siteOptions->access,
-                'read_post'          => $this->siteOptions->access,
-                'delete_posts'       => $this->siteOptions->access,
-                'edit_posts'         => $this->siteOptions->access,
-                'edit_others_posts'  => $this->siteOptions->access,
-                'publish_posts'      => $this->siteOptions->access,
-                'read_private_posts' => $this->siteOptions->access,
-                'create_posts'       => $this->siteOptions->access
+                'edit_post'          => $capability,
+                'read_post'          => $capability,
+                'delete_posts'       => $capability,
+                'edit_posts'         => $capability,
+                'edit_others_posts'  => $capability,
+                'publish_posts'      => $capability,
+                'read_private_posts' => $capability,
+                'create_posts'       => $capability
             ],
             //'map_meta_cap'          => null,
             'hierarchical'          => false,

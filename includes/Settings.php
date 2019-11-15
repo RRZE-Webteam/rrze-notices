@@ -22,11 +22,9 @@ class Settings
 
     public function onLoaded()
     {
-        if (is_multisite()) {
-            add_action('network_admin_menu', [$this, 'networkAdminMenu']);
-            add_action('admin_init', [$this, 'networkAdminSettings']);
-            add_filter('network_admin_plugin_action_links_' . plugin_basename($this->pluginFile), [$this, 'networkAdminPluginActionLink']);
-        }
+        add_action('network_admin_menu', [$this, 'networkAdminMenu']);
+        add_action('admin_init', [$this, 'networkAdminSettings']);
+        add_filter('network_admin_plugin_action_links_' . plugin_basename($this->pluginFile), [$this, 'networkAdminPluginActionLink']);
     }
 
     public function networkAdminPluginActionLink($links)
