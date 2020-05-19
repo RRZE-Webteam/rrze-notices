@@ -111,12 +111,13 @@ class MetaBoxes
 
         wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
         
+        $postDateGmt = $post->post_date_gmt = '0000-00-00 00:00:00' ? get_gmt_from_date($post->post_date) : $post->post_date_gmt;
         $allIntervals = Util::getExpirationIntervals();
         $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
         $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
-        $expired = Util::isExpired($expiration, $post->post_date_gmt);
-        $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
-        $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+        $expired = Util::isExpired($expiration, $postDateGmt);
+        $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($postDateGmt)));
+        $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($postDateGmt)));
         
         echo '<ul>';
         
