@@ -34,8 +34,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use RRZE\Notices\Main;
 
-const RRZE_PHP_VERSION = '7.3';
-const RRZE_WP_VERSION = '5.2';
+const RRZE_PHP_VERSION = '7.4';
+const RRZE_WP_VERSION = '5.4';
 
 // Registriert die Plugin-Funktion, die bei Aktivierung des Plugins ausgeführt werden soll.
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
