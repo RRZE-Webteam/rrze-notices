@@ -1,0 +1,25 @@
+.expiration.column-expiration {
+  span.expired {
+    color: #a00;
+  }
+
+  span[title] {
+    text-decoration: dotted underline;
+  }
+}
+
+.rrze-notices.notice {
+  span.preview {
+    float: right;
+    position: relative;
+    bottom: 26px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  a.admin-edit-link {
+    float: right;
+    position: relative;
+    bottom: 26px;
+  }  
+}

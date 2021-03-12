@@ -10,52 +10,87 @@ const
     babel = require('gulp-babel'),
     bump = require('gulp-bump'),
     semver = require('semver'),
-    info = require('./package.json')
+    info = require('./package.json'),
+    wpPot = require('gulp-wp-pot'),
+    touch = require('gulp-touch-cmd')
 ;
 
 function css() {
+    return src('./src/sass/*.scss', {
+            sourcemaps: false
+        })
+        .pipe(sass())
+        .pipe(postcss([autoprefixer()]))
+        .pipe(cleancss())
+        .pipe(dest(info.dist.cssdir))
+	.pipe(touch());
+}
+function cssdev() {
     return src('./src/sass/*.scss', {
             sourcemaps: true
         })
         .pipe(sass())
         .pipe(postcss([autoprefixer()]))
-        .pipe(cleancss())
-        .pipe(dest('./css'));
+        .pipe(dest(info.dist.cssdir))
+	.pipe(touch());
 }
 
 function js() {
-    return src('./src/js/*.js')
-        .pipe(babel({
+    return src(['./src/js/*.js','!./src/js/**/*.min.js'])
+	.pipe(babel({
             presets: ['@babel/env']
-        }))
-        .pipe(uglify())
-        .pipe(dest('./js'))
+	}))
+	.pipe(uglify())
+	.pipe(dest(info.dist.jsdir))
+	.pipe(touch());
 }
 
 function patchPackageVersion() {
     var newVer = semver.inc(info.version, 'patch');
-    return src(['./package.json'])
+    return src(['./package.json', './' + info.main])
         .pipe(bump({
             version: newVer
         }))
-        .pipe(dest('./'));
+        .pipe(dest('./'))
+	.pipe(touch());
+};
+function prereleasePackageVersion() {
+    var newVer = semver.inc(info.version, 'prerelease');
+    return src(['./package.json', './' + info.main])
+        .pipe(bump({
+            version: newVer
+        }))
+	.pipe(dest('./'))
+	.pipe(touch());;
 };
 
-function patchPluginVersion() {
-    var newVer = semver.inc(info.version, 'patch');
-    return src('./' + info.main)
-        .pipe(bump({
-            version: newVer
-        }))
-        .pipe(dest('./'));
+function updatepot()  {
+  return src(['**/*.php', '!vendor/**/*.php'])
+  .pipe(
+      wpPot({
+        domain: info.textdomain,
+        package: info.name,
+	team: info.author.name,
+	bugReport: info.repository.issues,
+	ignoreTemplateNameHeader: true
+ 
+      })
+    )
+  .pipe(dest(`languages/${info.textdomain}.pot`))
+  .pipe(touch());
 };
+
 
 function startWatch() {
     watch('./src/sass/*.scss', css);
-    //watch('./gulpsrc/js/*.js', js);
+    watch('./src/js/*.js', js);
 }
 
 exports.css = css;
-//exports.js = js;
-exports.patchversion = series(patchPackageVersion, patchPluginVersion);
+exports.js = js;
+exports.dev = series(js, cssdev, prereleasePackageVersion);
+exports.build = series(js, css, patchPackageVersion);
+exports.pot = updatepot;
+exports.devversion = prereleasePackageVersion;
+exports.buildversion = patchPackageVersion;
 exports.default = startWatch;

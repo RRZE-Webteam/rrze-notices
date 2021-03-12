@@ -8,32 +8,27 @@ class CPT
 {
     const CPT_NAME = 'notice';
 
-    protected $pluginFile;
-    
-    protected $pluginBaseName;
-    
     protected $siteOptions;
-    
+
     protected $metaBoxes;
-    
-    protected $columns;
-    
-    public function __construct($pluginFile)
+
+    public function __construct()
     {
-        $this->pluginFile = $pluginFile;
-        $this->pluginBaseName = plugin_basename($this->pluginFile);
-        $this->siteOptions = Options::getSiteOptions();       
+        $this->siteOptions = Options::getSiteOptions();
     }
-    
+
     public function onLoaded()
     {
         add_action('init', [$this, 'registerCPT']);
-        
-        $this->metaBoxes = new MetaBoxes($this->pluginFile);
-        $this->metaBoxes->onLoaded();
-        
-        $this->columns = new Columns($this->pluginFile);
-        $this->columns->onLoaded();         
+
+        $post = new Post;
+        $post->onLoaded();
+
+        $columns = new Columns;
+        $columns->onLoaded();
+
+        $metaBoxes = new MetaBoxes;
+        $metaBoxes->onLoaded();
     }
 
     public static function getPostTypeName()
@@ -43,8 +38,8 @@ class CPT
 
     public function registerCPT()
     {
-        $capability = is_plugin_active_for_network($this->pluginBaseName) ? $this->siteOptions->access : 'manage_options';
-        
+        $capability = is_plugin_active_for_network(plugin()->getBaseName()) ? $this->siteOptions->access : 'manage_options';
+
         $labels = array(
             'name'               => _x('Notices', 'post type general name', 'rrze-notices'),
             'singular_name'      => _x('Notice', 'post type singular name', 'rrze-notices'),
@@ -88,7 +83,6 @@ class CPT
             //'map_meta_cap'          => null,
             'hierarchical'          => false,
             'supports'              => ['title', 'editor'],
-            'register_meta_box_cb'  => [$this->metaBoxes, 'addMetaBoxes'],
             //'taxonomies'            => [],
             'has_archive'           => false,
             'rewrite'               => false,
@@ -103,5 +97,4 @@ class CPT
 
         register_post_type(static::CPT_NAME, $args);
     }
-
 }

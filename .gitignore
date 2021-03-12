@@ -1,2 +1,11 @@
+nbproject/project.properties
+/nbproject/private/
+nbproject/project.xml
+img/logos/Browse.plb
 node_modules
-.DS_Store
+.idea*
+.sass-cache*
+/package-lock.json
+tmp
+*.DS_Store
+*.pot
