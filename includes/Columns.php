@@ -6,18 +6,12 @@ defined('ABSPATH') || exit;
 
 class Columns
 {
-    protected $pluginFile;
-    
-    protected $pluginBaseName;
-    
     protected $customPostType;
-    
+
     protected $siteOptions;
-    
-    public function __construct($pluginFile)
-    {   
-        $this->pluginFile = $pluginFile;
-        $this->pluginBaseName = plugin_basename($this->pluginFile);
+
+    public function __construct()
+    {
         $this->customPostType = CPT::getPostTypeName();
         $this->siteOptions = Options::getSiteOptions();
     }
@@ -41,7 +35,7 @@ class Columns
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!is_super_admin() || !is_multisite() || !is_plugin_active_for_network($this->pluginBaseName)) {
+        if (!is_super_admin() || !is_multisite() || !is_plugin_active_for_network(plugin()->getBaseName())) {
             unset($columns['network_wide']);
         }
         return $columns;
@@ -52,22 +46,19 @@ class Columns
         switch ($column) {
             case 'type':
                 $allTypes = Util::getNoticeTypes();
-                $noticeType = get_post_meta($postId, 'rrze_notices_type', true);
+                $noticeType = Util::getType($postId);
                 $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
                 echo $type;
                 break;
             case 'expiration':
-                $post = get_post($postId);
-                $allIntervals = Util::getExpirationIntervals();
-                $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
-                $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
-                $expired = Util::isExpired($expiration, $post->post_date_gmt);
-                $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
-                $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($post->post_date_gmt)));
+                $expiration = Util::getExpiration($postId);
+                $expirationGmt = Util::getExpirationGmt($postId);
+                $expired = Util::isExpired($expirationGmt);
+                $expireDateTime = Util::dateTimeFormat($expiration);
                 if ($expired) {
-                    printf('<span class="expired">%s</span><br><span class="expired" title="%s">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime, $expireDate);
+                    printf('<span class="expired">%s</span><br><span class="expired">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime);
                 } else {
-                    printf('<span title="%s">%s</span>', $expireDateTime, $expireDate);
+                    printf('<span>%s</span>', $expireDateTime);
                 }
                 break;
             case 'network_wide':

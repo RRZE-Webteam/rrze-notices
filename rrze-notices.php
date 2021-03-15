@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Notices
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
 Description:     Management and listing of admin notices.
-Version:         1.3.3
+Version:         2.0.0
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -15,117 +15,137 @@ Text Domain:     rrze-notices
 
 namespace RRZE\Notices;
 
-/*
-Die Codezeile defined('ABSPATH') || exit;
-verhindert den direkten Zugriff auf die PHP-Dateien über URL und stellt sicher,
-dass die Plugin-Dateien nur innerhalb der WordPress-Umgebung ausgeführt werden.
-Denn wenn bspw. eine Datei I/O-Operationen enthält,
-kann sie schließlich kompromittiert werden (durch einen Angreifer),
-was zu unerwartetem Verhalten führen kann.
-*/
-
 defined('ABSPATH') || exit;
 
-// Laden der Konfigurationsdatei
-//require_once __DIR__ . '/config/config.php';
+// Autoloader (PSR-4)
+spl_autoload_register(function ($class) {
+    $prefix = __NAMESPACE__;
+    $base_dir = __DIR__ . '/includes/';
 
-// Automatische Laden von Klassen.
-require_once __DIR__ . '/vendor/autoload.php';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
 
-use RRZE\Notices\Main;
+    $relativeClass = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relativeClass) . '.php';
+
+    if (file_exists($file)) {
+        require $file;
+    }
+});
 
 const RRZE_PHP_VERSION = '7.4';
-const RRZE_WP_VERSION = '5.4';
+const RRZE_WP_VERSION = '5.7';
 
-// Registriert die Plugin-Funktion, die bei Aktivierung des Plugins ausgeführt werden soll.
 register_activation_hook(__FILE__, __NAMESPACE__ . '\activation');
-// Registriert die Plugin-Funktion, die ausgeführt werden soll, wenn das Plugin deaktiviert wird.
 register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
-// Wird aufgerufen, sobald alle aktivierten Plugins geladen wurden.
 add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
 
 /**
- * Einbindung der Sprachdateien.
+ * Loads a plugin’s translated strings.
  */
-function loadTextDomain()
+function loadTextdomain()
 {
     load_plugin_textdomain('rrze-notices', false, sprintf('%s/languages/', dirname(plugin_basename(__FILE__))));
 }
 
 /**
- * Überprüft die Systemvoraussetzungen.
+ * [systemRequirements description]
+ * @return string [description]
  */
-function systemRequirements()
+function systemRequirements(): string
 {
+    loadTextdomain();
+
     $error = '';
     if (version_compare(PHP_VERSION, RRZE_PHP_VERSION, '<')) {
-        /* Übersetzer: 1: aktuelle PHP-Version, 2: erforderliche PHP-Version */
-        $error = sprintf(__('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-notices'), PHP_VERSION, RRZE_PHP_VERSION);
+        $error = sprintf(
+            /* translators: 1: Server PHP version number, 2: Required PHP version number. */
+            __('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-notices'),
+            PHP_VERSION,
+            RRZE_PHP_VERSION
+        );
     } elseif (version_compare($GLOBALS['wp_version'], RRZE_WP_VERSION, '<')) {
-        /* Übersetzer: 1: aktuelle WP-Version, 2: erforderliche WP-Version */
-        $error = sprintf(__('The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s.', 'rrze-notices'), $GLOBALS['wp_version'], RRZE_WP_VERSION);
+        $error = sprintf(
+            /* translators: 1: Server WordPress version number, 2: Required WordPress version number. */
+            __('The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s.', 'rrze-notices'),
+            $GLOBALS['wp_version'],
+            RRZE_WP_VERSION
+        );
     }
     return $error;
 }
 
 /**
- * Wird nach der Aktivierung des Plugins ausgeführt.
+ * [activation description]
  */
 function activation()
 {
-    // Sprachdateien werden eingebunden.
-    loadTextDomain();
-
-    // Überprüft die minimal erforderliche PHP- u. WP-Version.
-    // Wenn die Überprüfung fehlschlägt, dann wird das Plugin automatisch deaktiviert.
     if ($error = systemRequirements()) {
         deactivate_plugins(plugin_basename(__FILE__));
-        wp_die($error);
+        wp_die(
+            sprintf(
+                /* translators: 1: The plugin name, 2: The error string. */
+                __('Plugins: %1$s: %2$s', 'rrze-notices'),
+                plugin_basename(__FILE__), 
+                $error
+            )
+        );
     }
-
-    // Ab hier können die Funktionen hinzugefügt werden,
-    // die bei der Aktivierung des Plugins aufgerufen werden müssen.
-    // Bspw. wp_schedule_event, flush_rewrite_rules, etc.
 }
 
 /**
- * Wird durchgeführt, nachdem das Plugin deaktiviert wurde.
+ * [deactivation description]
  */
 function deactivation()
 {
-    // Hier können die Funktionen hinzugefügt werden, die
-    // bei der Deaktivierung des Plugins aufgerufen werden müssen.
-    // Bspw. delete_option, wp_clear_scheduled_hook, flush_rewrite_rules, etc.
+    //
 }
 
 /**
- * Wird durchgeführt, nachdem das WP-Grundsystem hochgefahren
- * und alle Plugins eingebunden wurden.
+ * [plugin description]
+ * @return object
+ */
+function plugin(): object
+{
+    static $instance;
+    if (null === $instance) {
+        $instance = new Plugin(__FILE__);
+    }
+    return $instance;
+}
+
+/**
+ * [loaded description]
+ * @return void
  */
 function loaded()
 {
-    // Sprachdateien werden eingebunden.
-    loadTextDomain();
+    add_action('init', __NAMESPACE__ . '\loadTextdomain');
+    plugin()->onLoaded();
 
-    // Überprüft die Systemvoraussetzungen.
     if ($error = systemRequirements()) {
         add_action('admin_init', function () use ($error) {
-            $pluginData = get_plugin_data(__FILE__);
-            $pluginName = $pluginData['Name'];
-            $tag = is_plugin_active_for_network(plugin_basename(__FILE__)) ? 'network_admin_notices' : 'admin_notices';
-            add_action($tag, function () use ($pluginName, $error) {
-                printf(
-                    '<div class="notice notice-error"><p>' . __('Plugins: %1$s: %2$s', 'rrze-notices') . '</p></div>',
-                    esc_html($pluginName),
-                    esc_html($error)
-                );
-            });
+            if (current_user_can('activate_plugins')) {
+                $pluginData = get_plugin_data(plugin()->getFile());
+                $pluginName = $pluginData['Name'];
+                $tag = is_plugin_active_for_network(plugin()->getBaseName()) ? 'network_admin_notices' : 'admin_notices';
+                add_action($tag, function () use ($pluginName, $error) {
+                    printf(
+                        '<div class="notice notice-error"><p>' . 
+                        /* translators: 1: The plugin name, 2: The error string. */
+                        __('Plugins: %1$s: %2$s', 'rrze-notices') . 
+                        '</p></div>',
+                        esc_html($pluginName),
+                        esc_html($error)
+                    );
+                });
+            }
         });
-        // Das Plugin wird nicht mehr ausgeführt.
         return;
     }
 
-    // Hauptklasse (Main) wird instanziiert.
-    $main = new Main(__FILE__);
+    $main = new Main;
     $main->onLoaded();
 }

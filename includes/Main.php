@@ -5,7 +5,6 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 use RRZE\Notices\CPT;
-use RRZE\Notices\MetaBoxes;
 use RRZE\Notices\EditNotice;
 
 /**
@@ -13,67 +12,50 @@ use RRZE\Notices\EditNotice;
  */
 class Main
 {
-    /**
-     * Der vollständige Pfad- und Dateiname der Plugin-Datei.
-     * @var string
-     */
-    protected $pluginFile;
-    
-    protected $pluginBaseName;
-    
     protected $siteOptions;
-    
-    /**
-     * Variablen Werte zuweisen.
-     * @param string $pluginFile Pfad- und Dateiname der Plugin-Datei
-     */
-    public function __construct($pluginFile)
+
+    public function __construct()
     {
-        $this->pluginFile = $pluginFile;
-        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->siteOptions = Options::getSiteOptions();
     }
 
-    /**
-     * Es wird ausgeführt, sobald die Klasse instanziiert wird.
-     */
     public function onLoaded()
     {
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
-        
+
         if ($this->isPluginActiveForNetwork()) {
-            $settings = new Settings($this->pluginFile);
-            $settings->onLoaded();            
+            $settings = new Settings;
+            $settings->onLoaded();
             if (!$this->siteOptions->enabled) {
                 return;
             }
         }
-        
-        $cpt = new CPT($this->pluginFile);
+
+        $cpt = new CPT;
         $cpt->onLoaded();
 
-        $editNotice = new EditNotice;
-        $editNotice->onLoaded();
-
-        $showNotices = new ShowNotices($this->pluginFile);
+        $showNotices = new ShowNotices;
         $showNotices->onLoaded();
 
-        $adminBar = new AdminBar($this->pluginFile);
+        $adminBar = new AdminBar;
         $adminBar->onLoaded();
     }
 
-    public function adminEnqueueScripts()
+    public function adminEnqueueScripts($hook)
     {
-        wp_enqueue_style('rrze-notices', plugins_url('css/plugin.css', plugin_basename($this->pluginFile)));
+        wp_enqueue_style(
+            'rrze-notices-admin', 
+            plugins_url('assets/css/admin.css', plugin()->getBasename()),
+        );
     }
-    
+
     protected function isPluginActiveForNetwork()
     {
         if (!is_multisite()) {
             return false;
         }
         $plugins = get_site_option('active_sitewide_plugins');
-        if (isset($plugins[$this->pluginBaseName])) {
+        if (isset($plugins[plugin()->getBaseName()])) {
             return true;
         }
         return false;

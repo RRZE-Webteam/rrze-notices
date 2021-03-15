@@ -4,52 +4,28 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-/**
- * Originally written by {@link https://github.com/WPTRT WPTRT} and
- * modified by {@link https://github.com/RRZE-Webteam RRZE Webteam}
- */
-
-/**
- * The Admin_Notice class, responsible for creating admin notices.
- *
- * Each notice is a new instance of the object.
- *
- * @since 1.0.0
- */
 class Notices
 {
 
     /**
      * An array of notices.
      *
-     * @access private
-     * @since 1.0
      * @var array
      */
     private $notices = [];
 
     /**
      * Adds actions for the notices.
-     *
-     * @access public
-     * @since 1.0
-     * @return void
      */
     public function boot()
     {
-
-        // Add the notice.
-        add_action('admin_notices', [ $this, 'the_notices' ]);
-
-        // Print the script to the footer.
-        add_action('admin_footer', [ $this, 'print_scripts' ]);
+        add_action('admin_notices', [$this, 'theNotices']);
+        add_action('admin_footer', [$this, 'printScripts']);
     }
 
     /**
      * Add a notice.
      *
-     * @access public
-     * @since 1.0
      * @param string $id      A unique ID for this notice. Can contain lowercase characters and underscores.
      * @param string $title   The title for our notice.
      * @param string $message The message for our notice.
@@ -59,45 +35,40 @@ class Notices
      */
     public function add($id, $title, $message, $options = [])
     {
-        $this->notices[ $id ] = new Notice($id, $title, $message, $options);
+        $this->notices[$id] = new Notice($id, $title, $message, $options);
     }
 
     /**
      * Remove a notice.
      *
-     * @access public
-     * @since 1.0
-     * @param string $id The unique ID of the notice we want to remove.
+     * @param string $id The ID of the notice.
      * @return void
      */
     public function remove($id)
     {
-        unset($this->notices[ $id ]);
+        unset($this->notices[$id]);
     }
 
     /**
      * Get a single notice.
      *
-     * @access public
-     * @since 1.0
-     * @param string $id The unique ID of the notice we want to retrieve.
+     * @param string $id The ID of the notice.
      * @return Notice|null
      */
     public function get($id)
     {
-        if (isset($this->notices[ $id ])) {
-            return $this->notices[ $id ];
+        if (isset($this->notices[$id])) {
+            return $this->notices[$id];
         }
+        return null;
     }
 
     /**
      * Get all notices.
      *
-     * @access public
-     * @since 1.0
      * @return array
      */
-    public function get_all()
+    public function getAll()
     {
         return $this->notices;
     }
@@ -105,33 +76,27 @@ class Notices
     /**
      * Prints the notice.
      *
-     * @access public
-     * @since 1.0
      * @return void
      */
-    public function the_notices()
+    public function theNotices()
     {
-        $notices = $this->get_all();
+        $notices = $this->getAll();
 
         foreach ($notices as $notice) {
-            $notice->the_notice();
+            $notice->theNotice();
         }
     }
 
     /**
      * Prints scripts for the notices.
-     *
-     * @access public
-     * @since 1.0
-     * @return void
      */
-    public function print_scripts()
+    public function printScripts()
     {
-        $notices = $this->get_all();
+        $notices = $this->getAll();
 
         foreach ($notices as $notice) {
             if ($notice->show()) {
-                $notice->dismiss->print_script();
+                $notice->dismiss->printScript();
             }
         }
     }

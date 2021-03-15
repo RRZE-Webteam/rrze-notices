@@ -5,17 +5,13 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 class Settings
-{   
-    protected $pluginFile;
-    
+{
     protected $siteOptionsName;
-    
+
     protected $siteOptions;
 
-    public function __construct($pluginFile)
+    public function __construct()
     {
-        $this->pluginFile = $pluginFile;
-        
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
     }
@@ -24,7 +20,7 @@ class Settings
     {
         add_action('network_admin_menu', [$this, 'networkAdminMenu']);
         add_action('admin_init', [$this, 'networkAdminSettings']);
-        add_filter('network_admin_plugin_action_links_' . plugin_basename($this->pluginFile), [$this, 'networkAdminPluginActionLink']);
+        add_filter('network_admin_plugin_action_links_' . plugin()->getBasename(), [$this, 'networkAdminPluginActionLink']);
     }
 
     public function networkAdminPluginActionLink($links)
@@ -33,12 +29,14 @@ class Settings
             return $links;
         }
         return array_merge(
-            $links, 
+            $links,
             [
                 sprintf(
-                    '<a href="%s">%s</a>', 
-                    add_query_arg(['page' => 'rrze-notices'], 
-                    network_admin_url('settings.php')), 
+                    '<a href="%s">%s</a>',
+                    add_query_arg(
+                        ['page' => 'rrze-notices'],
+                        network_admin_url('settings.php')
+                    ),
                     __('Settings', 'rrze-notices')
                 )
             ]
@@ -53,12 +51,12 @@ class Settings
 
                 $this->siteOptions->enabled = !empty($settings['enabled']) ? 1 : 0;
                 $this->siteOptions->access = isset($settings['access']) && $settings['access'] == 'manage_options' ? $settings['access'] : 'manage_site_options';
-                update_site_option($this->siteOptionsName, $this->siteOptions);           
+                update_site_option($this->siteOptionsName, $this->siteOptions);
             }
 
             wp_redirect(
                 add_query_arg(
-                    ['page' => 'rrze-notices', 'update' => 'updated'], 
+                    ['page' => 'rrze-notices', 'update' => 'updated'],
                     network_admin_url('settings.php')
                 )
             );
@@ -66,11 +64,11 @@ class Settings
         }
 
         add_submenu_page(
-            'settings.php', 
-            __('Notices', 'rrze-notices'), 
-            __('Notices', 'rrze-notices'), 
-            'manage_network_options', 
-            'rrze-notices', 
+            'settings.php',
+            __('Notices', 'rrze-notices'),
+            __('Notices', 'rrze-notices'),
+            'manage_network_options',
+            'rrze-notices',
             [$this, 'network_page_settings']
         );
     }
@@ -85,30 +83,30 @@ class Settings
 
     public function enabledField()
     {
-        ?>
+    ?>
         <label>
             <input type="radio" name="rrze_notices_settings[enabled]" value="1" <?php checked('1', $this->siteOptions->enabled); ?>><?php esc_html_e('Notices is enabled.', 'rrze-notices') ?>
         </label><br>
         <label>
             <input type="radio" name="rrze_notices_settings[enabled]" value="0" <?php checked('0', $this->siteOptions->enabled); ?>><?php esc_html_e('Notices is disabled.', 'rrze-notices') ?>
         </label>
-        <?php
+    <?php
     }
 
     public function accessField()
     {
         echo '<label>';
         echo '<input name="readonly" type="checkbox" value="manage_site_options" disabled checked="checked">';
-        echo __('Superadmins', 'rrze-notices').'</label>';
-        echo '<br>';        
+        echo __('Superadmins', 'rrze-notices') . '</label>';
+        echo '<br>';
         echo '<label>';
         echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ' . checked($this->siteOptions->access, 'manage_options', false) . '>';
-        echo __('Administrators', 'rrze-notices').'</label>';
+        echo __('Administrators', 'rrze-notices') . '</label>';
     }
 
     public function network_page_settings()
     {
-        ?>
+    ?>
         <div class="wrap">
             <h2><?php echo esc_html(__('Notices', 'rrze-notices')); ?></h2>
 
@@ -121,7 +119,6 @@ class Settings
             </form>
 
         </div>
-        <?php
+    <?php
     }
-
 }

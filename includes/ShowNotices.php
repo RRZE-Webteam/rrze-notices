@@ -4,73 +4,76 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use WP_Query;
-
 class ShowNotices
 {
-    protected $notices;
-    
-    protected $pluginFile;
-    
-    protected $pluginBaseName;
-    
     protected $customPostType;
-    
+
     protected $siteOptions;
 
-    protected $userMeta = 'rrze_notice_dismissed';
+    protected $siteOptionsName;
 
-    public function __construct($pluginFile)
+    protected $userMeta = 'rrze_notices_dismissed';
+
+    protected $notices;
+
+    public function __construct()
     {
-        $this->pluginFile = $pluginFile;
-        $this->pluginBaseName = plugin_basename($this->pluginFile);
         $this->customPostType = CPT::getPostTypeName();
+        $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = new Notices;
     }
 
     public function onLoaded()
     {
-        add_action('admin_init', [$this, 'adminInit']);
+        add_action('admin_init', function () {
+            $this->setNetworkWideNotices();
+            $this->setNotices();
+            $this->notices->boot();
+        });
+
+        add_action('admin_head', function () {
+            $this->previewNotice();
+            $this->notices->boot();
+        }, 99);
+
+        //add_filter('user_can_richedit', [$this, 'disableRichedit']);        
     }
-    
-    public function adminInit()
-    {
-        $this->setNetworkWideNotices();
-        $this->setNotices();
-        $this->showNotices();
-    }
-    
+
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !is_plugin_active_for_network($this->pluginBaseName)) {
+        if (!is_multisite() || !is_plugin_active_for_network(plugin()->getBaseName())) {
             return;
         }
-                
+
         $notices = $this->siteOptions->network_wide;
         if (empty($notices)) {
             return;
         }
 
-        foreach ($notices as $id => $notice) {
-            global $wpdb;
-            $idArray = explode('-', $id);
+        foreach ($notices as $noticeId => $notice) {
+            $idArray = explode('-', $noticeId);
             $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
-            if ($wpdb->blogid == $blogId) {
+            $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
+            if (!$blogId || !$postId) {
                 continue;
             }
-                        
-            $allIntervals = Util::getExpirationIntervals();
-            $expiration = array_key_exists($notice->expiration, $allIntervals) ? $notice->expiration : 'week';
-            $expired = Util::isExpired($expiration, $notice->date_gmt);
+
+            if (get_current_blog_id() == $blogId) {
+                continue;
+            }
+
+            if (!isset($this->siteOptions->network_wide[$noticeId])) {
+                continue;
+            }
+
+            $expired = Util::isExpired($notice->expiration_gmt);
             if ($expired) {
-                if (isset($this->siteOptions->network_wide[$id])) {
-                    unset($this->siteOptions->network_wide[$id]);
-                    update_site_option($this->siteOptionsName, $this->siteOptions);
-                }
+                unset($this->siteOptions->network_wide[$noticeId]);
+                update_site_option($this->siteOptionsName, $this->siteOptions);
                 continue;
             }
-                                    
+
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
             $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
@@ -93,31 +96,45 @@ class ShowNotices
             if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
-                
+
             $content = $notice->content;
             if (!$content) {
                 continue;
             }
-            
-            $title = $notice->title;
+
+            $title = !$notice->hide_title ? $notice->title : '';
             $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
-            $altStyle = $notice->alt_style ? true : false;
-            
+            $altStyle = $notice->alt_style;
+
             $editLink = '';
-            if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
-                $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
-                $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
+            if (
+                is_super_admin()
+                && is_multisite()
+                && is_plugin_active_for_network(plugin()->getBaseName())
+            ) {
                 switch_to_blog($blogId);
                 $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
                 restore_current_blog();
                 $editText = __('Edit (Network-Wide)', 'rrze-notices');
-                $editLink = sprintf('<a style="float: right; position: relative; bottom: 26px;" href="%1$s">%2$s</a>', $adminLink, $editText);
+                $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
             }
-                        
-            $this->addNotices($id, $title, $content, $type, $altStyle, $editLink);
+
+            $this->notices->add(
+                $noticeId,
+                $title,
+                $content,
+                [
+                    'scope'         => 'user',
+                    'screens'       => ['dashboard'],
+                    'type'          => $type,
+                    'alt_style'     => $altStyle,
+                    'capability'    => 'read',
+                    'edit_link'     => $editLink
+                ]
+            );
         }
     }
-    
+
     protected function setNotices()
     {
         $posts = get_posts([
@@ -129,18 +146,16 @@ class ShowNotices
             return;
         }
         foreach ($posts as $post) {
-            $id = $post->ID;
-            
-            $allIntervals = Util::getExpirationIntervals();
-            $noticeExpiration = get_post_meta($id, 'rrze_notices_expiration', true);
-            $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
-            $expired = Util::isExpired($expiration, $post->post_date_gmt);
+            $postId = $post->ID;
+
+            $expirationGmt = Util::getExpirationGmt($postId);
+            $expired = Util::isExpired($expirationGmt);
             if ($expired) {
                 continue;
             }
-            
+
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-            $roleVisibility = get_post_meta($id, 'rrze_notices_visibility', true);
+            $roleVisibility = Util::getVisibility($postId);
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -156,60 +171,108 @@ class ShowNotices
             if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
-                            
+
             $content = $post->post_content;
             if (!$content) {
                 continue;
             }
 
-            $title = $post->post_title;
-                            
-            $noticeType = get_post_meta($id, 'rrze_notices_type', true);
+            $title = !Util::hideTitle($postId) ? $post->post_title : false;
+
+            $noticeType = Util::getType($postId);
             $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-            $altStyle = get_post_meta($id, 'rrze_notices_alt_style', true) ? true : false;
-            
+            $altStyle = Util::altStyle($postId);
+
             $editLink = '';
-            $adminLink = admin_url('post.php?post=' . esc_attr($id) . '&action=edit');
+            $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
             $editText = __('Edit', 'rrze-notices');
-            
-            if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
-                global $wpdb;
-                $blogId = $wpdb->blogid;
-                $networkWideid = sprintf('%d-%d', $blogId, $id);
-                if (isset($this->siteOptions->network_wide[$networkWideid])) {
-                    $editText = isset($this->siteOptions->network_wide[$networkWideid]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
-                }
+            $capability = 'manage_options';
+            $blogId = get_current_blog_id();
+            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
+
+            if (
+                is_super_admin()
+                && is_multisite()
+                && is_plugin_active_for_network(plugin()->getBaseName())
+                && isset($this->siteOptions->network_wide[$noticeId])
+            ) {
+                $capability = $this->siteOptions->access;
+                $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
             }
-            
-            $capablity = is_plugin_active_for_network($this->pluginBaseName) ? $this->siteOptions->access : 'manage_options';
-            if (current_user_can($capablity)) {
-                $editLink = sprintf('<a style="float: right; position: relative; bottom: 26px;" href="%1$s">%2$s</a>', $adminLink, $editText);
+
+            if (current_user_can($capability)) {
+                $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
             }
-            
-            $this->addNotices($id, $title, $content, $type, $altStyle, $editLink);
+
+            $this->notices->add(
+                $noticeId,
+                $title,
+                $content,
+                [
+                    'scope'         => 'user',
+                    'screens'       => ['dashboard'],
+                    'type'          => $type,
+                    'alt_style'     => $altStyle,
+                    'capability'    => 'read',
+                    'edit_link'     => $editLink
+                ]
+            );
         }
     }
 
-    protected function addNotices($id, $title, $content, $type, $altStyle, $editLink)
+    protected function previewNotice()
     {
+        $screen = get_current_screen();
+        if ($screen->id != $this->customPostType) {
+            return;
+        }
+
+        global $pagenow;
+        if ($pagenow == 'post-new.php') {
+            return;
+        }
+
+        global $post;
+        $postId = $post->ID;
+
+        $content = $post->post_content;
+        if (!$content) {
+            return;
+        }
+
+        $title = !Util::hideTitle($postId) ? $post->post_title : false;
+
+        $noticeType = Util::getType($postId);
+        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+        $altStyle = Util::altStyle($postId);
+
+        $editLink = sprintf('<span class="preview">%s</span>', __('Preview', 'rrze-notices'));;
+        $blogId = get_current_blog_id();
+        $noticeId = sprintf('%d-%d', $blogId, $postId);
+
         $this->notices->add(
-            $id,
+            $noticeId,
             $title,
             $content,
             [
-                'scope'         => 'user',
-                'screens'       => ['dashboard'],
-                'type'          => $type,
-                'alt_style'     => $altStyle,
-                'capability'    => 'read',
-                'edit_link'     => $editLink,
-                'option_prefix' => $this->userMeta
+                'scope'          => 'user',
+                'screens'        => [$this->customPostType],
+                'type'           => $type,
+                'alt_style'      => $altStyle,
+                'capability'     => 'read',
+                'edit_link'      => $editLink,
+                'is_dismissible' => false
             ]
         );
     }
 
-    protected function showNotices()
+    public function disableRichedit($can)
     {
-        $this->notices->boot();
+        global $post;
+
+        if ($this->customPostType == $post->post_type) {
+            return false;
+        }
+        return $can;
     }
 }

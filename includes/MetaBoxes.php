@@ -9,342 +9,120 @@ use RRZE\Notices\Util;
 
 class MetaBoxes
 {
-    const META_TYPE_BOX = 'rrze_notices_type_box';
-
-    const META_EXPIRATION_BOX = 'rrze_notices_expiration_box';
-    
-    const META_DISPLAY_BOX = 'rrze_notices_display_box';
-
-    const META_VISIBILITY_BOX = 'rrze_notices_visibility_box';
-    
-    protected $pluginFile;
-    
-    protected $pluginBaseName;
-
     protected $customPostType;
-    
+
     protected $siteOptionsName;
-    
+
     protected $siteOptions;
 
-    public function __construct($pluginFile)
+    public function __construct()
     {
-        $this->pluginFile = $pluginFile;
-        $this->pluginBaseName = plugin_basename($this->pluginFile);
+        require_once plugin()->getPath('vendor/cmb2') . 'init.php';
+
         $this->customPostType = CPT::getPostTypeName();
-        
+
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
     }
 
     public function onLoaded()
     {
-        add_action('save_post', [$this, 'savePost'], 10, 2);
-        add_action('post_updated', [$this, 'postUpdated'], 10, 3);
-        add_action('delete_post', [$this, 'deletePost']);
+        add_action('cmb2_admin_init', [$this, 'metabox']);
+        add_action('cmb2_save_field_rrze_notices_expiration', [$this, 'afterSaveExpirationField'], 10, 3);
     }
 
-    public function addMetaBoxes()
+    public function metabox()
     {
-        add_meta_box(
-            static::META_TYPE_BOX,
-            __('Type', 'rrze-notices'),
-            [$this, 'typeFields'],
-            $this->customPostType,
-            'side',
-            'default'
-        );
+        $cmb = new_cmb2_box([
+            'id' => 'rrze_notices_metabox',
+            'title' => __('Notice Settings', 'rrze-notices'),
+            'object_types' => ['notice'],
+            'context' => 'normal',
+            'priority' => 'high',
+            'show_names' => true
+        ]);
 
-        add_meta_box(
-            static::META_EXPIRATION_BOX,
-            __('Expiration', 'rrze-notices'),
-            [$this, 'expirationFields'],
-            $this->customPostType,
-            'side',
-            'default'
-        );
-        
-        add_meta_box(
-            static::META_DISPLAY_BOX,
-            __('Display', 'rrze-notices'),
-            [$this, 'displayFields'],
-            $this->customPostType,
-            'side',
-            'default'
-        );
+        $cmb->add_field([
+            'id'   => 'rrze_notices_type',
+            'name' => __('Type', 'rrze-notices'),
+            'type' => 'radio',
+            'default' => 'info',
+            'options' => [
+                'info' => __('Info', 'rrze-notices'),
+                'warning' => __('Warning', 'rrze-notices')
+            ]
+        ]);
 
-        add_meta_box(
-            static::META_VISIBILITY_BOX,
-            __('Visibility', 'rrze-notices'),
-            [$this, 'visibilityFields'],
-            $this->customPostType,
-            'side',
-            'default'
-        );
+        $cmb->add_field([
+            'name' => __('Expiration', 'rrze-notices'),
+            'id' => 'rrze_notices_expiration',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'attributes' => [
+                'data-timepicker' => json_encode(
+                    [
+                        'timeFormat' => 'HH:mm',
+                        'stepMinute' => 10
+                    ]
+                ),
+                'required' => 'required'
+            ]
+        ]);
+
+        $cmb->add_field([
+            'name' => __('Display', 'rrze-notices'),
+            'id' => 'rrze_notices_display',
+            'type' => 'multicheck',
+            'options' => $this->getDisplayOptions()
+        ]);
+
+        $cmb->add_field([
+            'name' => __('Visibility', 'rrze-notices'),
+            'id' => 'rrze_notices_visibility',
+            'type' => 'multicheck',
+            'options' => $this->getVisibilityOptions()
+        ]);
     }
 
-    public function typeFields()
+    public function getDisplayOptions()
     {
-        global $post;
-
-        wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
-
-        $noticeType = get_post_meta($post->ID, 'rrze_notices_type', true);
-        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-        
-        echo '<ul>';
-        
-        echo '<li><label>';
-        echo '<input name="rrze_notices_type" type="radio" value="info" ' . checked($type, 'info', false) . '>';
-        echo __('Info', 'rrze-notices').'</label></li>';
-
-        echo '<li><label>';
-        echo '<input name="rrze_notices_type" type="radio" value="warning" ' . checked($type, 'warning', false) . '>';
-        echo __('Warning', 'rrze-notices').'</label></li>';
-        
-        echo '</ul>';
-    }
-
-    public function expirationFields()
-    {
-        global $post;
-
-        wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
-        
-        $postDateGmt = $post->post_date_gmt = '0000-00-00 00:00:00' ? get_gmt_from_date($post->post_date) : $post->post_date_gmt;
-        $allIntervals = Util::getExpirationIntervals();
-        $noticeExpiration = get_post_meta($post->ID, 'rrze_notices_expiration', true);
-        $expiration = array_key_exists($noticeExpiration, $allIntervals) ? $noticeExpiration : 'week';
-        $expired = Util::isExpired($expiration, $postDateGmt);
-        $expireDate = date_i18n(__('Y/m/d', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($postDateGmt)));
-        $expireDateTime = date_i18n(__('Y/m/d H:s:i', 'rrze-notices'), strtotime('+1 ' . $expiration, strtotime($postDateGmt)));
-        
-        echo '<ul>';
-        
-        echo '<li>';
-        echo '<select name="rrze_notices_expiration">';
-        foreach ($allIntervals as $key => $label) {
-            printf(
-                '<option value="%s"%s>%s</option>',
-                $key,
-                selected($expiration, $key, false),
-                $label
-            );
+        $options = [
+            'hide_title' => __('Hide Title', 'rrze-notices'),
+            'alternative_style' => __('Use alternative style', 'rrze-notices')
+        ];
+        if (is_super_admin() && is_multisite() && is_plugin_active_for_network(plugin()->getBasename())) {
+            $options['network_wide'] = __('Network-Wide', 'rrze-notices');
         }
-        echo '</select>';
-        if ($expired) {
-            printf ('<span class="expiration expired" title="%s">%s</span>', $expireDateTime, $expireDate);
-        } else {
-            printf('<span class="expiration" title="%s">%s</span>', $expireDateTime, $expireDate);
-        }
-        echo '</li>';
-        
-        echo '</ul>';
-    }
-    
-    public function displayFields()
-    {
-        global $post;
-
-        wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
-
-        $hideTitle = get_post_meta($post->ID, 'rrze_notices_hide_title', true) ? 1 : 0;
-        $altStyle = get_post_meta($post->ID, 'rrze_notices_alt_style', true) ? 1 : 0;
-                
-        echo '<ul>';
-        
-        echo '<li><label>';
-        echo '<input name="rrze_notices_hide_title" type="checkbox" value="1" ' . checked($hideTitle, 1, false) . '>';
-        echo __('Hide Title', 'rrze-notices').'</label></li>';
-
-        echo '<li><label>';
-        echo '<input name="rrze_notices_alt_style" type="checkbox" value="1" ' . checked($altStyle, 1, false) . '>';
-        echo __('Use alternative style', 'rrze-notices').'</label></li>';
-        
-        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
-            global $wpdb;
-            $blogId = $wpdb->blogid;
-            $id = sprintf('%d-%d', $blogId, $post->ID);
-            $networkWide = isset($this->siteOptions->network_wide[$id]) ? 1 : 0;
-            echo '<li><label>';
-            echo '<input name="rrze_notices_network_wide" type="checkbox" value="1" ' . checked($networkWide, 1, false) . '>';
-            echo __('Network-Wide', 'rrze-notices').'</label></li>';
-        }
-                
-        echo '</ul>';
+        return $options;
     }
 
-    public function visibilityFields()
+    public function getVisibilityOptions()
     {
-        global $post;
-
-        wp_nonce_field(basename(__FILE__), 'notice_meta_fields');
-
         $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $roleVisibility = get_post_meta($post->ID, 'rrze_notices_visibility', true);
-        if (!empty($roleVisibility)) {
-            $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-        } else {
-            $roleVisibility = [];
-        }
+        $roleVisibility = [];
         $visibility = [];
         foreach ($roleVisibility as $k) {
             if (isset($availableRoles[$k])) {
                 $visibility[] = $k;
             }
         }
-        
-        $count_users = count_users();
-        
-        echo '<ul>';
+
+        $options = [];
+        $countUsers = count_users();
         foreach ($availableRoles as $role => $name) {
-            $count = isset($count_users['avail_roles'][$role]) ? $count_users['avail_roles'][$role]: '-';
-            $count = 'all' === $role ? $count_users['total_users']: $count;
-            echo '<li><label>';
-            printf('<input name="rrze_notices_visibility[]" type="checkbox" value="%s" %s> %s (%d)', $role, checked($role, in_array($role, $visibility) ? $role : '', false), $name, $count);
-            echo '</label></li>';
+            $count = isset($countUsers['avail_roles'][$role]) ? $countUsers['avail_roles'][$role] : '-';
+            $count = 'all' === $role ? $countUsers['total_users'] : $count;
+            $options[$role] = sprintf('%s (%d)', $name, $count);
         }
-        echo '</ul>';
+        return $options;
     }
 
-    public function savePost($postId, $post)
+    public function afterSaveExpirationField(bool $updated, string $action, \CMB2_Field $field)
     {
-        if (is_int(wp_is_post_revision($postId))) {
-            return;
-        }
-        if (is_int(wp_is_post_autosave($postId))) {
-            return;
-        }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        if (!isset($_POST['notice_meta_fields']) || !wp_verify_nonce($_POST['notice_meta_fields'], basename(__FILE__))) {
-            return;
-        }
-        if (!isset($post->post_type) || $this->customPostType != $post->post_type) {
-            return;
-        }
-        $postTypeObject = get_post_type_object($post->post_type);
-        if (!current_user_can($postTypeObject->cap->edit_post, $postId)) {
-            return;
-        }
-
-        $noticeType = $_POST['rrze_notices_type'];
-        $noticeMetas['rrze_notices_type'] = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-
-        $noticeExpiration = $_POST['rrze_notices_expiration'];
-        $noticeMetas['rrze_notices_expiration'] = array_key_exists($noticeExpiration, Util::getExpirationIntervals()) ? $noticeExpiration : 'week';
-
-        $noticeMetas['rrze_notices_hide_title'] = isset($_POST['rrze_notices_hide_title']) ? 1 : 0;
-        $noticeMetas['rrze_notices_alt_style'] = isset($_POST['rrze_notices_alt_style']) ? 1 : 0;
-        
-        $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-        $roleVisibility = isset($_POST['rrze_notices_visibility']) ? $_POST['rrze_notices_visibility'] : [];
-        if (!empty($roleVisibility)) {
-            $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-        } else {
-            $roleVisibility = [];
-        }
-        $visibility = [];
-        foreach ($roleVisibility as $k) {
-            if (isset($availableRoles[$k])) {
-                $visibility[] = $k;
-            }
-        }
-        $noticeMetas['rrze_notices_visibility'] = $visibility;
-
-        foreach ($noticeMetas as $key => $value) {
-            if (get_post_meta($postId, $key, true)) {
-                update_post_meta($postId, $key, $value);
-            } else {
-                add_post_meta($postId, $key, $value);
-            }
-            if (!$value) {
-                delete_post_meta($postId, $key);
-            }
-        }
-        
-        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
-            global $wpdb;
-            $blogId = $wpdb->blogid;
-            $id = sprintf('%d-%d', $blogId, $postId);
-            $networkWide = is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName) && isset($_POST['rrze_notices_network_wide']) ? 1 : 0;
-            if ($networkWide && $post->post_status == 'publish') {
-                $this->siteOptions->network_wide[$id] = (object)[
-                    'title' => $post->post_title,
-                    'content' => $post->post_content,
-                    'date_gmt' => $post->post_date_gmt,
-                    'type' => $noticeMetas['rrze_notices_type'],
-                    'expiration' => $noticeMetas['rrze_notices_expiration'],
-                    'hide_title' => $noticeMetas['rrze_notices_hide_title'],
-                    'alt_style' => $noticeMetas['rrze_notices_alt_style'],
-                    'visibility' => $noticeMetas['rrze_notices_visibility']
-                ];
-            } elseif (isset($this->siteOptions->network_wide[$id])) {
-                unset($this->siteOptions->network_wide[$id]);
-            }
-            update_site_option($this->siteOptionsName, $this->siteOptions);
-        }
-    }
-    
-    public function postUpdated($postId, $postAfter, $postBefore)
-    {    
-        if (is_int(wp_is_post_revision($postId))) {
-            return;
-        }
-        if (is_int(wp_is_post_autosave($postId))) {
-            return;
-        }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        if (!isset($postAfter->post_type) || $this->customPostType != $postAfter->post_type) {
-            return;
-        }
-        $postTypeObject = get_post_type_object($postAfter->post_type);
-        if (!current_user_can($postTypeObject->cap->edit_post, $postId)) {
-            return;
-        }
-
-        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName) && $postAfter->post_status != 'publish') {
-            global $wpdb;
-            $blogId = $wpdb->blogid;
-            $id = sprintf('%d-%d', $blogId, $postId);
-            if (isset($this->siteOptions->network_wide[$id])) {
-                unset($this->siteOptions->network_wide[$id]);
-                update_site_option($this->siteOptionsName, $this->siteOptions);
-            }
-        }
-    }
-        
-    public function deletePost($postId)
-    {
-        if (is_int(wp_is_post_revision($postId))) {
-            return;
-        }
-        if (is_int(wp_is_post_autosave($postId))) {
-            return;
-        }
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-        $post = get_post($postId);
-        if (!isset($post->post_type) || $this->customPostType != $post->post_type) {
-            return;
-        }
-        $postTypeObject = get_post_type_object($post->post_type);
-        if (!current_user_can($postTypeObject->cap->edit_post, $postId)) {
-            return;
-        }
-        
-        if (is_super_admin() && is_multisite() && is_plugin_active_for_network($this->pluginBaseName)) {
-            global $wpdb;
-            $blogId = $wpdb->blogid;
-            $id = sprintf('%d-%d', $blogId, $postId);
-            if (isset($this->siteOptions->network_wide[$id])) {
-                unset($this->siteOptions->network_wide[$id]);
-                update_site_option($this->siteOptionsName, $this->siteOptions);
-            }
-        }
+        $postId = $field->object_id;
+        $expiration = $field->value;
+        $expirationGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $expiration)));
+        update_post_meta($postId, 'rrze_notices_expiration_gmt', $expirationGmt);
     }
 }
