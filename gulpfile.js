@@ -1,7 +1,7 @@
 'use strict';
 
 const
-    {src, dest, watch, series} = require('gulp'),
+    { src, dest, watch, series } = require('gulp'),
     sass = require('gulp-sass'),
     cleancss = require('gulp-clean-css'),
     postcss = require('gulp-postcss'),
@@ -13,36 +13,36 @@ const
     info = require('./package.json'),
     wpPot = require('gulp-wp-pot'),
     touch = require('gulp-touch-cmd')
-;
+    ;
 
 function css() {
     return src('./src/sass/*.scss', {
-            sourcemaps: false
-        })
+        sourcemaps: false
+    })
         .pipe(sass())
         .pipe(postcss([autoprefixer()]))
         .pipe(cleancss())
         .pipe(dest(info.dist.cssdir))
-	.pipe(touch());
+        .pipe(touch());
 }
 function cssdev() {
     return src('./src/sass/*.scss', {
-            sourcemaps: true
-        })
+        sourcemaps: true
+    })
         .pipe(sass())
         .pipe(postcss([autoprefixer()]))
         .pipe(dest(info.dist.cssdir))
-	.pipe(touch());
+        .pipe(touch());
 }
 
 function js() {
-    return src(['./src/js/*.js','!./src/js/**/*.min.js'])
-	.pipe(babel({
+    return src(['./src/js/*.js', '!./src/js/**/*.min.js'])
+        .pipe(babel({
             presets: ['@babel/env']
-	}))
-	.pipe(uglify())
-	.pipe(dest(info.dist.jsdir))
-	.pipe(touch());
+        }))
+        .pipe(uglify())
+        .pipe(dest(info.dist.jsdir))
+        .pipe(touch());
 }
 
 function patchPackageVersion() {
@@ -52,7 +52,7 @@ function patchPackageVersion() {
             version: newVer
         }))
         .pipe(dest('./'))
-	.pipe(touch());
+        .pipe(touch());
 };
 function prereleasePackageVersion() {
     var newVer = semver.inc(info.version, 'prerelease');
@@ -60,24 +60,24 @@ function prereleasePackageVersion() {
         .pipe(bump({
             version: newVer
         }))
-	.pipe(dest('./'))
-	.pipe(touch());;
+        .pipe(dest('./'))
+        .pipe(touch());;
 };
 
-function updatepot()  {
-  return src(['**/*.php', '!vendor/**/*.php'])
-  .pipe(
-      wpPot({
-        domain: info.textdomain,
-        package: info.name,
-	team: info.author.name,
-	bugReport: info.repository.issues,
-	ignoreTemplateNameHeader: true
- 
-      })
-    )
-  .pipe(dest(`languages/${info.textdomain}.pot`))
-  .pipe(touch());
+function updatepot() {
+    return src(['**/*.php', '!vendor/**/*.php'])
+        .pipe(
+            wpPot({
+                domain: info.textdomain,
+                package: info.name,
+                team: info.author.name,
+                bugReport: info.repository.issues,
+                ignoreTemplateNameHeader: true
+
+            })
+        )
+        .pipe(dest(`languages/${info.textdomain}.pot`))
+        .pipe(touch());
 };
 
 
