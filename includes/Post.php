@@ -25,10 +25,11 @@ class Post
 
     public function onLoaded()
     {
-        add_action('transition_post_status', [$this, 'transitionPostStatus'], 10, 3);
+        add_action('save_post', [$this, 'savePost'], 99, 2);
+        add_action('delete_post', [$this, 'deletePost'], 10, 2);
     }
 
-    public function transitionPostStatus($newStatus, $oldStatus, $post)
+    public function savePost($postId, $post)
     {
         $postId = $post->ID;
 
@@ -49,6 +50,26 @@ class Post
         if (Util::networkWide($postId)) {
             $this->updateNetworkWideSiteOption($postId, $post);
         }
+    }
+
+    public function deletePost($postId, $post)
+    {
+        $postId = $post->ID;
+
+        if (
+            !is_super_admin()
+            || !is_multisite()
+            || $post->post_type != $this->customPostType
+        ) {
+            return;
+        }
+
+        $postTypeObject = get_post_type_object($post->post_type);
+        if (!current_user_can($postTypeObject->cap->edit_post, $postId)) {
+            return;
+        }
+
+        $this->deleteNetworkWideSiteOption($postId);
     }
 
     protected function updateNetworkWideSiteOption(int $postId, \WP_Post $post)

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
-"POT-Creation-Date: 2021-03-09T16:06:30+00:00\n"
-"PO-Revision-Date: 2021-03-09 17:07+0100\n"
+"POT-Creation-Date: 2021-03-15T13:45:15+00:00\n"
+"PO-Revision-Date: 2021-03-15 14:48+0100\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -35,13 +35,13 @@ msgstr "RRZE Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/AdminBar.php:77 includes/AdminBar.php:138 includes/Columns.php:73
-#: includes/MetaBoxes.php:102 includes/ShowNotices.php:68
-#: includes/ShowNotices.php:134
+#: includes/AdminBar.php:76 includes/AdminBar.php:139 includes/Columns.php:73
+#: includes/MetaBoxes.php:102 includes/ShowNotices.php:77
+#: includes/ShowNotices.php:157
 msgid "All"
 msgstr "Alle"
 
-#: includes/AdminBar.php:192 includes/Settings.php:68 includes/Settings.php:69
+#: includes/AdminBar.php:193 includes/Settings.php:68 includes/Settings.php:69
 #: includes/Settings.php:78 includes/Settings.php:111
 msgid "Notices"
 msgstr "Nachrichten"
@@ -147,12 +147,16 @@ msgstr "Info"
 msgid "Warning"
 msgstr "Warnhinweis"
 
-#: includes/MetaBoxes.php:60
-msgid "m/d/Y"
-msgstr "Y.m.d"
+#. translators: Expiration date format, see https://www.php.net/manual/datetime.format.php
+#: includes/MetaBoxes.php:60 includes/Util.php:113
+msgctxt "expiration date format"
+msgid "Y/m/d"
+msgstr "d.m.Y"
 
-#: includes/MetaBoxes.php:61
-msgid "H:i"
+#. translators: Expiration time format, see https://www.php.net/manual/datetime.format.php
+#: includes/MetaBoxes.php:61 includes/Util.php:115
+msgctxt "expiration time format"
+msgid "g:i a"
 msgstr "H:i"
 
 #: includes/MetaBoxes.php:74
@@ -199,13 +203,17 @@ msgstr "Administratoren"
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
-#: includes/ShowNotices.php:107 includes/ShowNotices.php:172
+#: includes/ShowNotices.php:118 includes/ShowNotices.php:200
 msgid "Edit (Network-Wide)"
 msgstr "Bearbeiten (netzwerkweit)"
 
-#: includes/ShowNotices.php:165
+#: includes/ShowNotices.php:188
 msgid "Edit"
 msgstr "Bearbeiten"
+
+#: includes/ShowNotices.php:249
+msgid "Preview"
+msgstr "Vorschau"
 
 #: includes/Util.php:88
 msgid "1 Day"
@@ -218,18 +226,6 @@ msgstr "1 Woche"
 #: includes/Util.php:90
 msgid "1 Month"
 msgstr "1 Monat"
-
-#. translators: Expiration date format, see https://www.php.net/manual/datetime.format.php
-#: includes/Util.php:113
-msgctxt "expiration date format"
-msgid "Y/m/d"
-msgstr "d.m.Y"
-
-#. translators: Expiration time format, see https://www.php.net/manual/datetime.format.php
-#: includes/Util.php:115
-msgctxt "expiration time format"
-msgid "g:i a"
-msgstr "H:i"
 
 #. translators: 1: Server PHP version number, 2: Required PHP version number.
 #: rrze-notices.php:65
@@ -253,6 +249,12 @@ msgstr ""
 #: rrze-notices.php:90 rrze-notices.php:138
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
+
+#~ msgid "m/d/Y"
+#~ msgstr "Y.m.d"
+
+#~ msgid "H:i"
+#~ msgstr "H:i"
 
 #~ msgid "Y/m/d H:s:i"
 #~ msgstr "d.m.Y H:s:i"

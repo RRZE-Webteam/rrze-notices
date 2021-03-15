@@ -63,7 +63,7 @@ class Dismiss
         $nonce = wp_create_nonce('rrze_notices_dismiss_' . $this->id); ?>
         <script>
             window.addEventListener('load', function() {
-                var dismissBtn = document.querySelector('#rrze-notices-<?php echo esc_attr($this->id); ?> .notice-dismiss');
+                var dismissBtn = document.querySelector('#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
                 dismissBtn.addEventListener('click', function(event) {
                     var httpRequest = new XMLHttpRequest(),
                         postData = '';
