@@ -98,7 +98,6 @@ class Dismiss
      */
     public function ajaxDismissNotice()
     {
-        \RRZE\Debug\log($_POST); return;
         if (!isset($_POST['action']) || 'rrze_notices_dismiss' !== $_POST['action']) {
             return;
         }
