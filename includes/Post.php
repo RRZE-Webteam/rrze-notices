@@ -77,25 +77,7 @@ class Post
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
-        $type = Util::getType($postId);
-        $expiration = Util::getExpiration($postId);
-        $expirationGmt = Util::getExpirationGmt($postId);
-        $altStyle = Util::altStyle($postId);
-        $hideTitle = Util::hideTitle($postId);
-        $visibility = Util::getVisibility($postId);
-
-        $this->siteOptions->network_wide[$noticeId] = (object)[
-            'title' => $post->post_title,
-            'content' => $post->post_content,
-            'date' => $post->post_date,
-            'date_gmt' => $post->post_date_gmt,
-            'type' => $type,
-            'expiration' => $expiration,
-            'expiration_gmt' => $expirationGmt,
-            'hide_title' => $hideTitle,
-            'alt_style' => $altStyle,
-            'visibility' => $visibility
-        ];
+        $this->siteOptions->network_wide[$noticeId] = $noticeId;
         update_site_option($this->siteOptionsName, $this->siteOptions);
     }
 
