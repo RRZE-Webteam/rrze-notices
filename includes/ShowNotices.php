@@ -67,7 +67,28 @@ class ShowNotices
                 continue;
             }
 
-            $expired = Util::isExpired($notice->expiration_gmt);
+            $hasNotice = false;
+            switch_to_blog($blogId);
+            $post = get_post($postId);
+            if (!is_null($post)) {
+                $hasNotice = true;
+                $title = $post->post_title;
+                $content = $post->post_content;
+                $type = Util::getType($postId);
+                $expiration = Util::getExpiration($postId);
+                $expirationGmt = Util::getExpirationGmt($postId);
+                $altStyle = Util::altStyle($postId);
+                $hideTitle = Util::hideTitle($postId);
+                $visibility = Util::getVisibility($postId);
+                $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
+            }
+            restore_current_blog();
+
+            if (!$hasNotice) {
+                continue;
+            }
+
+            $expired = Util::isExpired($expirationGmt);
             if ($expired) {
                 unset($this->siteOptions->network_wide[$noticeId]);
                 update_site_option($this->siteOptionsName, $this->siteOptions);
@@ -75,7 +96,7 @@ class ShowNotices
             }
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-            $roleVisibility = $notice->visibility;
+            $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -97,14 +118,12 @@ class ShowNotices
                 continue;
             }
 
-            $content = $notice->content;
             if (!$content) {
                 continue;
             }
 
-            $title = !$notice->hide_title ? $notice->title : '';
-            $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
-            $altStyle = $notice->alt_style;
+            $title = !$hideTitle ? $title : '';
+            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
 
             $editLink = '';
             if (
@@ -112,9 +131,6 @@ class ShowNotices
                 && is_multisite()
                 && is_plugin_active_for_network(plugin()->getBaseName())
             ) {
-                switch_to_blog($blogId);
-                $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
-                restore_current_blog();
                 $editText = __('Edit (Network-Wide)', 'rrze-notices');
                 $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
             }
@@ -124,7 +140,6 @@ class ShowNotices
                 $title,
                 $content,
                 [
-                    'scope'         => 'user',
                     'screens'       => ['dashboard'],
                     'type'          => $type,
                     'alt_style'     => $altStyle,
@@ -147,15 +162,25 @@ class ShowNotices
         }
         foreach ($posts as $post) {
             $postId = $post->ID;
-
+            $blogId = get_current_blog_id();
+            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
+            $title = $post->post_title;
+            $content = $post->post_content;
+            $type = Util::getType($postId);
+            $expiration = Util::getExpiration($postId);
             $expirationGmt = Util::getExpirationGmt($postId);
+            $altStyle = Util::altStyle($postId);
+            $hideTitle = Util::hideTitle($postId);
+            $visibility = Util::getVisibility($postId);
+            $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
+
             $expired = Util::isExpired($expirationGmt);
             if ($expired) {
                 continue;
             }
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-            $roleVisibility = Util::getVisibility($postId);
+            $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -172,23 +197,18 @@ class ShowNotices
                 continue;
             }
 
-            $content = $post->post_content;
             if (!$content) {
                 continue;
             }
 
-            $title = !Util::hideTitle($postId) ? $post->post_title : false;
+            $title = !$hideTitle ? $title : '';
 
-            $noticeType = Util::getType($postId);
-            $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-            $altStyle = Util::altStyle($postId);
+            $title = !$hideTitle ? $title : '';
+            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
 
             $editLink = '';
-            $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
             $editText = __('Edit', 'rrze-notices');
             $capability = 'manage_options';
-            $blogId = get_current_blog_id();
-            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
             if (
                 is_super_admin()
@@ -209,7 +229,6 @@ class ShowNotices
                 $title,
                 $content,
                 [
-                    'scope'         => 'user',
                     'screens'       => ['dashboard'],
                     'type'          => $type,
                     'alt_style'     => $altStyle,
@@ -255,7 +274,6 @@ class ShowNotices
             $title,
             $content,
             [
-                'scope'          => 'user',
                 'screens'        => [$this->customPostType],
                 'type'           => $type,
                 'alt_style'      => $altStyle,

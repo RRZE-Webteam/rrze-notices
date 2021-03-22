@@ -52,7 +52,12 @@ class AdminBar
         foreach ($notices as $noticeId => $notice) {
             $idArray = explode('-', $noticeId);
             $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
-            if (!$blogId || get_current_blog_id() == $blogId) {
+            $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
+            if (!$blogId || !$postId) {
+                continue;
+            }
+
+            if (get_current_blog_id() == $blogId) {
                 continue;
             }
 
@@ -60,11 +65,28 @@ class AdminBar
                 continue;
             }
 
-            if (!isset($this->siteOptions->network_wide[$noticeId])) {
+            $hasNotice = false;
+            switch_to_blog($blogId);
+            $post = get_post($postId);
+            if (!is_null($post)) {
+                $hasNotice = true;
+                $title = $post->post_title;
+                $content = $post->post_content;
+                $type = Util::getType($postId);
+                $expiration = Util::getExpiration($postId);
+                $expirationGmt = Util::getExpirationGmt($postId);
+                $altStyle = Util::altStyle($postId);
+                $hideTitle = Util::hideTitle($postId);
+                $visibility = Util::getVisibility($postId);
+                $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
+            }
+            restore_current_blog();
+
+            if (!$hasNotice) {
                 continue;
             }
 
-            $expired = Util::isExpired($notice->expiration_gmt);
+            $expired = Util::isExpired($expirationGmt);
             if ($expired) {
                 if (isset($this->siteOptions->network_wide[$noticeId])) {
                     unset($this->siteOptions->network_wide[$noticeId]);
@@ -74,7 +96,7 @@ class AdminBar
             }
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
-            $roleVisibility = $notice->visibility;
+            $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -96,13 +118,11 @@ class AdminBar
                 continue;
             }
 
-            $content = $notice->content;
             if (!$content) {
                 continue;
             }
 
-            $title = $notice->title;
-            $type = array_key_exists($notice->type, Util::getNoticeTypes()) ? $notice->type : 'info';
+            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
 
             $this->addNotices($noticeId, $title, $type);
         }

@@ -34,13 +34,12 @@ class Notice
      * @var array
      */
     private $options = [
-        'scope'          => 'global',
         'screens'        => [],
         'type'           => 'info',
         'alt_style'      => false,
         'edit_link'      => '',
         'capability'     => 'edit_theme_options',
-        'option_prefix'  => 'rrze_notice_dismissed',
+        'option_prefix'  => 'rrze_notices_dismissed',
         'is_dismissible' => true
     ];
 
@@ -98,7 +97,7 @@ class Notice
 
         $this->allowed_html = apply_filters('rrze_notices_allowed_html', $this->allowed_html);
 
-        $this->dismiss = new Dismiss($this->id, $this->options['option_prefix'], $this->options['scope'], $this->options['is_dismissible']);
+        $this->dismiss = new Dismiss($this->id, $this->options['option_prefix'], $this->options['is_dismissible']);
     }
 
     /**
