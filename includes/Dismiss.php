@@ -22,13 +22,6 @@ class Dismiss
     private $prefix;
 
     /**
-     * The notice's scope. Can be "user" or "global".
-     *
-     * @var string
-     */
-    private $scope;
-
-    /**
      * Should the script be printed.
      *
      * @var boolean
@@ -40,14 +33,12 @@ class Dismiss
      * 
      * @param string $id A unique ID for this notice. Can contain lowercase characters and underscores.
      * @param string $prefix The prefix that will be used for the option/user-meta.
-     * @param string $scope Used for the option/user-meta saving.
      * @param boolean $isDismissible Should be the notice dismissible?
      */
-    public function __construct(string $id, string $prefix, string $scope = 'global', bool $isDismissible = true)
+    public function __construct(string $id, string $prefix, bool $isDismissible = true)
     {
         $this->id = sanitize_key($id);
         $this->prefix = sanitize_key($prefix);
-        $this->scope = (in_array($scope, ['global', 'user'], true)) ? $scope : 'global';
         $this->isDismissible = $isDismissible;
 
         add_action('wp_ajax_rrze_notices_dismiss', [$this, 'ajaxDismissNotice']);
@@ -63,8 +54,11 @@ class Dismiss
         $nonce = wp_create_nonce('rrze_notices_dismiss_' . $this->id); ?>
         <script>
             window.addEventListener('load', function() {
-                var dismissBtn = document.querySelector('#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
+                var dismissBtn = document.querySelector('div#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
                 dismissBtn.addEventListener('click', function(event) {
+                    if (event.target.tagName.toLowerCase() === 'a') {
+                        return;
+                    }
                     var httpRequest = new XMLHttpRequest(),
                         postData = '';
                     postData += 'id=<?php echo esc_attr(rawurlencode($this->id)); ?>';
@@ -76,7 +70,7 @@ class Dismiss
                 });
             });
         </script>
-<?php
+        <?php
     }
 
     /**
@@ -86,11 +80,9 @@ class Dismiss
      */
     public function isDismissed()
     {
-        if ('user' === $this->scope) {
-            return (get_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true));
-        }
+        if (!$this->isDismissible) return false;
 
-        return (get_option("{$this->prefix}_{$this->id}"));
+        return (get_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true));
     }
 
     /**
@@ -116,10 +108,6 @@ class Dismiss
      */
     private function dismissNotice()
     {
-        if ('user' === $this->scope) {
-            update_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true);
-            return;
-        }
-        update_option("{$this->prefix}_{$this->id}", true);
+        update_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true);
     }
 }
