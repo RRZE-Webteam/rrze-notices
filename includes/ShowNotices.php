@@ -67,26 +67,17 @@ class ShowNotices
                 continue;
             }
 
-            $hasNotice = false;
-            switch_to_blog($blogId);
-            $post = get_post($postId);
-            if (!is_null($post)) {
-                $hasNotice = true;
-                $title = $post->post_title;
-                $content = $post->post_content;
-                $type = Util::getType($postId);
-                $expiration = Util::getExpiration($postId);
-                $expirationGmt = Util::getExpirationGmt($postId);
-                $altStyle = Util::altStyle($postId);
-                $hideTitle = Util::hideTitle($postId);
-                $visibility = Util::getVisibility($postId);
-                $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
-            }
-            restore_current_blog();
+            $notice = (object) $notice;
 
-            if (!$hasNotice) {
-                continue;
-            }
+            $title = isset($notice->title) ? $notice->title : '';
+            $content = isset($notice->content) ? $notice->content : '';
+            $type = isset($notice->type) ? $notice->type : 'info';
+            $expiration = isset($notice->expiration) ? $notice->expiration : current_time('timestamp');
+            $expirationGmt = isset($notice->expiration_gmt) ? $notice->expiration_gmt : time();
+            $altStyle = isset($notice->alt_style) ? $notice->alt_style : false;
+            $hideTitle = isset($notice->hide_title) ? $notice->hide_title : false;
+            $visibility = isset($notice->visibility) ? $notice->visibility : true;
+            $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
 
             $expired = Util::isExpired($expirationGmt);
             if ($expired) {
