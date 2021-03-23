@@ -1,6 +1,6 @@
 {
   "name": "rrze-notices",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Management and listing of admin notices.",
   "main": "rrze-notices.php",
   "textdomain": "rrze-notices",
