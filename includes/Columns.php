@@ -20,7 +20,7 @@ class Columns
     {
         add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageEdit']);
         add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'managePosts'], 10, 2);
-        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortale']);
+        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortable']);
         add_action('load-edit.php', [$this, 'loadEdit']);
     }
 
@@ -62,10 +62,7 @@ class Columns
                 }
                 break;
             case 'network_wide':
-                global $wpdb;
-                $blogId = $wpdb->blogid;
-                $id = sprintf('%d-%d', $blogId, $postId);
-                if (isset($this->siteOptions->network_wide[$id])) {
+                if (Util::networkWide($postId)) {
                     echo '<span class="dashicons dashicons-yes"></span>';
                 }
                 break;
@@ -90,7 +87,7 @@ class Columns
         }
     }
 
-    public function manageSortale($columns)
+    public function manageSortable($columns)
     {
         $columns['type'] = 'type';
         $columns['expiration'] = 'expiration';
