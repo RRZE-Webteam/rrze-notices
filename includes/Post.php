@@ -47,6 +47,7 @@ class Post
         }
 
         $this->deleteNetworkWideSiteOption($postId);
+
         if (Util::networkWide($postId)) {
             $this->updateNetworkWideSiteOption($postId, $post);
         }
@@ -77,7 +78,32 @@ class Post
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
-        $this->siteOptions->network_wide[$noticeId] = $noticeId;
+        $title = $post->post_title;
+        $content = $post->post_content;
+        $date = $post->post_date;
+        $dateGmt = $post->post_date_gmt;
+        $type = Util::getType($postId);
+        $expiration = Util::getExpiration($postId);
+        $expirationGmt = Util::getExpirationGmt($postId);
+        $altStyle = Util::altStyle($postId);
+        $hideTitle = Util::hideTitle($postId);
+        $visibility = Util::getVisibility($postId);
+        $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
+
+        $this->siteOptions->network_wide[$noticeId] = [
+            'title' => $title,
+            'content' => $content,
+            'date' => $date,
+            'date_gmt' => $dateGmt,
+            'type' => $type,
+            'expiration' => $expiration,
+            'expiration_gmt' => $expirationGmt,
+            'hide_title' => $hideTitle,
+            'alt_style' => $altStyle,
+            'visibility' => $visibility,
+            'admin_link' => $adminLink
+        ];
+
         update_site_option($this->siteOptionsName, $this->siteOptions);
     }
 
