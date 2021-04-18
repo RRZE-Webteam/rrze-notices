@@ -42,7 +42,7 @@ class ShowNotices
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !is_plugin_active_for_network(plugin()->getBaseName())) {
+        if (!is_multisite() || !Util::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -120,7 +120,7 @@ class ShowNotices
             if (
                 is_super_admin()
                 && is_multisite()
-                && is_plugin_active_for_network(plugin()->getBaseName())
+                && Util::isPluginActiveForNetwork()
             ) {
                 $editText = __('Edit (Network-Wide)', 'rrze-notices');
                 $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
@@ -204,7 +204,7 @@ class ShowNotices
             if (
                 is_super_admin()
                 && is_multisite()
-                && is_plugin_active_for_network(plugin()->getBaseName())
+                && Util::isPluginActiveForNetwork()
                 && isset($this->siteOptions->network_wide[$noticeId])
             ) {
                 $capability = $this->siteOptions->access;

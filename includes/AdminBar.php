@@ -40,7 +40,7 @@ class AdminBar
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !is_plugin_active_for_network(plugin()->getBaseName())) {
+        if (!is_multisite() || !Util::isPluginActiveForNetwork()) {
             return;
         }
 

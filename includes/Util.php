@@ -6,8 +6,6 @@ defined('ABSPATH') || exit;
 
 use WP_Roles;
 
-use function PHPSTORM_META\expectedArguments;
-
 class Util
 {
     const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
@@ -127,6 +125,18 @@ class Util
             if (in_array($stack, $haystack)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public static function isPluginActiveForNetwork()
+    {
+        if (!is_multisite()) {
+            return false;
+        }
+        $plugins = get_site_option('active_sitewide_plugins');
+        if (isset($plugins[plugin()->getBaseName()])) {
+            return true;
         }
         return false;
     }
