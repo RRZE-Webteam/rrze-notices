@@ -91,7 +91,7 @@ class MetaBoxes
             'hide_title' => __('Hide Title', 'rrze-notices'),
             'alternative_style' => __('Use alternative style', 'rrze-notices')
         ];
-        if (is_super_admin() && is_multisite() && is_plugin_active_for_network(plugin()->getBasename())) {
+        if (is_super_admin() && is_multisite() && Util::isPluginActiveForNetwork()) {
             $options['network_wide'] = __('Network-Wide', 'rrze-notices');
         }
         return $options;
