@@ -35,7 +35,7 @@ class Columns
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!is_super_admin() || !is_multisite() || !is_plugin_active_for_network(plugin()->getBaseName())) {
+        if (!is_super_admin() || !is_multisite() || !Util::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
         }
         return $columns;
