@@ -23,7 +23,7 @@ class Main
     {
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
 
-        if ($this->isPluginActiveForNetwork()) {
+        if (Util::isPluginActiveForNetwork()) {
             $settings = new Settings;
             $settings->onLoaded();
             if (!$this->siteOptions->enabled) {
@@ -47,17 +47,5 @@ class Main
             'rrze-notices-admin', 
             plugins_url('assets/css/admin.css', plugin()->getBasename()),
         );
-    }
-
-    protected function isPluginActiveForNetwork()
-    {
-        if (!is_multisite()) {
-            return false;
-        }
-        $plugins = get_site_option('active_sitewide_plugins');
-        if (isset($plugins[plugin()->getBaseName()])) {
-            return true;
-        }
-        return false;
     }
 }
