@@ -6,13 +6,19 @@ defined('ABSPATH') || exit;
 
 class Notice
 {
-
     /**
      * The notice-ID.
      *
      * @var string
      */
     private $id;
+
+    /**
+     * The notice title.
+     *
+     * @var string
+     */
+    private $title;
 
     /**
      * The notice message.
