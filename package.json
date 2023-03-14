@@ -1,6 +1,6 @@
 {
     "name": "rrze-notices",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "main": "rrze-notices.php",
     "scripts": {
         "start": "webpack --mode=development --watch",
