@@ -42,7 +42,7 @@ class ShowNotices
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !Util::isPluginActiveForNetwork()) {
+        if (!is_multisite() || !Utils::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -79,14 +79,14 @@ class ShowNotices
             $visibility = isset($notice->visibility) ? $notice->visibility : true;
             $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
 
-            $expired = Util::isExpired($expirationGmt);
+            $expired = Utils::isExpired($expirationGmt);
             if ($expired) {
                 unset($this->siteOptions->network_wide[$noticeId]);
                 update_site_option($this->siteOptionsName, $this->siteOptions);
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -105,7 +105,7 @@ class ShowNotices
                 $visibility = [];
             }
             $current_user = wp_get_current_user();
-            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
 
@@ -114,13 +114,13 @@ class ShowNotices
             }
 
             $title = !$hideTitle ? $title : '';
-            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($type, Utils::getNoticeTypes()) ? $type : 'info';
 
             $editLink = '';
             if (
                 is_super_admin()
                 && is_multisite()
-                && Util::isPluginActiveForNetwork()
+                && Utils::isPluginActiveForNetwork()
             ) {
                 $editText = __('Edit (Network-Wide)', 'rrze-notices');
                 $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
@@ -157,20 +157,20 @@ class ShowNotices
             $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
             $title = $post->post_title;
             $content = $post->post_content;
-            $type = Util::getType($postId);
-            $expiration = Util::getExpiration($postId);
-            $expirationGmt = Util::getExpirationGmt($postId);
-            $altStyle = Util::altStyle($postId);
-            $hideTitle = Util::hideTitle($postId);
-            $visibility = Util::getVisibility($postId);
+            $type = Utils::getType($postId);
+            $expiration = Utils::getExpiration($postId);
+            $expirationGmt = Utils::getExpirationGmt($postId);
+            $altStyle = Utils::altStyle($postId);
+            $hideTitle = Utils::hideTitle($postId);
+            $visibility = Utils::getVisibility($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-            $expired = Util::isExpired($expirationGmt);
+            $expired = Utils::isExpired($expirationGmt);
             if ($expired) {
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -184,7 +184,7 @@ class ShowNotices
                 }
             }
             $current_user = wp_get_current_user();
-            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
 
@@ -195,7 +195,7 @@ class ShowNotices
             $title = !$hideTitle ? $title : '';
 
             $title = !$hideTitle ? $title : '';
-            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($type, Utils::getNoticeTypes()) ? $type : 'info';
 
             $editLink = '';
             $editText = __('Edit', 'rrze-notices');
@@ -204,7 +204,7 @@ class ShowNotices
             if (
                 is_super_admin()
                 && is_multisite()
-                && Util::isPluginActiveForNetwork()
+                && Utils::isPluginActiveForNetwork()
                 && isset($this->siteOptions->network_wide[$noticeId])
             ) {
                 $capability = $this->siteOptions->access;
@@ -250,11 +250,11 @@ class ShowNotices
             return;
         }
 
-        $title = !Util::hideTitle($postId) ? $post->post_title : false;
+        $title = !Utils::hideTitle($postId) ? $post->post_title : false;
 
-        $noticeType = Util::getType($postId);
-        $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
-        $altStyle = Util::altStyle($postId);
+        $noticeType = Utils::getType($postId);
+        $type = array_key_exists($noticeType, Utils::getNoticeTypes()) ? $noticeType : 'info';
+        $altStyle = Utils::altStyle($postId);
 
         $editLink = sprintf('<span class="preview">%s</span>', __('Preview', 'rrze-notices'));;
         $blogId = get_current_blog_id();
