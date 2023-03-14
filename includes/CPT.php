@@ -38,7 +38,7 @@ class CPT
 
     public function registerCPT()
     {
-        $capability = Util::isPluginActiveForNetwork() ? $this->siteOptions->access : 'manage_options';
+        $capability = Utils::isPluginActiveForNetwork() ? $this->siteOptions->access : 'manage_options';
 
         $labels = array(
             'name'               => _x('Notices', 'post type general name', 'rrze-notices'),
