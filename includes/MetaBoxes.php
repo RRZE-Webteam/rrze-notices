@@ -17,8 +17,6 @@ class MetaBoxes
 
     public function __construct()
     {
-        require_once plugin()->getPath('vendor/cmb2') . 'init.php';
-
         $this->customPostType = CPT::getPostTypeName();
 
         $this->siteOptionsName = Options::getSiteOptionName();
@@ -91,7 +89,7 @@ class MetaBoxes
             'hide_title' => __('Hide Title', 'rrze-notices'),
             'alternative_style' => __('Use alternative style', 'rrze-notices')
         ];
-        if (is_super_admin() && is_multisite() && Util::isPluginActiveForNetwork()) {
+        if (is_super_admin() && is_multisite() && Utils::isPluginActiveForNetwork()) {
             $options['network_wide'] = __('Network-Wide', 'rrze-notices');
         }
         return $options;
@@ -99,7 +97,7 @@ class MetaBoxes
 
     public function getVisibilityOptions()
     {
-        $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+        $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
         $roleVisibility = [];
         $visibility = [];
         foreach ($roleVisibility as $k) {
