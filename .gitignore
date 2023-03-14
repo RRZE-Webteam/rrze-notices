@@ -1,11 +1,17 @@
-nbproject/project.properties
-/nbproject/private/
-nbproject/project.xml
-img/logos/Browse.plb
-node_modules
-.idea*
-.sass-cache*
+### vscode ###
+.vscode/
+### NetBeans ###
+**/nbproject/
+### PhpStorm ###
+.idea/
+### macOS ###
+.DS_Store
+### Node ###
+node_modules/
 package-lock.json
-tmp
-*.DS_Store
+### Composer ###
+composer.lock
+### WordPress ###
 *.pot
+### Tmp ###
+_tmp/
