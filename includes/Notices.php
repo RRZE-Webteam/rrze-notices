@@ -6,7 +6,6 @@ defined('ABSPATH') || exit;
 
 class Notices
 {
-
     /**
      * An array of notices.
      *
