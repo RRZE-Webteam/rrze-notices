@@ -6,7 +6,6 @@ defined('ABSPATH') || exit;
 
 class Dismiss
 {
-
     /**
      * The notice-ID.
      *
