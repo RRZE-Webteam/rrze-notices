@@ -4,8 +4,6 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use WP_Query;
-
 class AdminBar
 {
     protected $customPostType;
@@ -40,7 +38,7 @@ class AdminBar
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !Util::isPluginActiveForNetwork()) {
+        if (!is_multisite() || !Utils::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -77,12 +75,12 @@ class AdminBar
             $visibility = isset($notice->visibility) ? $notice->visibility : true;
             $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
 
-            $expired = Util::isExpired($expirationGmt);
+            $expired = Utils::isExpired($expirationGmt);
             if ($expired) {
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -101,7 +99,7 @@ class AdminBar
                 $visibility = [];
             }
             $current_user = wp_get_current_user();
-            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
 
@@ -109,7 +107,7 @@ class AdminBar
                 continue;
             }
 
-            $type = array_key_exists($type, Util::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($type, Utils::getNoticeTypes()) ? $type : 'info';
 
             $this->addNotices($noticeId, $title, $type);
         }
@@ -137,13 +135,13 @@ class AdminBar
                 continue;
             }
 
-            $expiration = Util::getExpirationGmt($postId);
-            $expired = Util::isExpired($expiration);
+            $expiration = Utils::getExpirationGmt($postId);
+            $expired = Utils::isExpired($expiration);
             if ($expired) {
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
             $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -157,7 +155,7 @@ class AdminBar
                 }
             }
             $current_user = wp_get_current_user();
-            if (!Util::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
                 continue;
             }
 
@@ -168,8 +166,8 @@ class AdminBar
 
             $title = $post->post_title;
 
-            $noticeType = Util::getType($postId);
-            $type = array_key_exists($noticeType, Util::getNoticeTypes()) ? $noticeType : 'info';
+            $noticeType = Utils::getType($postId);
+            $type = array_key_exists($noticeType, Utils::getNoticeTypes()) ? $noticeType : 'info';
 
             $this->addNotices($postId, $title, $type);
         }

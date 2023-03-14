@@ -48,7 +48,7 @@ class Post
 
         $this->deleteNetworkWideSiteOption($postId);
 
-        if (Util::networkWide($postId)) {
+        if (Utils::networkWide($postId)) {
             $this->updateNetworkWideSiteOption($postId, $post);
         }
     }
@@ -82,12 +82,12 @@ class Post
         $content = $post->post_content;
         $date = $post->post_date;
         $dateGmt = $post->post_date_gmt;
-        $type = Util::getType($postId);
-        $expiration = Util::getExpiration($postId);
-        $expirationGmt = Util::getExpirationGmt($postId);
-        $altStyle = Util::altStyle($postId);
-        $hideTitle = Util::hideTitle($postId);
-        $visibility = Util::getVisibility($postId);
+        $type = Utils::getType($postId);
+        $expiration = Utils::getExpiration($postId);
+        $expirationGmt = Utils::getExpirationGmt($postId);
+        $altStyle = Utils::altStyle($postId);
+        $hideTitle = Utils::hideTitle($postId);
+        $visibility = Utils::getVisibility($postId);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
         $this->siteOptions->network_wide[$noticeId] = [

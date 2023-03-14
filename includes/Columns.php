@@ -35,7 +35,7 @@ class Columns
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!is_super_admin() || !is_multisite() || !Util::isPluginActiveForNetwork()) {
+        if (!is_super_admin() || !is_multisite() || !Utils::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
         }
         return $columns;
@@ -45,16 +45,16 @@ class Columns
     {
         switch ($column) {
             case 'type':
-                $allTypes = Util::getNoticeTypes();
-                $noticeType = Util::getType($postId);
+                $allTypes = Utils::getNoticeTypes();
+                $noticeType = Utils::getType($postId);
                 $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
                 echo $type;
                 break;
             case 'expiration':
-                $expiration = Util::getExpiration($postId);
-                $expirationGmt = Util::getExpirationGmt($postId);
-                $expired = Util::isExpired($expirationGmt);
-                $expireDateTime = Util::dateTimeFormat($expiration);
+                $expiration = Utils::getExpiration($postId);
+                $expirationGmt = Utils::getExpirationGmt($postId);
+                $expired = Utils::isExpired($expirationGmt);
+                $expireDateTime = Utils::dateTimeFormat($expiration);
                 if ($expired) {
                     printf('<span class="expired">%s</span><br><span class="expired">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime);
                 } else {
@@ -62,12 +62,12 @@ class Columns
                 }
                 break;
             case 'network_wide':
-                if (Util::networkWide($postId)) {
+                if (Utils::networkWide($postId)) {
                     echo '<span class="dashicons dashicons-yes"></span>';
                 }
                 break;
             case 'visibility':
-                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Util::getRoles());
+                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
                 $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
                 if (!empty($roleVisibility)) {
                     $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;

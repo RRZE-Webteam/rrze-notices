@@ -12,15 +12,14 @@ class Options
 
     protected static function deafaultOptions()
     {
-        return [
-        ];
+        return [];
     }
 
     protected static function defaultSiteOptiones()
     {
         return [
             'enabled' => 0,
-            'access' => 'manage_network_options',            
+            'access' => 'manage_network_options',
             'network_wide' => []
         ];
     }
