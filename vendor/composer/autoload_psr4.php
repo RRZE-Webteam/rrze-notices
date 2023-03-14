@@ -6,9 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'When\\' => array($vendorDir . '/tplaner/when/src'),
-    'Recurr\\' => array($vendorDir . '/simshaun/recurr/src/Recurr'),
     'RRZE\\Notices\\' => array($baseDir . '/includes'),
-    'Doctrine\\Deprecations\\' => array($vendorDir . '/doctrine/deprecations/lib/Doctrine/Deprecations'),
-    'Doctrine\\Common\\Collections\\' => array($vendorDir . '/doctrine/collections/lib/Doctrine/Common/Collections'),
 );
