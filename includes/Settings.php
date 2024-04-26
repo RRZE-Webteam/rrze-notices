@@ -16,7 +16,7 @@ class Settings
         $this->siteOptions = Options::getSiteOptions();
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         add_action('network_admin_menu', [$this, 'networkAdminMenu']);
         add_action('admin_init', [$this, 'networkAdminSettings']);
@@ -69,13 +69,13 @@ class Settings
             __('Notices', 'rrze-notices'),
             'manage_network_options',
             'rrze-notices',
-            [$this, 'network_page_settings']
+            [$this, 'networkPageSettings']
         );
     }
 
     public function networkAdminSettings()
     {
-        add_settings_section('rrze_notices_section', __('Notices', 'rrze-notices'), '__return_false', 'rrze_notices_network');
+        add_settings_section('rrze_notices_section', __('General', 'rrze-notices'), '__return_false', 'rrze_notices_network');
 
         add_settings_field('rrze_notices_enable', __('Enable Notices', 'rrze-notices'), array($this, 'enabledField'), 'rrze_notices_network', 'rrze_notices_section');
         add_settings_field('rrze_notices_access', __('Access', 'rrze-notices'), array($this, 'accessField'), 'rrze_notices_network', 'rrze_notices_section');
@@ -83,42 +83,39 @@ class Settings
 
     public function enabledField()
     {
-    ?>
-        <label>
-            <input type="radio" name="rrze_notices_settings[enabled]" value="1" <?php checked('1', $this->siteOptions->enabled); ?>><?php esc_html_e('Notices is enabled.', 'rrze-notices') ?>
-        </label><br>
-        <label>
-            <input type="radio" name="rrze_notices_settings[enabled]" value="0" <?php checked('0', $this->siteOptions->enabled); ?>><?php esc_html_e('Notices is disabled.', 'rrze-notices') ?>
-        </label>
-    <?php
+        echo '<fieldset>';
+        echo '<label>';
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->siteOptions->enabled), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
+        echo '</label><br>';
+        echo '<label>';
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->siteOptions->enabled), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
+        echo '</label>';
+        echo '</fieldset>';
     }
 
     public function accessField()
     {
+        echo '<fieldset>';
         echo '<label>';
         echo '<input name="readonly" type="checkbox" value="manage_site_options" disabled checked="checked">';
-        echo __('Superadmins', 'rrze-notices') . '</label>';
-        echo '<br>';
+        echo __('Superadmins', 'rrze-notices');
+        echo '</label><br>';
         echo '<label>';
-        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ' . checked($this->siteOptions->access, 'manage_options', false) . '>';
-        echo __('Administrators', 'rrze-notices') . '</label>';
+        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ', checked($this->siteOptions->access, 'manage_options', false), '>';
+        echo __('Administrators', 'rrze-notices');
+        echo '</label>';
+        echo '</fieldset>';
     }
 
-    public function network_page_settings()
+    public function networkPageSettings()
     {
-    ?>
-        <div class="wrap">
-            <h2><?php echo esc_html(__('Notices', 'rrze-notices')); ?></h2>
-
-            <form method="post">
-                <?php
-                settings_fields('rrze_notices_network');
-                do_settings_sections('rrze_notices_network');
-                submit_button(esc_html__('Save Changes', 'rrze-notices'), 'primary', 'rrze_notices_settings_submit');
-                ?>
-            </form>
-
-        </div>
-    <?php
+        echo '<div class="wrap">';
+        echo '<h2>', esc_html(__('Notices Network Settings', 'rrze-notices')), '</h2>';
+        echo '<form method="post">';
+        settings_fields('rrze_notices_network');
+        do_settings_sections('rrze_notices_network');
+        submit_button(esc_html__('Save Changes', 'rrze-notices'), 'primary', 'rrze_notices_settings_submit');
+        echo '</form>';
+        echo '</div>';
     }
 }
