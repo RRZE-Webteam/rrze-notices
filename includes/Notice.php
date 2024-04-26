@@ -75,7 +75,7 @@ class Notice
      *
      * @var array
      */
-    private $allowed_types = [
+    private $allowedTypes = [
         'info',
         'success',
         'error',
@@ -165,7 +165,7 @@ class Notice
             $classes[] = 'is-dismissible';
         }
 
-        $this->options['type'] = in_array($this->options['type'], $this->allowed_types) ? $this->options['type'] : 'info';
+        $this->options['type'] = in_array($this->options['type'], $this->allowedTypes) ? $this->options['type'] : 'info';
 
         $classes[] = 'notice-' . $this->options['type'];
 
