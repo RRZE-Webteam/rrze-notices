@@ -26,6 +26,8 @@ class Post
     {
         add_action('updated_post_meta', [$this, 'updatePostMeta'], 10, 4);
         add_action('delete_post', [$this, 'deletePost'], 10, 2);
+        add_action('pre_get_posts', [$this, 'excludeNetworkWidePosts']);
+        add_filter('user_has_cap', [$this, 'restrictPostEditing'], 10, 4);
     }
 
     public function updatePostMeta($metaId, $postId, $metaKey, $metaValue)
@@ -38,6 +40,21 @@ class Post
             $rruleArgs = Event::makeRRuleArgs($postId);
             update_post_meta($postId, 'event_rrule_args', json_encode($rruleArgs));
         }
+
+        if (
+            !Utils::isPluginActiveForNetwork() ||
+            !current_user_can('manage_network_options')
+        ) {
+            return;
+        }
+
+        if ($this->isNetworkWide($postId)) {
+            $this->updateNetworkWideSiteOption($postId);
+            update_post_meta($postId, 'notice_network_wide', 'on');
+        } else {
+            $this->deleteNetworkWideSiteOption($postId);
+            delete_post_meta($postId, 'notice_network_wide');
+        }
     }
 
     public function deletePost($postId, $post)
@@ -45,8 +62,47 @@ class Post
         $this->deleteNetworkWideSiteOption($postId);
     }
 
-    protected function updateNetworkWideSiteOption(int $postId, \WP_Post $post)
+    public function excludeNetworkWidePosts($query)
     {
+        if (
+            !current_user_can('manage_network_options') &&
+            $query->is_main_query() &&
+            $query->get('post_type') == $this->customPostType
+        ) {
+            $meta_query = [
+                'relation' => 'OR',
+                [
+                    'key' => 'notice_network_wide',
+                    'compare' => 'NOT EXISTS',
+                ],
+                [
+                    'key' => 'notice_network_wide',
+                    'value' => 'on',
+                    'compare' => '!=',
+                ],
+            ];
+            $query->set('meta_query', $meta_query);
+        }
+    }
+
+    public function restrictPostEditing($allcaps, $caps, $args, $user)
+    {
+        if (isset($caps[0], $args[2]) && $caps[0] == 'edit_post') {
+            $post = get_post($args[2]);
+            if (
+                $post->post_type == $this->customPostType &&
+                get_post_meta($post->ID, 'notice_network_wide', true) == 'on' &&
+                !current_user_can('manage_network_options')
+            ) {
+                $allcaps[$caps[0]] = false;
+            }
+        }
+        return $allcaps;
+    }
+
+    protected function updateNetworkWideSiteOption(int $postId)
+    {
+        $post = get_post($postId);
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
