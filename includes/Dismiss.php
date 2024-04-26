@@ -14,7 +14,7 @@ class Dismiss
     private $id;
 
     /**
-     * The prefix we'll be using for the option/user-meta.
+     * The prefix to be using for the option/user-meta.
      *
      * @var string
      */
@@ -69,7 +69,7 @@ class Dismiss
                 });
             });
         </script>
-        <?php
+<?php
     }
 
     /**
