@@ -17,18 +17,18 @@ class CPT
         $this->siteOptions = Options::getSiteOptions();
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         add_action('init', [$this, 'registerCPT']);
 
         $post = new Post;
-        $post->onLoaded();
+        $post->loaded();
 
         $columns = new Columns;
-        $columns->onLoaded();
+        $columns->loaded();
 
         $metaBoxes = new MetaBoxes;
-        $metaBoxes->onLoaded();
+        $metaBoxes->loaded();
     }
 
     public static function getPostTypeName()
