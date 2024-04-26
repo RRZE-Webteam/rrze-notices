@@ -24,7 +24,7 @@ class AdminBar
         $this->notices = [];
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         add_action('admin_head', [$this, 'adminHead']);
         add_action('init', [$this, 'redirectRequest']);
@@ -38,7 +38,7 @@ class AdminBar
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !Utils::isPluginActiveForNetwork()) {
+        if (!Utils::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -65,15 +65,15 @@ class AdminBar
 
             $notice = (object) $notice;
 
-            $title = isset($notice->title) ? $notice->title : '';
-            $content = isset($notice->content) ? $notice->content : '';
-            $type = isset($notice->type) ? $notice->type : 'info';
-            $expiration = isset($notice->expiration) ? $notice->expiration : current_time('timestamp');
-            $expirationGmt = isset($notice->expiration_gmt) ? $notice->expiration_gmt : time();
-            $altStyle = isset($notice->alt_style) ? $notice->alt_style : false;
-            $hideTitle = isset($notice->hide_title) ? $notice->hide_title : false;
-            $visibility = isset($notice->visibility) ? $notice->visibility : true;
-            $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
+            $title = $notice->title ?? '';
+            $content = $notice->content ?? '';
+            $type = $notice->type ?? 'info';
+            $expiration = $notice->expiration ?? current_time('timestamp');
+            $expirationGmt = $notice->expiration_gmt ?? time();
+            $altStyle = $notice->alt_style ?? false;
+            $hideTitle = $notice->hide_title ?? false;
+            $visibility = $notice->visibility ?? true;
+            $adminLink = $notice->admin_link ?? '';
 
             $expired = Utils::isExpired($expirationGmt);
             if ($expired) {
