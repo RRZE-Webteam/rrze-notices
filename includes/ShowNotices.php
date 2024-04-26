@@ -24,7 +24,7 @@ class ShowNotices
         $this->notices = new Notices;
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         add_action('admin_init', function () {
             $this->setNetworkWideNotices();
@@ -42,7 +42,7 @@ class ShowNotices
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !Utils::isPluginActiveForNetwork()) {
+        if (!Utils::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -118,8 +118,7 @@ class ShowNotices
 
             $editLink = '';
             if (
-                is_super_admin()
-                && is_multisite()
+                current_user_can('manage_network_options')
                 && Utils::isPluginActiveForNetwork()
             ) {
                 $editText = __('Edit (Network-Wide)', 'rrze-notices');
@@ -202,8 +201,7 @@ class ShowNotices
             $capability = 'manage_options';
 
             if (
-                is_super_admin()
-                && is_multisite()
+                current_user_can('manage_network_options')
                 && Utils::isPluginActiveForNetwork()
                 && isset($this->siteOptions->network_wide[$noticeId])
             ) {
