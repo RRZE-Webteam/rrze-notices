@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
-"POT-Creation-Date: 2023-03-14T12:41:05+00:00\n"
-"PO-Revision-Date: 2023-03-14 13:41+0100\n"
+"POT-Creation-Date: 2024-04-26T14:17:26+00:00\n"
+"PO-Revision-Date: 2024-04-26 16:41+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -11,37 +11,40 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.2.2\n"
-"X-Loco-Version: 2.3.1; wp-5.3\n"
+"X-Generator: Poedit 3.4.2\n"
 
 #. Plugin Name of the plugin
+#: rrze-notices.php
 msgid "RRZE Notices"
 msgstr "RRZE Nachrichten"
 
 #. Plugin URI of the plugin
+#: rrze-notices.php
 msgid "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
 msgstr "https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices"
 
 #. Description of the plugin
+#: rrze-notices.php
 msgid "Management and listing of admin notices."
 msgstr "Verwaltung und Auflistung von Nachrichten."
 
 #. Author of the plugin
+#: rrze-notices.php
 msgid "RRZE Webteam"
 msgstr "RRZE Webteam"
 
 #. Author URI of the plugin
+#: rrze-notices.php
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
 #: includes/AdminBar.php:83 includes/AdminBar.php:144 includes/Columns.php:70
-#: includes/MetaBoxes.php:100 includes/ShowNotices.php:89
-#: includes/ShowNotices.php:173
+#: includes/MetaBoxes.php:91 includes/ShowNotices.php:89
+#: includes/ShowNotices.php:172
 msgid "All"
 msgstr "Alle"
 
 #: includes/AdminBar.php:198 includes/Settings.php:68 includes/Settings.php:69
-#: includes/Settings.php:78 includes/Settings.php:111
 msgid "Notices"
 msgstr "Nachrichten"
 
@@ -49,29 +52,29 @@ msgstr "Nachrichten"
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/Columns.php:32 includes/MetaBoxes.php:45
+#: includes/Columns.php:32 includes/MetaBoxes.php:69
 msgid "Type"
 msgstr "Art"
 
-#: includes/Columns.php:33 includes/MetaBoxes.php:55
-msgid "Expiration"
-msgstr "Verfallsdatum"
+#: includes/Columns.php:33
+msgid "Start"
+msgstr "Start"
 
-#: includes/Columns.php:34 includes/MetaBoxes.php:79
+#: includes/Columns.php:34
+msgid "Event Date"
+msgstr "Event-Datum"
+
+#: includes/Columns.php:35 includes/MetaBoxes.php:87
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-#: includes/Columns.php:35 includes/MetaBoxes.php:93
+#: includes/Columns.php:36 includes/MetaBoxes.php:308
 msgid "Network-Wide"
 msgstr "Netzwerkweit"
 
-#: includes/Columns.php:36
+#: includes/Columns.php:37 includes/MetaBoxes.php:244
 msgid "Date"
 msgstr "Datum"
-
-#: includes/Columns.php:59
-msgid "Expired"
-msgstr "Verfallen"
 
 #: includes/CPT.php:44
 msgctxt "post type general name"
@@ -134,45 +137,171 @@ msgstr "Keine Nachrichten gefunden."
 msgid "No notices found in Trash."
 msgstr "Keine Nachrichten im Papierkorb gefunden."
 
-#: includes/MetaBoxes.php:36
+#: includes/Event.php:41 includes/Event.php:62
+msgid "All Day"
+msgstr "Ganztägig"
+
+#: includes/Event.php:226
+msgid "Y-m-d"
+msgstr "d.m.Y"
+
+#: includes/MetaBoxes.php:60
 msgid "Notice Settings"
 msgstr "Einstellungen"
 
-#: includes/MetaBoxes.php:49 includes/Utils.php:33
+#: includes/MetaBoxes.php:73 includes/Post.php:95 includes/Utils.php:57
 msgid "Info"
 msgstr "Info"
 
-#: includes/MetaBoxes.php:50 includes/Utils.php:34
+#: includes/MetaBoxes.php:74 includes/Post.php:96 includes/Utils.php:58
 msgid "Warning"
 msgstr "Warnhinweis"
 
+#: includes/MetaBoxes.php:80
+msgid "Display"
+msgstr "Anzeige"
+
+#: includes/MetaBoxes.php:92
+msgid "By User Role"
+msgstr "Nach Benutzer-Rolle"
+
+#: includes/MetaBoxes.php:97
+msgid "User Roles"
+msgstr "Benutzer-Rollen"
+
+#: includes/MetaBoxes.php:105
+msgid "Notice Start"
+msgstr "Nachricht Start"
+
 #. translators: Expiration date format, see https://www.php.net/manual/datetime.format.php
-#: includes/MetaBoxes.php:58 includes/Utils.php:111
+#: includes/MetaBoxes.php:108 includes/MetaBoxes.php:130
+#: includes/MetaBoxes.php:152 includes/MetaBoxes.php:187 includes/Utils.php:153
 msgctxt "expiration date format"
 msgid "Y/m/d"
 msgstr "d.m.Y"
 
 #. translators: Expiration time format, see https://www.php.net/manual/datetime.format.php
-#: includes/MetaBoxes.php:59 includes/Utils.php:113
+#: includes/MetaBoxes.php:109 includes/MetaBoxes.php:131
+#: includes/MetaBoxes.php:153 includes/MetaBoxes.php:188 includes/Utils.php:155
 msgctxt "expiration time format"
 msgid "g:i a"
 msgstr "H:i"
 
-#: includes/MetaBoxes.php:72
-msgid "Display"
-msgstr "Anzeige"
+#: includes/MetaBoxes.php:127
+msgid "Event Start"
+msgstr "Event-Start"
 
-#: includes/MetaBoxes.php:89
+#: includes/MetaBoxes.php:149
+msgid "Event End"
+msgstr "Event-Ende"
+
+#: includes/MetaBoxes.php:171
+msgid "All Day Event"
+msgstr "Ganztägig"
+
+#: includes/MetaBoxes.php:171
+msgid "(Time settings will be ignored)"
+msgstr "(Zeitangaben werden ignoriert)"
+
+#: includes/MetaBoxes.php:177
+msgid "Event Repeat"
+msgstr "Event wiederholen"
+
+#: includes/MetaBoxes.php:183
+msgid "Repeat Until"
+msgstr "Wiederholen bis"
+
+#: includes/MetaBoxes.php:184
+msgid "(optional)"
+msgstr "(Optional)"
+
+#: includes/MetaBoxes.php:207
+msgid "Repeat Interval"
+msgstr "Wiederholungsintervall"
+
+#: includes/MetaBoxes.php:212
+msgid "Weekly"
+msgstr "Wöchentlich"
+
+#: includes/MetaBoxes.php:213
+msgid "Monthly"
+msgstr "Monatlich"
+
+#: includes/MetaBoxes.php:219
+msgid "Repeats"
+msgstr "Wiederholt sich"
+
+#: includes/MetaBoxes.php:227
+msgid "every"
+msgstr "alle"
+
+#: includes/MetaBoxes.php:228
+msgid "week(s)"
+msgstr "Woche(n)"
+
+#: includes/MetaBoxes.php:232 includes/MetaBoxes.php:250
+#: includes/MetaBoxes.php:259
+msgid "Repeats On"
+msgstr "Wiederholt sich an"
+
+#: includes/MetaBoxes.php:240
+msgid "Each"
+msgstr "Jeder"
+
+#: includes/MetaBoxes.php:245
+msgid "Weekday"
+msgstr "Wochentag"
+
+#: includes/MetaBoxes.php:254 includes/MetaBoxes.php:262
+msgid "each"
+msgstr "jedem"
+
+#: includes/MetaBoxes.php:255 includes/MetaBoxes.php:263
+msgid "of month"
+msgstr "des Monats"
+
+#: includes/MetaBoxes.php:267
+msgid "Repeats In"
+msgstr "Wiederholt sich im"
+
+#: includes/MetaBoxes.php:276
+msgid "Dates Exceptions"
+msgstr "Datenausnahmen"
+
+#: includes/MetaBoxes.php:277
+msgid ""
+"Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per "
+"line."
+msgstr ""
+"Hier können Sie Daten angeben, an denen die Events ausnahmsweise ausfällt "
+"(Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum pro Zeile."
+
+#: includes/MetaBoxes.php:284
+msgid "Dates Additions"
+msgstr "Datenergänzungen"
+
+#: includes/MetaBoxes.php:285
+msgid ""
+"Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line."
+msgstr ""
+"Zusätzliche Daten hinzufügen (Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum "
+"pro Zeile."
+
+#: includes/MetaBoxes.php:301
 msgid "Hide Title"
 msgstr "Titel ausblenden"
 
-#: includes/MetaBoxes.php:90
+#: includes/MetaBoxes.php:302
 msgid "Use alternative style"
 msgstr "Alternativer Stil verwenden"
 
 #: includes/Settings.php:40
 msgid "Settings"
 msgstr "Einstellungen"
+
+#: includes/Settings.php:78
+msgid "General"
+msgstr "Allgemein"
 
 #: includes/Settings.php:80
 msgid "Enable Notices"
@@ -190,39 +319,43 @@ msgstr "Nachrichten sind aktiviert."
 msgid "Notices is disabled."
 msgstr "Nachrichten sind deaktiviert."
 
-#: includes/Settings.php:100
+#: includes/Settings.php:101
 msgid "Superadmins"
 msgstr "Superadmins"
 
-#: includes/Settings.php:104
+#: includes/Settings.php:105
 msgid "Administrators"
 msgstr "Administratoren"
+
+#: includes/Settings.php:113
+msgid "Notices Network Settings"
+msgstr "Netzwerk-Einstellungen &rsaquo; Nachrichten"
 
 #: includes/Settings.php:117
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
-#: includes/ShowNotices.php:125 includes/ShowNotices.php:211
+#: includes/ShowNotices.php:124 includes/ShowNotices.php:209
 msgid "Edit (Network-Wide)"
 msgstr "Bearbeiten (netzwerkweit)"
 
-#: includes/ShowNotices.php:201
+#: includes/ShowNotices.php:200
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: includes/ShowNotices.php:259
+#: includes/ShowNotices.php:257
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Utils.php:86
+#: includes/Utils.php:128
 msgid "1 Day"
 msgstr "1 Tag"
 
-#: includes/Utils.php:87
+#: includes/Utils.php:129
 msgid "1 Week"
 msgstr "1 Woche"
 
-#: includes/Utils.php:88
+#: includes/Utils.php:130
 msgid "1 Month"
 msgstr "1 Monat"
 
@@ -248,17 +381,3 @@ msgstr ""
 #: rrze-notices.php:82 rrze-notices.php:129
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
-
-#~ msgid "m/d/Y"
-#~ msgstr "Y.m.d"
-
-#~ msgid "H:i"
-#~ msgstr "H:i"
-
-#, fuzzy
-#~| msgid "Plugins: %1$s: %2$s"
-#~ msgid "Plugins: %s: %s"
-#~ msgstr "Plugins: %1$s: %2$s"
-
-#~ msgid "Y/m/d H:s:i"
-#~ msgstr "d.m.Y H:s:i"
