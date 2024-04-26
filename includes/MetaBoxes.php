@@ -5,16 +5,33 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 use RRZE\Notices\CPT;
-use RRZE\Notices\Util;
 
 class MetaBoxes
 {
+    /**
+     * Custom post type name
+     *
+     * @var string
+     */
     protected $customPostType;
 
+    /**
+     * Site options name
+     *
+     * @var string
+     */
     protected $siteOptionsName;
 
+    /**
+     * Site options
+     *
+     * @var array
+     */
     protected $siteOptions;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->customPostType = CPT::getPostTypeName();
@@ -23,7 +40,12 @@ class MetaBoxes
         $this->siteOptions = Options::getSiteOptions();
     }
 
-    public function onLoaded()
+    /**
+     * Load hooks
+     *
+     * @return void
+     */
+    public function loaded()
     {
         add_action('cmb2_admin_init', [$this, 'metabox']);
         add_action('cmb2_save_field_rrze_notices_expiration', [$this, 'afterSaveExpirationField'], 10, 3);
@@ -31,73 +53,272 @@ class MetaBoxes
 
     public function metabox()
     {
+        $startOfWeek = get_option('start_of_week');
+
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
             'title' => __('Notice Settings', 'rrze-notices'),
-            'object_types' => ['notice'],
+            'object_types' => [$this->customPostType],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true
         ]);
-
+        // Notice Type options
         $cmb->add_field([
-            'id'   => 'rrze_notices_type',
+            'id'   => 'notice_type',
             'name' => __('Type', 'rrze-notices'),
             'type' => 'radio',
             'default' => 'info',
             'options' => [
                 'info' => __('Info', 'rrze-notices'),
                 'warning' => __('Warning', 'rrze-notices')
-            ]
+            ],
+            'default' => 'info'
         ]);
-
+        // Notice Display options
         $cmb->add_field([
-            'name' => __('Expiration', 'rrze-notices'),
-            'id' => 'rrze_notices_expiration',
+            'name' => __('Display', 'rrze-notices'),
+            'id' => 'notice_display',
+            'type' => 'multicheck',
+            'options' => $this->getDisplayOptions()
+        ]);
+        // Notice Visibility
+        $cmb->add_field([
+            'name' => __('Visibility', 'rrze-notices'),
+            'id' => 'notice_visibility',
+            'type' => 'radio',
+            'options' => [
+                'all' => __('All', 'rrze-notices'),
+                'roles' => __('By User Role', 'rrze-notices'),
+            ],
+            'default' => 'all'
+        ]);
+        $cmb->add_field([
+            'name' => __('User Roles', 'rrze-notices'),
+            'id' => 'notice_visibility_roles',
+            'type' => 'multicheck',
+            'options' => $this->getVisibilityByUserRoleOptions(),
+            'classes' => ['notice_visibility_roles'],
+        ]);
+        // Notice Start date/time
+        $cmb->add_field([
+            'name' => __('Notice Start', 'rrze-notices'),
+            'id' => 'notice_start',
             'type' => 'text_datetime_timestamp',
             'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
             'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
             'attributes' => [
                 'data-timepicker' => json_encode(
                     [
-                        'timeFormat' => 'HH:mm',
-                        'stepMinute' => 10
+                        'stepMinute' => 30,
+                        'minDate' => 1,
+                        'yearRange' => 'c:c+1',
+                        'firstDay' => $startOfWeek,
+                        'dayNames' => Utils::getDaysOfWeek('short'),
+                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                        'monthNamesShort' => Utils::getMonthNames('short')
                     ]
                 ),
                 'required' => 'required'
             ]
         ]);
-
+        // Event Start date/time
         $cmb->add_field([
-            'name' => __('Display', 'rrze-notices'),
-            'id' => 'rrze_notices_display',
-            'type' => 'multicheck',
-            'options' => $this->getDisplayOptions()
+            'name' => __('Event Start', 'rrze-notices'),
+            'id' => 'event_start',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'attributes' => [
+                'data-timepicker' => json_encode(
+                    [
+                        'stepMinute' => 10,
+                        'minDate' => 1,
+                        'yearRange' => 'c:c+1',
+                        'firstDay' => $startOfWeek,
+                        'dayNames' => Utils::getDaysOfWeek('short'),
+                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                        'monthNamesShort' => Utils::getMonthNames('short')
+                    ]
+                ),
+                'required' => 'required'
+            ]
         ]);
-
+        // End date/time
         $cmb->add_field([
-            'name' => __('Visibility', 'rrze-notices'),
-            'id' => 'rrze_notices_visibility',
-            'type' => 'multicheck',
-            'options' => $this->getVisibilityOptions()
+            'name' => __('Event End', 'rrze-notices'),
+            'id' => 'event_end',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'attributes' => [
+                'data-timepicker' => json_encode(
+                    [
+                        'stepMinute' => 10,
+                        'minDate' => 1,
+                        'yearRange' => 'c:c+1',
+                        'firstDay' => $startOfWeek,
+                        'dayNames' => Utils::getDaysOfWeek('short'),
+                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                        'monthNamesShort' => Utils::getMonthNames('short')
+                    ]
+                ),
+                'required' => 'required'
+            ]
+        ]);
+        // All day event
+        $cmb->add_field([
+            'name' => __('All Day Event', 'rrze-notices') . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">' . __('(Time settings will be ignored)', 'rrze-notices') . '</span>',
+            'id' => 'event_all_day',
+            'type' => 'checkbox',
+        ]);
+        // Event reapeat
+        $cmb->add_field([
+            'name' => __('Event Repeat', 'rrze-notices'),
+            'id' => 'event_repeat',
+            'type' => 'checkbox',
+        ]);
+        // Reapeat until
+        $cmb->add_field([
+            'name' => __('Repeat Until', 'rrze-notices'),
+            'desc' => __('(optional)', 'rrze-notices'),
+            'id' => 'event_repeat_lastdate',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'attributes' => [
+                'data-timepicker' => json_encode(
+                    [
+                        'stepMinute' => 10,
+                        'minDate' => 1,
+                        'yearRange' => 'c:c+10',
+                        'firstDay' => $startOfWeek,
+                        'dayNames' => Utils::getDaysOfWeek('short'),
+                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
+                        'monthNamesShort' => Utils::getMonthNames('short')
+                    ]
+                ),
+                'required' => 'required'
+            ],
+            'classes'   => ['event-repeat'],
+        ]);
+        // Reapeat Interval
+        $cmb->add_field([
+            'name' => __('Repeat Interval', 'rrze-notices'),
+            'id' => 'event_repeat_interval',
+            'type' => 'select',
+            'default' => 'week',
+            'options' => [
+                'week' => __('Weekly', 'rrze-notices'),
+                'month' => __('Monthly', 'rrze-notices'),
+            ],
+            'classes'   => ['event-repeat'],
+        ]);
+        // Reapeats weekly
+        $cmb->add_field([
+            'name' => __('Repeats', 'rrze-notices'),
+            'id' => 'event_repeat_weekly_interval',
+            'type' => 'text_small',
+            'default' => '1',
+            'attributes' => [
+                'type' => 'number',
+                'min' => '1',
+            ],
+            'before_field' => __('every', 'rrze-notices') . ' ',
+            'after_field' =>  ' ' . __('week(s)', 'rrze-notices'),
+            'classes'   => ['event-repeat', 'event-repeat-weekly'],
+        ]);
+        $cmb->add_field([
+            'name' => __('Repeats On', 'rrze-notices'),
+            'id' => 'event_repeat_weekly_day',
+            'type' => 'multicheck_inline',
+            'options' => $this->getDowOptions(),
+            'classes'   => ['event-repeat', 'event-repeat-weekly'],
+        ]);
+        // Repeats monthly
+        $cmb->add_field([
+            'name' => __('Each', 'rrze-notices'),
+            'id' => 'event_repeat_monthly_type',
+            'type' => 'radio',
+            'options' => [
+                'date' => __('Date', 'rrze-notices'),
+                'dow' => __('Weekday', 'rrze-notices'),
+            ],
+            'classes'   => ['event-repeat', 'event-repeat-monthly'],
+        ]);
+        $cmb->add_field([
+            'name' => __('Repeats On', 'rrze-notices'),
+            'id' => 'event_repeat_monthly_type_date',
+            'type' => 'select',
+            'options' => $this->getMonthDaysOptions(),
+            'before_field' => __('each', 'rrze-notices') . ' ',
+            'after_field' =>  ' ' . __('of month', 'rrze-notices'),
+            'classes'   => ['event-repeat', 'event-repeat-monthly', 'event-repeat-monthly-date'],
+        ]);
+        $cmb->add_field([
+            'name' => __('Repeats On', 'rrze-notices'),
+            'id' => 'event_repeat_monthly_type_dow',
+            'type' => 'select_weekdayofmonth',
+            'before_field' => __('each', 'rrze-notices') . ' ',
+            'after_field' =>  ' ' . __('of month', 'rrze-notices'),
+            'classes'   => ['event-repeat', 'event-repeat-monthly', 'event-repeat-monthly-dow'],
+        ]);
+        $cmb->add_field([
+            'name' => __('Repeats In', 'rrze-notices'),
+            'id' => 'event_repeat_monthly_month',
+            'type' => 'multicheck_inline',
+            'options' => $this->getMonthsOptions(),
+            'default' => array_keys($this->getMonthsOptions()),
+            'classes'   => ['event-repeat', 'event-repeat-monthly'],
+        ]);
+        // Exceptions
+        $cmb->add_field([
+            'name' => __('Dates Exceptions', 'rrze-notices'),
+            'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
+            'id' => 'event_date_exceptions',
+            'type' => 'textarea_small',
+            'classes'   => ['event-repeat'],
+        ]);
+        // Additions
+        $cmb->add_field([
+            'name' => __('Dates Additions', 'rrze-notices'),
+            'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
+            'id' => 'event_date_additions',
+            'type' => 'textarea_small',
+            'classes'   => ['event-repeat'],
         ]);
     }
 
+    /**
+     * Get an array of display options
+     * e.g. $options['hide_title'] = 'Hide Title'
+     *
+     * @return array
+     */
     public function getDisplayOptions()
     {
         $options = [
             'hide_title' => __('Hide Title', 'rrze-notices'),
-            'alternative_style' => __('Use alternative style', 'rrze-notices')
+            'alt_style' => __('Use alternative style', 'rrze-notices')
         ];
-        if (is_super_admin() && is_multisite() && Utils::isPluginActiveForNetwork()) {
+        if (
+            current_user_can('manage_network_options') &&
+            Utils::isPluginActiveForNetwork()
+        ) {
             $options['network_wide'] = __('Network-Wide', 'rrze-notices');
         }
         return $options;
     }
 
-    public function getVisibilityOptions()
+    /**
+     * Get an array of visibility by user role options
+     * e.g. $options['administrator'] = 'Administrator'
+     *
+     * @return array
+     */
+    public function getVisibilityByUserRoleOptions()
     {
-        $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
+        $availableRoles = Utils::getRoles();
         $roleVisibility = [];
         $visibility = [];
         foreach ($roleVisibility as $k) {
@@ -107,15 +328,81 @@ class MetaBoxes
         }
 
         $options = [];
-        $countUsers = count_users();
-        foreach ($availableRoles as $role => $name) {
-            $count = isset($countUsers['avail_roles'][$role]) ? $countUsers['avail_roles'][$role] : '-';
-            $count = 'all' === $role ? $countUsers['total_users'] : $count;
-            $options[$role] = sprintf('%s (%d)', $name, $count);
+        if (
+            current_user_can('manage_network_options') &&
+            Utils::isPluginActiveForNetwork()
+        ) {
+            foreach ($availableRoles as $role => $name) {
+                $options[$role] = $name;
+            }
+        } else {
+            $countUsers = count_users();
+            foreach ($availableRoles as $role => $name) {
+                $count = $countUsers['avail_roles'][$role] ?? 0;
+                if ($count > 0) {
+                    $options[$role] = sprintf('%s (%d)', $name, $count);
+                } else {
+                    $options[$role] = sprintf('%s (&mdash;)', $name);;
+                }
+            }
+        }
+
+        return $options;
+    }
+
+    /**
+     * Get an array of days of the week options
+     * e.g. $options['sun'] = 'Sun'
+     *
+     * @return array
+     */
+    public function getDowOptions()
+    {
+        global $wp_locale;
+        $options = [];
+        for ($i = 0; $i <= 6; $i++) {
+            $dow = strtolower(date('l', strtotime("Sunday +{$i} days")));
+            $options[$dow] = $wp_locale->get_weekday_abbrev($wp_locale->get_weekday($i));
         }
         return $options;
     }
 
+    /**
+     * Get an array of month days options
+     * e.g. $options[1] = 1
+     *
+     * @return array
+     */
+    public function getMonthDaysOptions()
+    {
+        return array_combine(range(1, 31), range(1, 31));
+    }
+
+    /**
+     * Get an array of months options
+     * e.g. $options['jan'] = 'January'
+     *
+     * @return array
+     */
+    public function getMonthsOptions()
+    {
+        global $wp_locale;
+        $options = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $month = strtolower(substr(date('M', mktime(0, 0, 0, $i, 1)), 0, 3));
+            $options[$month] = $wp_locale->get_month_abbrev($wp_locale->get_month(sprintf('%02d', $i)));
+        }
+        return $options;
+    }
+
+    /**
+     * Save expiration date as GMT timestamp
+     *
+     * @param bool $updated
+     * @param string $action
+     * @param \CMB2_Field $field
+     * @return void
+     */
     public function afterSaveExpirationField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
