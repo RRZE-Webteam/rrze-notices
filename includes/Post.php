@@ -42,18 +42,16 @@ class Post
         }
 
         if (
-            !Utils::isPluginActiveForNetwork() ||
-            !current_user_can('manage_network_options')
+            Utils::isPluginActiveForNetwork() &&
+            current_user_can('manage_network_options')
         ) {
-            return;
-        }
-
-        if ($this->isNetworkWide($postId)) {
-            $this->updateNetworkWideSiteOption($postId);
-            update_post_meta($postId, 'notice_network_wide', 'on');
-        } else {
-            $this->deleteNetworkWideSiteOption($postId);
-            delete_post_meta($postId, 'notice_network_wide');
+            if (self::isNetworkWide($postId)) {
+                $this->updateNetworkWideSiteOption($postId);
+                update_post_meta($postId, 'notice_network_wide', 'on');
+            } else {
+                $this->deleteNetworkWideSiteOption($postId);
+                delete_post_meta($postId, 'notice_network_wide');
+            }
         }
     }
 
@@ -110,12 +108,11 @@ class Post
         $content = $post->post_content;
         $date = $post->post_date;
         $dateGmt = $post->post_date_gmt;
-        $type = Utils::getType($postId);
-        $expiration = Utils::getExpiration($postId);
-        $expirationGmt = Utils::getExpirationGmt($postId);
-        $altStyle = Utils::altStyle($postId);
-        $hideTitle = Utils::hideTitle($postId);
-        $visibility = Utils::getVisibility($postId);
+        $type = self::getType($postId);
+        $altStyle = self::altStyle($postId);
+        $hideTitle = self::hideTitle($postId);
+        $visibility = self::getVisibility($postId);
+        $noticeStart = self::getNoticeStart($postId);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
         $this->siteOptions->network_wide[$noticeId] = [
@@ -124,11 +121,10 @@ class Post
             'date' => $date,
             'date_gmt' => $dateGmt,
             'type' => $type,
-            'expiration' => $expiration,
-            'expiration_gmt' => $expirationGmt,
             'hide_title' => $hideTitle,
             'alt_style' => $altStyle,
             'visibility' => $visibility,
+            'notice_start' => $noticeStart,
             'admin_link' => $adminLink
         ];
 
@@ -164,7 +160,7 @@ class Post
 
     public static function hideTitle(int $postId): bool
     {
-        if ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
+        if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
             return in_array('hide_title', $display);
         } elseif ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
             // Legacy meta key
@@ -213,16 +209,13 @@ class Post
         }
     }
 
-    public static function getNoticeStart(int $postId): array
+    public static function getNoticeStart(int $postId): string
     {
-        $startAry = [];
+        $start = '';
         if ($start = (int) get_post_meta($postId, 'notice_start', true)) {
-            $startAry = [
-                'date' => date_i18n(get_option('date_format'), $start),
-                'time' => date_i18n(get_option('time_format'), $start) . ' &ndash; ' . date_i18n(get_option('time_format'), $start),
-            ];
+            $start = date_i18n(get_option('date_format'), $start);
         }
-        return $startAry;
+        return $start;
     }
 
     public static function isEventRepeat(int $postId): int
@@ -238,5 +231,10 @@ class Post
     public static function getEventReccurence($postId)
     {
         return Event::getReccurence($postId);
+    }
+
+    public static function isExpired($postId)
+    {
+        //
     }
 }
