@@ -48,7 +48,9 @@ class MetaBoxes
     public function loaded()
     {
         add_action('cmb2_admin_init', [$this, 'metabox']);
-        add_action('cmb2_save_field_rrze_notices_expiration', [$this, 'afterSaveExpirationField'], 10, 3);
+        add_action('cmb2_save_field_notice_start', [$this, 'saveNoticeStartField'], 10, 3);
+        add_action('cmb2_save_field_event_start', [$this, 'saveEventStartField'], 10, 3);
+        add_action('cmb2_save_field_event_end', [$this, 'saveEventEndField'], 10, 3);
     }
 
     public function metabox()
@@ -100,19 +102,17 @@ class MetaBoxes
             'options' => $this->getVisibilityByUserRoleOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
-        // Notice Start date/time
+        // Notice Start date/timestamp
         $cmb->add_field([
             'name' => __('Notice Start', 'rrze-notices'),
             'id' => 'notice_start',
-            'type' => 'text_datetime_timestamp',
+            'type' => 'text_date_timestamp',
             'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
             'attributes' => [
-                'data-timepicker' => json_encode(
+                'data-datepicker' => json_encode(
                     [
-                        'stepMinute' => 30,
-                        'minDate' => 1,
-                        'yearRange' => 'c:c+1',
+                        'minDate' => '-1m',
+                        'maxDate' => '+12m',
                         'firstDay' => $startOfWeek,
                         'dayNames' => Utils::getDaysOfWeek('short'),
                         'dayNamesMin' => Utils::getDaysOfWeek('min'),
@@ -122,7 +122,7 @@ class MetaBoxes
                 'required' => 'required'
             ]
         ]);
-        // Event Start date/time
+        // Event Start date-time/timestamp
         $cmb->add_field([
             'name' => __('Event Start', 'rrze-notices'),
             'id' => 'event_start',
@@ -130,21 +130,23 @@ class MetaBoxes
             'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
             'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
             'attributes' => [
-                'data-timepicker' => json_encode(
+                'data-datepicker' => json_encode(
                     [
-                        'stepMinute' => 10,
-                        'minDate' => 1,
-                        'yearRange' => 'c:c+1',
                         'firstDay' => $startOfWeek,
                         'dayNames' => Utils::getDaysOfWeek('short'),
                         'dayNamesMin' => Utils::getDaysOfWeek('min'),
                         'monthNamesShort' => Utils::getMonthNames('short')
                     ]
                 ),
+                'data-timepicker' => json_encode(
+                    [
+                        'stepMinute' => 5,
+                    ]
+                ),
                 'required' => 'required'
             ]
         ]);
-        // End date/time
+        // End date-time/timestamp
         $cmb->add_field([
             'name' => __('Event End', 'rrze-notices'),
             'id' => 'event_end',
@@ -152,15 +154,17 @@ class MetaBoxes
             'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
             'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
             'attributes' => [
-                'data-timepicker' => json_encode(
+                'data-datepicker' => json_encode(
                     [
-                        'stepMinute' => 10,
-                        'minDate' => 1,
-                        'yearRange' => 'c:c+1',
                         'firstDay' => $startOfWeek,
                         'dayNames' => Utils::getDaysOfWeek('short'),
                         'dayNamesMin' => Utils::getDaysOfWeek('min'),
                         'monthNamesShort' => Utils::getMonthNames('short')
+                    ]
+                ),
+                'data-timepicker' => json_encode(
+                    [
+                        'stepMinute' => 5,
                     ]
                 ),
                 'required' => 'required'
@@ -396,18 +400,50 @@ class MetaBoxes
     }
 
     /**
-     * Save expiration date as GMT timestamp
+     * Save notice_start date as GMT timestamp
      *
      * @param bool $updated
      * @param string $action
      * @param \CMB2_Field $field
      * @return void
      */
-    public function afterSaveExpirationField(bool $updated, string $action, \CMB2_Field $field)
+    public function saveNoticeStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $expiration = $field->value;
-        $expirationGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $expiration)));
-        update_post_meta($postId, 'rrze_notices_expiration_gmt', $expirationGmt);
+        $timestamp = $field->value;
+        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        update_post_meta($postId, 'notice_start_gmt', $timestampGmt);
+    }
+
+    /**
+     * Save event_start date as GMT timestamp
+     *
+     * @param bool $updated
+     * @param string $action
+     * @param \CMB2_Field $field
+     * @return void
+     */
+    public function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
+    {
+        $postId = $field->object_id;
+        $timestamp = $field->value;
+        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        update_post_meta($postId, 'event_start_gmt', $timestampGmt);
+    }
+
+    /**
+     * Save event_start date as GMT timestamp
+     *
+     * @param bool $updated
+     * @param string $action
+     * @param \CMB2_Field $field
+     * @return void
+     */
+    public function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
+    {
+        $postId = $field->object_id;
+        $timestamp = $field->value;
+        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        update_post_meta($postId, 'event_end_gmt', $timestampGmt);
     }
 }
