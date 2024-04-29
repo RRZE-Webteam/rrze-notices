@@ -156,15 +156,14 @@ class ShowNotices
             $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
             $title = $post->post_title;
             $content = $post->post_content;
-            $type = Utils::getType($postId);
-            $expiration = Utils::getExpiration($postId);
-            $expirationGmt = Utils::getExpirationGmt($postId);
-            $altStyle = Utils::altStyle($postId);
-            $hideTitle = Utils::hideTitle($postId);
-            $visibility = Utils::getVisibility($postId);
+            $type = Post::getType($postId);
+            $altStyle = Post::altStyle($postId);
+            $hideTitle = Post::hideTitle($postId);
+            $visibility = Post::getVisibility($postId);
+            $noticeStart = Post::getNoticeStart($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-            $expired = Utils::isExpired($expirationGmt);
+            $expired = Post::isExpired($postId);
             if ($expired) {
                 continue;
             }
@@ -248,7 +247,7 @@ class ShowNotices
             return;
         }
 
-        $title = !Utils::hideTitle($postId) ? $post->post_title : false;
+        $title = !Post::hideTitle($postId) ? $post->post_title : false;
 
         $noticeType = Utils::getType($postId);
         $type = array_key_exists($noticeType, Utils::getNoticeTypes()) ? $noticeType : 'info';
