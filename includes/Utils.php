@@ -4,18 +4,8 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use WP_Roles;
-use DateTime;
-use DateTimeZone;
-
-
 class Utils
 {
-    /**
-     * Built-in roles
-     */
-    const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
-
     public static function getMeta($meta, $key)
     {
         if (!isset($meta[$key][0])) {
@@ -24,94 +14,6 @@ class Utils
             return unserialize($meta[$key][0]);
         } else {
             return $meta[$key][0];
-        }
-    }
-
-    /**
-     * Get translated user roles names
-     *
-     * @param boolean $translated
-     * @param boolean $buildIn
-     * @return array
-     */
-    public static function getRoles($translated = true, $buildIn = true)
-    {
-        $wpRoles = new WP_Roles();
-        $roles = $wpRoles->get_names();
-        if (true === $translated) {
-            $roles = array_map('translate_user_role', $roles);
-        }
-        if (true === $buildIn) {
-            foreach (array_flip($roles) as $k) {
-                if (!in_array($k, static::BUILT_IN_ROLES)) {
-                    unset($roles[$k]);
-                }
-            }
-        }
-        return $roles;
-    }
-
-    public static function getNoticeTypes()
-    {
-        return [
-            'info' => __('Info', 'rrze-notices'),
-            'warning' => __('Warning', 'rrze-notices')
-        ];
-    }
-
-    public static function getType(int $postId): string
-    {
-        $type = get_post_meta($postId, 'rrze_notices_type', true);
-        return array_key_exists($type, self::getNoticeTypes()) ? $type : 'info';
-    }
-
-    public static function hideTitle(int $postId): bool
-    {
-        if ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
-            return in_array('hide_title', $display);
-        } elseif ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
-            // Legacy value
-            return in_array('hide_title', $display);
-        } else {
-            // Legacy value
-            return get_post_meta($postId, 'rrze_notices_hide_title', true) ? true : false;
-        }
-    }
-
-    public static function altStyle(int $postId): bool
-    {
-        if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
-            return in_array('alt_style', $display);
-        } elseif ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
-            // Legacy value
-            return in_array('alt_style', $display);
-        } else {
-            // Legacy value
-            return get_post_meta($postId, 'rrze_notices_alt_style', true) ? true : false;
-        }
-    }
-
-    public static function isNetworkWide(int $postId): int
-    {
-        if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
-            return in_array('network_wide', $display);
-        } elseif ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
-            // Legacy value
-            return in_array('network_wide', $display);
-        } else {
-            // Legacy value
-            return get_post_meta($postId, 'rrze_notices_network_wide', true) ? true : false;
-        }
-    }
-
-    public static function getVisibility(int $postId): array
-    {
-        if ($visibility = get_post_meta($postId, 'notice_visibility', true)) {
-            $roles = get_post_meta($postId, 'notice_visibility_roles', true);
-            return $visibility == 'roles' && $roles ? $roles : ['all'];
-        } else {
-            // Legacy value
-            return (array) get_post_meta($postId, 'rrze_notices_visibility', true);
         }
     }
 
@@ -307,6 +209,31 @@ class Utils
                 break;
         }
         return $monthNames;
+    }
+
+
+    /**
+     * Generates a random id.
+     *
+     * @param integer $length
+     * @return string
+     */
+    public static function createId(int $length = 8): string
+    {
+        return bin2hex(random_bytes($length));
+    }
+
+    /**
+     * Generates a random UUID based on the post ID and website host.
+     *
+     * @param integer $postId
+     * @return string
+     */
+    public static function createUid(int $postId = 0)
+    {
+        $host = parse_url(site_url(), PHP_URL_HOST);
+        $uid = vsprintf('%s-%s-%s', str_split(self::createId(), 4));
+        return sprintf('%s-%s@%s', $uid, $postId, $host);
     }
 
     /**
