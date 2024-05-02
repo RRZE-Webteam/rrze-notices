@@ -12,7 +12,7 @@ class Columns
 
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
+        $this->customPostType = CPT::POST_TYPE;
         $this->siteOptions = Options::getSiteOptions();
     }
 
@@ -54,6 +54,7 @@ class Columns
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
+                error_log(print_r($data, true));
                 $eventDate = [
                     ($data['event']['date'] ?? '') . (isset($data['event']['time']) ? ', ' . $data['event']['time'] : '&mdash;'),
                     Post::getEventReccurence($postId)
@@ -67,7 +68,7 @@ class Columns
                     '&mdash;';
                 break;
             case 'visibility':
-                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
+                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
                 $roles = Post::getVisibility($postId);
                 $visibility = [];
                 foreach ($roles as $k) {
