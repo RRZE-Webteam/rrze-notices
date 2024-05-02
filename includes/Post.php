@@ -8,16 +8,12 @@ use RRZE\Notices\CPT;
 
 class Post
 {
-    protected $customPostType;
-
     protected $siteOptionsName;
 
     protected $siteOptions;
 
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
-
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
     }
@@ -32,13 +28,16 @@ class Post
 
     public function updatePostMeta($metaId, $postId, $metaKey, $metaValue)
     {
-        if (get_post_type($postId) != $this->customPostType) {
+        if (get_post_type($postId) != CPT::POST_TYPE) {
             return;
         }
         $repeat = get_post_meta($postId, 'event_repeat', true);
-        if ($repeat == 'on') {
-            $rruleArgs = Event::makeRRuleArgs($postId);
-            update_post_meta($postId, 'event_rrule_args', json_encode($rruleArgs));
+        $rruleArgs = Event::makeRRuleArgs($postId);
+        if (
+            $repeat == 'on' &&
+            $rruleArgs = json_encode($rruleArgs)
+        ) {
+            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
         }
 
         if (
@@ -65,7 +64,7 @@ class Post
         if (
             !current_user_can('manage_network_options') &&
             $query->is_main_query() &&
-            $query->get('post_type') == $this->customPostType
+            $query->get('post_type') == CPT::POST_TYPE
         ) {
             $meta_query = [
                 'relation' => 'OR',
@@ -88,7 +87,7 @@ class Post
         if (isset($caps[0], $args[2]) && $caps[0] == 'edit_post') {
             $post = get_post($args[2]);
             if (
-                $post->post_type == $this->customPostType &&
+                $post->post_type == CPT::POST_TYPE &&
                 get_post_meta($post->ID, 'notice_network_wide', true) == 'on' &&
                 !current_user_can('manage_network_options')
             ) {
@@ -230,11 +229,41 @@ class Post
 
     public static function getEventReccurence($postId)
     {
-        return Event::getReccurence($postId);
+        return Event::getHumanReadableRecurrence($postId);
     }
 
     public static function isExpired($postId)
     {
         //
+    }
+
+    public static function updateStatus()
+    {
+        $args = array(
+            'post_type' => CPT::POST_TYPE,
+            'posts_per_page' => -1,
+        );
+        $posts = get_posts($args);
+        
+        foreach ($posts as $post) {
+            $postId = $post->ID;
+            $repeat = get_post_meta($postId, 'event_repeat', true);
+            $rruleArgs = Event::makeRRuleArgs($postId);
+            if (
+                $repeat == 'on' &&
+                $rruleArgs = json_encode($rruleArgs)
+            ) {
+                // update_post_meta($postId, 'event_rrule_args', $rruleArgs);
+            }
+    
+            if (Utils::isPluginActiveForNetwork()) {
+                if (self::isNetworkWide($postId)) {
+                    $this->updateNetworkWideSiteOption($postId);
+                    update_post_meta($postId, 'notice_network_wide', 'on');
+                } else {
+                    $this->deleteNetworkWideSiteOption($postId);
+                    delete_post_meta($postId, 'notice_network_wide');
+                }
+        }
     }
 }
