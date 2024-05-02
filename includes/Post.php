@@ -256,14 +256,6 @@ class Post
                 // update_post_meta($postId, 'event_rrule_args', $rruleArgs);
             }
     
-            if (Utils::isPluginActiveForNetwork()) {
-                if (self::isNetworkWide($postId)) {
-                    $this->updateNetworkWideSiteOption($postId);
-                    update_post_meta($postId, 'notice_network_wide', 'on');
-                } else {
-                    $this->deleteNetworkWideSiteOption($postId);
-                    delete_post_meta($postId, 'notice_network_wide');
-                }
         }
     }
 }
