@@ -46,8 +46,8 @@ class Main
         $cpt = new CPT;
         $cpt->loaded();
 
-        $showNotices = new ShowNotices;
-        $showNotices->loaded();
+        $display = new Display;
+        $display->loaded();
 
         $adminBar = new AdminBar;
         $adminBar->loaded();
