@@ -18,7 +18,7 @@ class AdminBar
 
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
+        $this->customPostType = CPT::POST_TYPE;
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
@@ -80,7 +80,7 @@ class AdminBar
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -107,7 +107,7 @@ class AdminBar
                 continue;
             }
 
-            $type = array_key_exists($type, Utils::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
 
             $this->addNotices($noticeId, $title, $type);
         }
@@ -141,7 +141,7 @@ class AdminBar
                 continue;
             }
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -166,8 +166,8 @@ class AdminBar
 
             $title = $post->post_title;
 
-            $noticeType = Utils::getType($postId);
-            $type = array_key_exists($noticeType, Utils::getNoticeTypes()) ? $noticeType : 'info';
+            $noticeType = Post::getType($postId);
+            $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
 
             $this->addNotices($postId, $title, $type);
         }
