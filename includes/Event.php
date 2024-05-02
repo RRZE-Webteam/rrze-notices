@@ -12,28 +12,25 @@ class Event
     public static function getData($postId)
     {
         $meta = get_post_meta($postId);
-        $data['all_day'] = Utils::getMeta($meta, 'event_all_day');
-        $data['repeat'] = Utils::getMeta($meta, 'event_repeat');
+        $allDay = Utils::getMeta($meta, 'event_all_day');
+        $repeat = Utils::getMeta($meta, 'event_repeat');
 
         $data['event'] = [];
-        $data['nextOccurence'] = [];
-        $nextOccurence = false;
 
-        if (!$tsStart = Utils::getMeta($meta, 'event_start')) {
+        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
             return null;
         }
-        $tsStart = Utils::getMeta($meta, 'event_start');
-        $tsStartUTC = get_gmt_from_date(date('Y-m-d H:i', $tsStart), 'U');
+        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
         $startDay = date('Y-m-d', $tsStart);
 
-        $tsEnd = Utils::getMeta($meta, 'event_end');
-        $tsEndUTC = get_gmt_from_date(date('Y-m-d H:i', $tsEnd), 'U');
+        $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
+        $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
         $endDay = date('Y-m-d', $tsEnd);
 
-
+        // Multiday event
         if ($startDay != $endDay) {
-            // Multiday event
-            if ($data['all_day'] == 'on') {
+            // All day event
+            if ($allDay == 'on') {
                 $event = [
                     'date' => date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
@@ -42,6 +39,7 @@ class Event
                     'startISO' => $startDay,
                     'endISO' => $endDay,
                 ];
+                // Timed event
             } else {
                 $event = [
                     'date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
@@ -52,9 +50,10 @@ class Event
                     'endISO' => date_i18n('c', $tsEndUTC),
                 ];
             }
-        } else {
             // Single day event
-            if ($data['all_day'] == 'on') {
+        } else {
+            // All day event
+            if ($allDay == 'on') {
                 $event = [
                     'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
@@ -63,6 +62,7 @@ class Event
                     'startISO' => $startDay,
                     'endISO' => $endDay,
                 ];
+                // Timed event
             } else {
                 $event = [
                     'date' => date_i18n(get_option('date_format'), $tsStart),
@@ -73,9 +73,12 @@ class Event
             }
         }
         $data['event'] = $event;
-        if (!$nextOccurence && $tsStart >= time()) {
-            $data['nextOccurence'] = $event;
-            $nextOccurence = true;
+
+        $data['all_day'] = $allDay;
+
+        if ($repeat) {
+            $data['repeat'] = $repeat;
+            $data['ocurrences'] = self::getOcurrences($postId);
         }
 
         return $data;
@@ -86,7 +89,7 @@ class Event
         $meta = get_post_meta($postId);
 
         $repeat = Utils::getMeta($meta, 'event_repeat');
-        if (!$repeat) {
+        if ($repeat !== 'on') {
             return [];
         }
 
@@ -101,10 +104,10 @@ class Event
             return [];
         }
 
-        $startTS = (int) Utils::getMeta($meta, 'event_start');
-        if (!$startTS) {
+        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
             return [];
         }
+        $startTS = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
         $dtstart = date('Y-m-d H:i:s', $startTS);
 
         $rruleArgs = [
@@ -156,18 +159,21 @@ class Event
         return $rruleArgs;
     }
 
-    public static function getReccurence($postId)
+    public static function getOcurrences($postId)
     {
+        $ocurrences = [];
         $repeat = get_post_meta($postId, 'event_repeat', true);
-        $readableRrule = '';
-        if ($repeat) {
-            $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
-            if ($rruleArgs = json_decode($rruleArgs, true)) {
-                $rule = new RRule($rruleArgs);
-                $readableRrule = self::humanReadableRecurrence($rule);
+        $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
+        if (
+            $repeat == 'on' &&
+            $rruleArgs = json_decode($rruleArgs, true)
+        ) {
+            $rrule = new RRule($rruleArgs);
+            foreach ($rrule as $occurrence) {
+                $ocurrences[$occurrence->format('Y-m-d H:i:s')] = $occurrence->format('Y-m-d H:i:s');
             }
         }
-        return $readableRrule;
+        return $ocurrences;
     }
 
     public static function makeRRuleSet(int $postId, int $start, int $end): array
@@ -175,8 +181,8 @@ class Event
         $meta = get_post_meta($postId);
         $start = date('Y-m-d', $start);
         $end = date('Y-m-d', $end);
-        $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
 
+        $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
         if ($rruleArgs = json_decode($rruleArgs, true)) {
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
@@ -217,7 +223,20 @@ class Event
         return [];
     }
 
-    public static function humanReadableRecurrence(string $rrule)
+    public static function getHumanReadableRecurrence($postId)
+    {
+        $repeat = get_post_meta($postId, 'event_repeat', true);
+        $readableRrule = '';
+        if ($repeat) {
+            $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
+            if ($rruleArgs = json_decode($rruleArgs, true)) {
+                $readableRrule = self::humanReadableRecurrence($rruleArgs);
+            }
+        }
+        return $readableRrule;
+    }
+
+    public static function humanReadableRecurrence(array $args)
     {
         $opt = [
             'use_intl' => true,
@@ -232,7 +251,7 @@ class Event
             'custom_path' => plugin()->getPath('languages/rrule'),
         ];
 
-        $rrule = new RRule($rrule);
+        $rrule = new RRule($args);
         return $rrule->humanReadable($opt);
     }
 }
