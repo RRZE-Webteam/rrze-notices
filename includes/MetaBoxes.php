@@ -34,7 +34,7 @@ class MetaBoxes
      */
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
+        $this->customPostType = CPT::POST_TYPE;
 
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
@@ -102,27 +102,22 @@ class MetaBoxes
             'options' => $this->getVisibilityByUserRoleOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
-        // Notice Start date/timestamp
+        // Notice Start date-time->timestamp
         $cmb->add_field([
             'name' => __('Notice Start', 'rrze-notices'),
+            'desc' => __('days before the start of the event', 'rrze-notices'),
             'id' => 'notice_start',
-            'type' => 'text_date_timestamp',
-            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
+            'type' => 'text_small',
             'attributes' => [
-                'data-datepicker' => json_encode(
-                    [
-                        'minDate' => '-1m',
-                        'maxDate' => '+12m',
-                        'firstDay' => $startOfWeek,
-                        'dayNames' => Utils::getDaysOfWeek('short'),
-                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                        'monthNamesShort' => Utils::getMonthNames('short')
-                    ]
-                ),
+                'type' => 'number',
+                'min' => '1',
+                'max' => '30',
                 'required' => 'required'
-            ]
+            ],
+            'sanitization_cb' => 'absint',
+            'escape_cb' => 'absint',
         ]);
-        // Event Start date-time/timestamp
+        // Event Start date-time->timestamp
         $cmb->add_field([
             'name' => __('Event Start', 'rrze-notices'),
             'id' => 'event_start',
@@ -146,7 +141,7 @@ class MetaBoxes
                 'required' => 'required'
             ]
         ]);
-        // End date-time/timestamp
+        // End date-time->timestamp
         $cmb->add_field([
             'name' => __('Event End', 'rrze-notices'),
             'id' => 'event_end',
@@ -281,6 +276,8 @@ class MetaBoxes
             'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_exceptions',
             'type' => 'textarea_small',
+            'sanitization_cb' => [$this, 'sanitizeTextarea'],
+            'escape_cb' => [$this, 'escapeTextareaValue'],
             'classes'   => ['event-repeat'],
         ]);
         // Additions
@@ -289,6 +286,8 @@ class MetaBoxes
             'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_additions',
             'type' => 'textarea_small',
+            'sanitization_cb' => [$this, 'sanitizeTextarea'],
+            'escape_cb' => [$this, 'escapeTextareaValue'],
             'classes'   => ['event-repeat'],
         ]);
     }
@@ -322,7 +321,7 @@ class MetaBoxes
      */
     public function getVisibilityByUserRoleOptions()
     {
-        $availableRoles = Utils::getRoles();
+        $availableRoles = Users::getRoles();
         $roleVisibility = [];
         $visibility = [];
         foreach ($roleVisibility as $k) {
@@ -400,7 +399,7 @@ class MetaBoxes
     }
 
     /**
-     * Save notice_start date as GMT timestamp
+     * Saves the event_uid field if it has not already been saved
      *
      * @param bool $updated
      * @param string $action
@@ -410,9 +409,9 @@ class MetaBoxes
     public function saveNoticeStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestamp = $field->value;
-        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
-        update_post_meta($postId, 'notice_start_gmt', $timestampGmt);
+        if (!get_post_meta($postId, 'event_uid', true)) {
+            update_post_meta($postId, 'event_uid', Utils::createUid($postId));
+        }
     }
 
     /**
@@ -445,5 +444,52 @@ class MetaBoxes
         $timestamp = $field->value;
         $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
         update_post_meta($postId, 'event_end_gmt', $timestampGmt);
+    }
+
+    /**
+     * Sanitize textarea field
+     *
+     * @param string $value
+     * @param array $field_args
+     * @param \CMB2_Field $field
+     * @return mixed string|array
+     */
+    public function sanitizeTextarea($value, $field_args, $field)
+    {
+        if (!empty($value)) {
+            $value = explode(PHP_EOL, sanitize_textarea_field($value));
+            $value = array_unique(array_filter(array_map('trim', $value)));
+            $value = array_filter(array_map([$this, 'validateDate'], $value));
+            sort($value);
+        }
+        return !empty($value) ? $value : '';
+    }
+
+    /**
+     * Escape textarea field value
+     *
+     * @param mixed $value
+     * @param array $field_args
+     * @param \CMB2_Field $field
+     * @return string
+     */
+    public function escapeTextareaValue($value, $field_args, $field)
+    {
+        if (!empty($value) && is_array($value)) {
+            return implode(PHP_EOL, $value);
+        }
+        return '';
+    }
+
+    /**
+     * Validate date
+     *
+     * @param string $date
+     * @return string
+     */
+    public function validateDate($date)
+    {
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') === $date ? $d->format('Y-m-d') : '';
     }
 }
