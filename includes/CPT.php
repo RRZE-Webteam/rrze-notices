@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 class CPT
 {
-    const CPT_NAME = 'notice';
+    const POST_TYPE = 'notice';
 
     protected $siteOptions;
 
@@ -29,11 +29,6 @@ class CPT
 
         $metaBoxes = new MetaBoxes;
         $metaBoxes->loaded();
-    }
-
-    public static function getPostTypeName()
-    {
-        return static::CPT_NAME;
     }
 
     public function registerCPT()
@@ -91,10 +86,10 @@ class CPT
             'can_export'            => true,
             'delete_with_user'      => null,
             'show_in_rest'          => false,
-            //'rest_base'             => static::CPT_NAME,
+            //'rest_base'             => self::POST_TYPE,
             //'rest_controller_class' => WP_REST_Posts_Controller,
         );
 
-        register_post_type(static::CPT_NAME, $args);
+        register_post_type(self::POST_TYPE, $args);
     }
 }
