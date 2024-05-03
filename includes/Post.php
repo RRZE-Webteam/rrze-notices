@@ -241,9 +241,12 @@ class Post
     {
         $args = array(
             'post_type' => CPT::POST_TYPE,
+            'post_status' => 'publish',
             'posts_per_page' => -1,
         );
         $posts = get_posts($args);
+
+        $siteOptions = Options::getSiteOptions();
         
         foreach ($posts as $post) {
             $postId = $post->ID;
