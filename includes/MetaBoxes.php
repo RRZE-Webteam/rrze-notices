@@ -51,6 +51,7 @@ class MetaBoxes
         add_action('cmb2_save_field_notice_start', [$this, 'saveNoticeStartField'], 10, 3);
         add_action('cmb2_save_field_event_start', [$this, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [$this, 'saveEventEndField'], 10, 3);
+        add_action('cmb2_save_field_event_repeat_lastdate', [$this, 'saveEventRepeatLastdateField'], 10, 3);
     }
 
     public function metabox()
@@ -444,6 +445,22 @@ class MetaBoxes
         $timestamp = $field->value;
         $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
         update_post_meta($postId, 'event_end_gmt', $timestampGmt);
+    }
+
+    /**
+     * Save event_repeat_lastdate date as GMT timestamp
+     *
+     * @param bool $updated
+     * @param string $action
+     * @param \CMB2_Field $field
+     * @return void
+     */
+    public function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
+    {
+        $postId = $field->object_id;
+        $timestamp = $field->value;
+        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
     }
 
     /**
