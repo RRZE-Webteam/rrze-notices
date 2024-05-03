@@ -35,9 +35,11 @@ class Event
                     'date' => date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd),
-                    'time' => __('All Day', 'rrze-notices'),
-                    'startISO' => $startDay,
-                    'endISO' => $endDay,
+                    'time' => '',
+                    'all_day' => 'on',
+                    'multiday' => 'on',
+                    'start' => $startDay,
+                    'end' => $endDay
                 ];
                 // Timed event
             } else {
@@ -46,8 +48,10 @@ class Event
                         . ' &ndash; '
                         . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd),
                     'time' => '',
-                    'startISO' => date_i18n('c', $tsStartUTC, true),
-                    'endISO' => date_i18n('c', $tsEndUTC),
+                    'all_day' => '',
+                    'multiday' => 'on',
+                    'start' => date('Y-m-d H:i:s', $tsStart, true),
+                    'end' => date('Y-m-d H:i:s', $tsEnd),
                 ];
             }
             // Single day event
@@ -58,17 +62,23 @@ class Event
                     'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd)),
-                    'time' => __('All Day', 'rrze-notices'),
-                    'startISO' => $startDay,
-                    'endISO' => $endDay,
+                    'time' => '',
+                    'all_day' => 'on',
+                    'multiday' => '',
+                    'start' => $startDay,
+                    'end' => $endDay,
                 ];
                 // Timed event
             } else {
                 $event = [
                     'date' => date_i18n(get_option('date_format'), $tsStart),
-                    'time' => date_i18n(get_option('time_format'), $tsStart) . ' &ndash; ' . date_i18n(get_option('time_format'), $tsEnd),
-                    'startISO' => date_i18n('c', $tsStartUTC, true),
-                    'endISO' => date_i18n('c', $tsEndUTC),
+                    'time' => date_i18n(get_option('time_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('time_format'), $tsEnd),
+                    'all_day' => '',
+                    'multiday' => '',
+                    'start' => date_i18n('Y-m-d H:i:s', $tsStart, true),
+                    'end' => date_i18n('Y-m-d H:i:s', $tsEnd),
                 ];
             }
         }
@@ -107,16 +117,17 @@ class Event
         if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
             return [];
         }
-        $startTS = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
-        $dtstart = date('Y-m-d H:i:s', $startTS);
+        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+        $dtstart = date('Y-m-d H:i:s', $tsStart);
 
         $rruleArgs = [
             'DTSTART' => $dtstart,
         ];
 
-        $lastDateTS = Utils::getMeta($meta, 'event_repeat_lastdate');
-        if ($lastDateTS) {
-            $lastDate = '@' . $lastDateTS;
+        $tsRepeatLastDateUTC = Utils::getMeta($meta, 'event_repeat_lastdate_gmt');
+        $tsRepeatLastDate = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsRepeatLastDateUTC)));
+        if ($tsRepeatLastDate > $tsStart) {
+            $lastDate = '@' . $tsRepeatLastDate;
         } else {
             $lastDate = '@' . strtotime('+1 year');
         }
@@ -159,40 +170,20 @@ class Event
         return $rruleArgs;
     }
 
-    public static function getOcurrences($postId)
-    {
-        $ocurrences = [];
-        $repeat = get_post_meta($postId, 'event_repeat', true);
-        $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
-        if (
-            $repeat == 'on' &&
-            $rruleArgs = json_decode($rruleArgs, true)
-        ) {
-            $rrule = new RRule($rruleArgs);
-            foreach ($rrule as $occurrence) {
-                $ocurrences[$occurrence->format('Y-m-d H:i:s')] = $occurrence->format('Y-m-d H:i:s');
-            }
-        }
-        return $ocurrences;
-    }
-
-    public static function makeRRuleSet(int $postId, int $start, int $end): array
+    public static function getOcurrences(int $postId): array
     {
         $meta = get_post_meta($postId);
-        $start = date('Y-m-d', $start);
-        $end = date('Y-m-d', $end);
 
         $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
         if ($rruleArgs = json_decode($rruleArgs, true)) {
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
-            $startTS = absint(Utils::getMeta($meta, 'start'));
-            $startTime = date('H:i', $startTS);
+            $tsStart = absint(Utils::getMeta($meta, 'event_start'));
+            $startTime = date('H:i:s', $tsStart);
 
-            // Exceptions
-            $exceptionsRaw = Utils::getMeta($meta, 'event_exceptions');
-            if (!empty($exceptionsRaw)) {
-                $exceptions = explode("\n", str_replace("\r", '', $exceptionsRaw));
+            // Dates exceptions
+            $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
+            if (!empty($exceptions) && is_array($exceptions)) {
                 foreach ($exceptions as $exception) {
                     $date = $exception . ' ' . $startTime;
                     if (Utils::validateDate($date)) {
@@ -200,10 +191,9 @@ class Event
                     }
                 }
             }
-            // Additions
-            $additionsRaw = Utils::getMeta($meta, 'event_additions');
-            if (!empty($additionsRaw)) {
-                $additions = explode("\n", str_replace("\r", '', $additionsRaw));
+            // Dates additions
+            $additions = Utils::getMeta($meta, 'event_date_additions');
+            if (!empty($additions) && is_array($additions)) {
                 foreach ($additions as $addition) {
                     $date = $addition . ' ' . $startTime;
                     if (Utils::validateDate($date)) {
@@ -212,13 +202,11 @@ class Event
                 }
             }
 
-            $start = Utils::validateDate($start) ? $start : NULL;
-            $end = Utils::validateDate($end) ? $end : NULL;
-            if ($start != NULL || $end != NULL) {
-                return $rset->getOccurrencesBetween($start, $end);
-            } else {
-                return $rset->getOccurrences();
+            $occurrences = [];
+            foreach ($rset->getOccurrences() as $occurrence) {
+                $occurrences[] = $occurrence->format('Y-m-d H:i:s');
             }
+            return $occurrences;
         }
         return [];
     }
