@@ -54,7 +54,7 @@ class Notice
      *
      * @var array
      */
-    private $allowed_html = [
+    private $allowedHtml = [
         'p' => [],
         'a' => [
             'href' => [],
@@ -101,7 +101,7 @@ class Notice
             return;
         }
 
-        $this->allowed_html = apply_filters('rrze_notices_allowed_html', $this->allowed_html);
+        $this->allowedHtml = apply_filters('rrze_notices_allowed_html', $this->allowedHtml);
 
         $this->dismiss = new Dismiss($this->id, $this->options['option_prefix'], $this->options['is_dismissible']);
     }
@@ -200,7 +200,7 @@ class Notice
      */
     public function getMessage()
     {
-        return wpautop(wp_kses($this->message, $this->allowed_html));
+        return wpautop(wp_kses($this->message, $this->allowedHtml));
     }
 
     /**
