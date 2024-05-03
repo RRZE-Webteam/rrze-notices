@@ -52,6 +52,8 @@ class Main
         $adminBar = new AdminBar;
         $adminBar->loaded();
 
+        Cron::init();
+
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
     }
 
