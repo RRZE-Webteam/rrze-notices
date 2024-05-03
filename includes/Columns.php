@@ -54,7 +54,6 @@ class Columns
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
-                error_log(print_r($data, true));
                 $eventDate = [
                     ($data['event']['date'] ?? '') . (isset($data['event']['time']) ? ', ' . $data['event']['time'] : '&mdash;'),
                     Post::getEventReccurence($postId)
