@@ -17,52 +17,6 @@ class Utils
         }
     }
 
-    public static function getExpiration(int $postId): int
-    {
-        $expiration = absint(get_post_meta($postId, 'rrze_notices_expiration', true));
-        if ($expiration) {
-            return $expiration;
-        }
-        // Maybe convert from legacy values
-        $post = get_post($postId);
-        $interval = get_post_meta($postId, 'rrze_notices_expiration', true);
-        $legacyExpirationIntervals = [
-            'day' => __('1 Day', 'rrze-notices'),
-            'week' => __('1 Week', 'rrze-notices'),
-            'month' => __('1 Month', 'rrze-notices')
-        ];
-        if (isset($legacyExpirationIntervals[$interval])) {
-            $expiration = strtotime('+1 ' . $interval, strtotime($post->post_date));
-            $expirationGmt = strtotime('+1 ' . $interval, strtotime($post->post_date_gmt));
-            update_post_meta($postId, 'rrze_notices_expiration', $expiration);
-            update_post_meta($postId, 'rrze_notices_expiration_gmt', $expirationGmt);
-        }
-        return $expiration ? $expiration : current_time('timestamp');
-    }
-
-    public static function getExpirationGmt(int $postId): int
-    {
-        $expirationGmt = absint(get_post_meta($postId, 'rrze_notices_expiration_gmt', true));
-        return $expirationGmt ? $expirationGmt : time();
-    }
-
-    public static function dateTimeFormat(int $timestamp): string
-    {
-        return sprintf(
-            /* translators: Expiration date string. 1: Date, 2: Time. */
-            __('%1$s at %2$s'),
-            /* translators: Expiration date format, see https://www.php.net/manual/datetime.format.php */
-            date_i18n(_x('Y/m/d', 'expiration date format', 'rrze-notices'), $timestamp),
-            /* translators: Expiration time format, see https://www.php.net/manual/datetime.format.php */
-            date_i18n(_x('g:i a', 'expiration time format', 'rrze-notices'), $timestamp)
-        );
-    }
-
-    public static function isExpired(int $expiration): bool
-    {
-        return (time() - $expiration > 0);
-    }
-
     public static function arrayValInArray($needle, $haystack)
     {
         foreach ($needle as $stack) {
@@ -264,5 +218,33 @@ class Utils
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public static function humanTimeDiff($timestamp, $html = true)
+    {
+        $datetime = date(__('Y/m/d g:i:s a', 'rrze-notices'), mysql2date('U', $timestamp));
+        $timeDiff = $timestamp - current_time('timestamp');
+
+        if ($timeDiff > 0 && $timeDiff < DAY_IN_SECONDS) {
+            $humanTime = sprintf(__('in %s'), human_time_diff($timestamp));
+        } elseif ($timeDiff < 0) {
+            $humanTime = sprintf(__('%s ago'), human_time_diff($timestamp));
+        } else {
+            $humanTime = '';
+        }
+
+        if (!$html) {
+            return $humanTime;
+        }
+
+        if ($timeDiff < 0) {
+            echo '<span class="expired">' . __('Expired', 'rrze-notices') . '</span>';
+            $humanTimeSpan = '<abbr class="expired" title="' . $datetime . '">' . $humanTime . '</abbr>';
+        } else {
+            echo '<abbr title="' . $datetime . '">' . mysql2date(__('Y/m/d'), $timestamp) . '</abbr>';
+            $humanTimeSpan = $humanTime ? '(' . $humanTime . ')' : '';
+        }
+
+        echo $humanTimeSpan;
     }
 }
