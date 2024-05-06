@@ -39,7 +39,9 @@ class Event
                     'all_day' => 'on',
                     'multiday' => 'on',
                     'start' => $startDay,
-                    'end' => $endDay
+                    'end' => $endDay,
+                    'start_gmt' => date('Y-m-d', $tsStartUTC),
+                    'end_gmt' => date('Y-m-d', $tsEndUTC),
                 ];
                 // Timed event
             } else {
@@ -50,8 +52,10 @@ class Event
                     'time' => '',
                     'all_day' => '',
                     'multiday' => 'on',
-                    'start' => date('Y-m-d H:i:s', $tsStart, true),
+                    'start' => date('Y-m-d H:i:s', $tsStart),
                     'end' => date('Y-m-d H:i:s', $tsEnd),
+                    'start_gmt' => date('Y-m-d H:i:s', $tsStartUTC),
+                    'end_gmt' => date('Y-m-d H:i:s', $tsEndUTC),
                 ];
             }
             // Single day event
@@ -67,6 +71,8 @@ class Event
                     'multiday' => '',
                     'start' => $startDay,
                     'end' => $endDay,
+                    'start_gmt' => date('Y-m-d', $tsStartUTC),
+                    'end_gmt' => date('Y-m-d', $tsEndUTC),
                 ];
                 // Timed event
             } else {
@@ -77,14 +83,14 @@ class Event
                         . date_i18n(get_option('time_format'), $tsEnd),
                     'all_day' => '',
                     'multiday' => '',
-                    'start' => date_i18n('Y-m-d H:i:s', $tsStart, true),
-                    'end' => date_i18n('Y-m-d H:i:s', $tsEnd),
+                    'start' => date('Y-m-d H:i:s', $tsStart),
+                    'end' => date('Y-m-d H:i:s', $tsEnd),
+                    'start_gmt' => date('Y-m-d H:i:s', $tsStartUTC),
+                    'end_gmt' => date('Y-m-d H:i:s', $tsEndUTC),
                 ];
             }
         }
         $data['event'] = $event;
-
-        $data['all_day'] = $allDay;
 
         if ($repeat) {
             $data['repeat'] = $repeat;
@@ -241,5 +247,24 @@ class Event
 
         $rrule = new RRule($args);
         return $rrule->humanReadable($opt);
+    }
+
+    public static function isExpired($postId)
+    {
+        $event = self::getData($postId);
+        $tsEnd = $event['event']['end'] ?? 0;
+        $tsEnd = strtotime($tsEnd);
+        $currentTime = current_time('timestamp');
+        $repeat = $event['repeat'] ?? '';
+        $ocurrences = $event['ocurrences'] ?? [];
+        if ($repeat == 'on' && !empty($ocurrences)) {
+            foreach ($ocurrences as $occurrence) {
+                $tsOccurrence = strtotime($occurrence);
+                if ($tsOccurrence > $currentTime) {
+                    return false;
+                }
+            }
+        }
+        return $tsEnd < $currentTime;
     }
 }
