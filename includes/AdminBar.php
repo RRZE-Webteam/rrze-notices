@@ -68,15 +68,9 @@ class AdminBar
             $title = $notice->title ?? '';
             $content = $notice->content ?? '';
             $type = $notice->type ?? 'info';
-            $expiration = $notice->expiration ?? current_time('timestamp');
-            $expirationGmt = $notice->expiration_gmt ?? time();
-            $altStyle = $notice->alt_style ?? false;
-            $hideTitle = $notice->hide_title ?? false;
             $visibility = $notice->visibility ?? true;
-            $adminLink = $notice->admin_link ?? '';
 
-            $expired = Utils::isExpired($expirationGmt);
-            if ($expired) {
+            if (Event::isExpired($postId)) {
                 continue;
             }
 
@@ -135,14 +129,12 @@ class AdminBar
                 continue;
             }
 
-            $expiration = Utils::getExpirationGmt($postId);
-            $expired = Utils::isExpired($expiration);
-            if ($expired) {
+            if (Event::isExpired($postId)) {
                 continue;
             }
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
+            $roleVisibility = Post::getVisibility($postId);
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -186,12 +178,10 @@ class AdminBar
     }
 
     /**
-     * Undocumented function
-     *
-     * @param object \WP_Admin_Bar $wp_admin_bar
-     * @return void
+     *  Add items to the admin bar.
+     * @param \WP_Admin_Bar $wpAdminBar
      */
-    public function addItems(&$wp_admin_bar)
+    public function addItems(&$wpAdminBar)
     {
         $title = sprintf(
             '<span class="ab-icon dashicons"></span><span class="ab-label">%s</span> <span class="notices-count">%s</span>',
@@ -199,7 +189,7 @@ class AdminBar
             count($this->notices)
         );
 
-        $wp_admin_bar->add_menu(
+        $wpAdminBar->add_menu(
             [
                 'id'     => 'rrze-notices',
                 'parent' => 'top-secondary',
@@ -213,7 +203,7 @@ class AdminBar
             $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice->id), 'rrze_notices_redirect_nonce');
             $metaClass = 'notices-' . $notice->type;
 
-            $wp_admin_bar->add_menu(
+            $wpAdminBar->add_menu(
                 [
                     'id'     => 'rrze-notices-item-' . $i,
                     'parent' => 'rrze-notices',
