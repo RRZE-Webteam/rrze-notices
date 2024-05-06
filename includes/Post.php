@@ -52,6 +52,15 @@ class Post
                 delete_post_meta($postId, 'notice_network_wide');
             }
         }
+
+        // $currentTime = current_time('timestamp');
+        // $tsStart = self::getNoticeStart($postId);
+        // if ($tsStart && $tsStart > $currentTime) {
+        //     wp_update_post([
+        //         'ID' => $postId,
+        //         'post_status' => 'future'
+        //     ]);
+        // }
     }
 
     public function deletePost($postId, $post)
@@ -105,20 +114,16 @@ class Post
 
         $title = $post->post_title;
         $content = $post->post_content;
-        $date = $post->post_date;
-        $dateGmt = $post->post_date_gmt;
         $type = self::getType($postId);
         $altStyle = self::altStyle($postId);
         $hideTitle = self::hideTitle($postId);
         $visibility = self::getVisibility($postId);
-        $noticeStart = self::getNoticeStart($postId);
+        $noticeStart = self::getNoticeStart($postId, true);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
         $this->siteOptions->network_wide[$noticeId] = [
             'title' => $title,
             'content' => $content,
-            'date' => $date,
-            'date_gmt' => $dateGmt,
             'type' => $type,
             'hide_title' => $hideTitle,
             'alt_style' => $altStyle,
@@ -208,13 +213,21 @@ class Post
         }
     }
 
-    public static function getNoticeStart(int $postId): string
+    public static function getNoticeStart(int $postId, bool $gmt = false): mixed
     {
-        $start = '';
-        if ($start = (int) get_post_meta($postId, 'notice_start', true)) {
-            $start = date_i18n(get_option('date_format'), $start);
+        $noticeStart = get_post_meta($postId, 'notice_start', true);
+        $event = self::getEventData($postId);
+        if ($gmt) {
+            $eventStart = $event['event']['start_gmt'] ?? null;
+        } else {
+            $eventStart = $event['event']['start'] ?? null;
         }
-        return $start;
+        if (!$noticeStart || !$eventStart) {
+            return null;
+        }
+        $noticeStart = absint($noticeStart);
+        $eventStart = strtotime($eventStart);
+        return $eventStart - $noticeStart;
     }
 
     public static function isEventRepeat(int $postId): int
@@ -232,33 +245,31 @@ class Post
         return Event::getHumanReadableRecurrence($postId);
     }
 
-    public static function isExpired($postId)
-    {
-        //
-    }
-
     public static function updateStatus()
     {
-        $args = array(
+        $args = [
             'post_type' => CPT::POST_TYPE,
             'post_status' => 'publish',
             'posts_per_page' => -1,
-        );
+        ];
         $posts = get_posts($args);
 
         $siteOptions = Options::getSiteOptions();
-        
+        $currentBlogId = get_current_blog_id();
+
         foreach ($posts as $post) {
             $postId = $post->ID;
-            $repeat = get_post_meta($postId, 'event_repeat', true);
-            $rruleArgs = Event::makeRRuleArgs($postId);
-            if (
-                $repeat == 'on' &&
-                $rruleArgs = json_encode($rruleArgs)
-            ) {
-                // update_post_meta($postId, 'event_rrule_args', $rruleArgs);
+            if (self::isNetworkWide($postId)) {
+                // $noticeId = sprintf('%1$d-%2$d', $currentBlogId, $postId);
+                // $siteOptions->network_wide[$noticeId] = $siteOptions->network_wide[$noticeId] ?? [];
+                // $siteOptions->network_wide[$noticeId]['status'] = Event::isExpired($postId) ? 'expired' : 'active';
             }
-    
+            if (Event::isExpired($postId)) {
+                wp_update_post([
+                    'ID' => $postId,
+                    'post_status' => CPT::EXPIRED_POST_STATUS
+                ]);
+            }
         }
     }
 }
