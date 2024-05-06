@@ -49,8 +49,8 @@ class Columns
                 echo Post::getType($postId);
                 break;
             case 'notice_start':
-                $data = Post::getNoticeStart($postId);
-                echo ($data['date'] ?? '') . (isset($data['time']) ? ', ' . $data['time'] : '&mdash;');
+                $tsStart = Post::getNoticeStart($postId);
+                echo $tsStart ? date_i18n(get_option('date_format'), $tsStart) : '&mdash;';
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
@@ -84,8 +84,7 @@ class Columns
 
     public function manageSortableColumns($columns)
     {
-        $columns['type'] = 'type';
-        $columns['expiration'] = 'expiration';
+        $columns['notice_type'] = 'notice_type';
         return $columns;
     }
 
@@ -103,9 +102,6 @@ class Columns
         switch ($orderBy) {
             case 'type':
                 $query->set('meta_key', 'rrze_notices_type');
-                break;
-            case 'expiration':
-                $query->set('meta_key', 'rrze_notices_expiration');
                 break;
             default:
                 break;
