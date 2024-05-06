@@ -103,7 +103,7 @@ class MetaBoxes
             'options' => $this->getVisibilityByUserRoleOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
-        // Notice Start date-time->timestamp
+        // Notice Start days->timestamp
         $cmb->add_field([
             'name' => __('Notice Start', 'rrze-notices'),
             'desc' => __('days before the start of the event', 'rrze-notices'),
@@ -111,20 +111,20 @@ class MetaBoxes
             'type' => 'text_small',
             'attributes' => [
                 'type' => 'number',
-                'min' => '1',
+                'min' => '0',
                 'max' => '30',
                 'required' => 'required'
             ],
-            'sanitization_cb' => 'absint',
-            'escape_cb' => 'absint',
+            'sanitization_cb' => [$this, 'sanitizeNoticeStart'],
+            'escape_cb' => [$this, 'escapeNoticeStartValue'],
         ]);
         // Event Start date-time->timestamp
         $cmb->add_field([
             'name' => __('Event Start', 'rrze-notices'),
             'id' => 'event_start',
             'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'date_format' => _x('Y/m/d', 'event date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'event time format', 'rrze-notices'),
             'attributes' => [
                 'data-datepicker' => json_encode(
                     [
@@ -147,8 +147,8 @@ class MetaBoxes
             'name' => __('Event End', 'rrze-notices'),
             'id' => 'event_end',
             'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'date_format' => _x('Y/m/d', 'event date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'event time format', 'rrze-notices'),
             'attributes' => [
                 'data-datepicker' => json_encode(
                     [
@@ -184,8 +184,8 @@ class MetaBoxes
             'desc' => __('(optional)', 'rrze-notices'),
             'id' => 'event_repeat_lastdate',
             'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'expiration date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'expiration time format', 'rrze-notices'),
+            'date_format' => _x('Y/m/d', 'event date format', 'rrze-notices'),
+            'time_format' => _x('g:i a', 'event time format', 'rrze-notices'),
             'attributes' => [
                 'data-timepicker' => json_encode(
                     [
@@ -463,15 +463,27 @@ class MetaBoxes
         update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
     }
 
+    public function sanitizeNoticeStart($value, $fieldArgs, $field)
+    {
+        $value = absint($value);
+        return $value * DAY_IN_SECONDS;
+    }
+
+    public function escapeNoticeStartValue($value, $fieldArgs, $field)
+    {
+        $value = absint($value);
+        return ceil($value / DAY_IN_SECONDS);
+    }
+
     /**
      * Sanitize textarea field
      *
      * @param string $value
-     * @param array $field_args
+     * @param array $fieldArgs
      * @param \CMB2_Field $field
      * @return mixed string|array
      */
-    public function sanitizeTextarea($value, $field_args, $field)
+    public function sanitizeTextarea($value, $fieldArgs, $field)
     {
         if (!empty($value)) {
             $value = explode(PHP_EOL, sanitize_textarea_field($value));
@@ -486,11 +498,11 @@ class MetaBoxes
      * Escape textarea field value
      *
      * @param mixed $value
-     * @param array $field_args
+     * @param array $fieldArgs
      * @param \CMB2_Field $field
      * @return string
      */
-    public function escapeTextareaValue($value, $field_args, $field)
+    public function escapeTextareaValue($value, $fieldArgs, $field)
     {
         if (!empty($value) && is_array($value)) {
             return implode(PHP_EOL, $value);
