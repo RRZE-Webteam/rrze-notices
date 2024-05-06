@@ -72,19 +72,16 @@ class Display
             $title = isset($notice->title) ? $notice->title : '';
             $content = isset($notice->content) ? $notice->content : '';
             $type = isset($notice->type) ? $notice->type : 'info';
-            // $expiration = isset($notice->expiration) ? $notice->expiration : current_time('timestamp');
-            // $expirationGmt = isset($notice->expiration_gmt) ? $notice->expiration_gmt : time();
             $altStyle = isset($notice->alt_style) ? $notice->alt_style : false;
             $hideTitle = isset($notice->hide_title) ? $notice->hide_title : false;
             $visibility = isset($notice->visibility) ? $notice->visibility : true;
             $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
 
-            // $expired = Utils::isExpired($expirationGmt);
-            // if ($expired) {
-            //     unset($this->siteOptions->network_wide[$noticeId]);
-            //     update_site_option($this->siteOptionsName, $this->siteOptions);
-            //     continue;
-            // }
+            if (Event::isExpired($postId)) {
+                unset($this->siteOptions->network_wide[$noticeId]);
+                update_site_option($this->siteOptionsName, $this->siteOptions);
+                continue;
+            }
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
@@ -160,11 +157,9 @@ class Display
             $altStyle = Post::altStyle($postId);
             $hideTitle = Post::hideTitle($postId);
             $visibility = Post::getVisibility($postId);
-            $noticeStart = Post::getNoticeStart($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-            $expired = Post::isExpired($postId);
-            if ($expired) {
+            if (Event::isExpired($postId)) {
                 continue;
             }
 
