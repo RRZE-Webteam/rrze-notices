@@ -43,8 +43,7 @@ class Main
             }
         }
 
-        $cpt = new CPT;
-        $cpt->loaded();
+        CPT::loaded();
 
         $display = new Display;
         $display->loaded();
