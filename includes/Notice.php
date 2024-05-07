@@ -109,7 +109,7 @@ class Notice
     /**
      * Prints the notice.
      */
-    public function theNotice()
+    public function printNotice()
     {
         if (!$this->show()) {
             return;
