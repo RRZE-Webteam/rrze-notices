@@ -51,6 +51,7 @@ class Columns
             case 'notice_start':
                 $tsStart = Post::getNoticeStart($postId);
                 echo $tsStart ? date_i18n(get_option('date_format'), $tsStart) : '&mdash;';
+                echo !current_user_can('manage_network_options') && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
