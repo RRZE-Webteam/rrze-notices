@@ -9,59 +9,27 @@ use RRZE\Notices\CPT;
 class MetaBoxes
 {
     /**
-     * Custom post type name
-     *
-     * @var string
-     */
-    protected $customPostType;
-
-    /**
-     * Site options name
-     *
-     * @var string
-     */
-    protected $siteOptionsName;
-
-    /**
-     * Site options
-     *
-     * @var array
-     */
-    protected $siteOptions;
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->customPostType = CPT::POST_TYPE;
-
-        $this->siteOptionsName = Options::getSiteOptionName();
-        $this->siteOptions = Options::getSiteOptions();
-    }
-
-    /**
      * Load hooks
      *
      * @return void
      */
-    public function loaded()
+    public static function loaded()
     {
-        add_action('cmb2_admin_init', [$this, 'metabox']);
-        add_action('cmb2_save_field_notice_start', [$this, 'saveNoticeStartField'], 10, 3);
-        add_action('cmb2_save_field_event_start', [$this, 'saveEventStartField'], 10, 3);
-        add_action('cmb2_save_field_event_end', [$this, 'saveEventEndField'], 10, 3);
-        add_action('cmb2_save_field_event_repeat_lastdate', [$this, 'saveEventRepeatLastdateField'], 10, 3);
+        add_action('cmb2_admin_init', [__CLASS__, 'metabox']);
+        add_action('cmb2_save_field_notice_start', [__CLASS__, 'saveNoticeStartField'], 10, 3);
+        add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
+        add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
+        add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
     }
 
-    public function metabox()
+    public static function metabox()
     {
         $startOfWeek = get_option('start_of_week');
 
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
             'title' => __('Notice Settings', 'rrze-notices'),
-            'object_types' => [$this->customPostType],
+            'object_types' => [CPT::POST_TYPE],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true
@@ -83,7 +51,7 @@ class MetaBoxes
             'name' => __('Display', 'rrze-notices'),
             'id' => 'notice_display',
             'type' => 'multicheck',
-            'options' => $this->getDisplayOptions()
+            'options' => self::getDisplayOptions()
         ]);
         // Notice Visibility
         $cmb->add_field([
@@ -97,10 +65,12 @@ class MetaBoxes
             'default' => 'all'
         ]);
         $cmb->add_field([
-            'name' => __('User Roles', 'rrze-notices'),
+            'name' => __('User Roles', 'rrze-notices')
+                . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
+                . __('(Visibility based on user role)', 'rrze-notices') . '</span>',
             'id' => 'notice_visibility_roles',
             'type' => 'multicheck',
-            'options' => $this->getVisibilityByUserRoleOptions(),
+            'options' => self::getVisibilityByUserRoleOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
         // Notice Start days->timestamp
@@ -115,8 +85,8 @@ class MetaBoxes
                 'max' => '30',
                 'required' => 'required'
             ],
-            'sanitization_cb' => [$this, 'sanitizeNoticeStart'],
-            'escape_cb' => [$this, 'escapeNoticeStartValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeNoticeStart'],
+            'escape_cb' => [__CLASS__, 'escapeNoticeStartValue'],
         ]);
         // Event Start date-time->timestamp
         $cmb->add_field([
@@ -198,7 +168,6 @@ class MetaBoxes
                         'monthNamesShort' => Utils::getMonthNames('short')
                     ]
                 ),
-                'required' => 'required'
             ],
             'classes'   => ['event-repeat'],
         ]);
@@ -232,7 +201,7 @@ class MetaBoxes
             'name' => __('Repeats On', 'rrze-notices'),
             'id' => 'event_repeat_weekly_day',
             'type' => 'multicheck_inline',
-            'options' => $this->getDowOptions(),
+            'options' => self::getDowOptions(),
             'classes'   => ['event-repeat', 'event-repeat-weekly'],
         ]);
         // Repeats monthly
@@ -250,7 +219,7 @@ class MetaBoxes
             'name' => __('Repeats On', 'rrze-notices'),
             'id' => 'event_repeat_monthly_type_date',
             'type' => 'select',
-            'options' => $this->getMonthDaysOptions(),
+            'options' => self::getMonthDaysOptions(),
             'before_field' => __('each', 'rrze-notices') . ' ',
             'after_field' =>  ' ' . __('of month', 'rrze-notices'),
             'classes'   => ['event-repeat', 'event-repeat-monthly', 'event-repeat-monthly-date'],
@@ -267,8 +236,8 @@ class MetaBoxes
             'name' => __('Repeats In', 'rrze-notices'),
             'id' => 'event_repeat_monthly_month',
             'type' => 'multicheck_inline',
-            'options' => $this->getMonthsOptions(),
-            'default' => array_keys($this->getMonthsOptions()),
+            'options' => self::getMonthsOptions(),
+            'default' => array_keys(self::getMonthsOptions()),
             'classes'   => ['event-repeat', 'event-repeat-monthly'],
         ]);
         // Exceptions
@@ -277,8 +246,8 @@ class MetaBoxes
             'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_exceptions',
             'type' => 'textarea_small',
-            'sanitization_cb' => [$this, 'sanitizeTextarea'],
-            'escape_cb' => [$this, 'escapeTextareaValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
+            'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
             'classes'   => ['event-repeat'],
         ]);
         // Additions
@@ -287,8 +256,8 @@ class MetaBoxes
             'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_additions',
             'type' => 'textarea_small',
-            'sanitization_cb' => [$this, 'sanitizeTextarea'],
-            'escape_cb' => [$this, 'escapeTextareaValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
+            'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
             'classes'   => ['event-repeat'],
         ]);
     }
@@ -299,7 +268,7 @@ class MetaBoxes
      *
      * @return array
      */
-    public function getDisplayOptions()
+    public static function getDisplayOptions()
     {
         $options = [
             'hide_title' => __('Hide Title', 'rrze-notices'),
@@ -320,7 +289,7 @@ class MetaBoxes
      *
      * @return array
      */
-    public function getVisibilityByUserRoleOptions()
+    public static function getVisibilityByUserRoleOptions()
     {
         $availableRoles = Users::getRoles();
         $roleVisibility = [];
@@ -360,7 +329,7 @@ class MetaBoxes
      *
      * @return array
      */
-    public function getDowOptions()
+    public static function getDowOptions()
     {
         global $wp_locale;
         $options = [];
@@ -377,7 +346,7 @@ class MetaBoxes
      *
      * @return array
      */
-    public function getMonthDaysOptions()
+    public static function getMonthDaysOptions()
     {
         return array_combine(range(1, 31), range(1, 31));
     }
@@ -388,7 +357,7 @@ class MetaBoxes
      *
      * @return array
      */
-    public function getMonthsOptions()
+    public static function getMonthsOptions()
     {
         global $wp_locale;
         $options = [];
@@ -407,7 +376,7 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return void
      */
-    public function saveNoticeStartField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveNoticeStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
         if (!get_post_meta($postId, 'event_uid', true)) {
@@ -423,7 +392,7 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return void
      */
-    public function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
         $timestamp = $field->value;
@@ -439,7 +408,7 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return void
      */
-    public function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
         $timestamp = $field->value;
@@ -455,21 +424,22 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return void
      */
-    public function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestamp = $field->value;
-        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
-        update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
+        if ($timestamp = $field->value) {
+            $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+            update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
+        }
     }
 
-    public function sanitizeNoticeStart($value, $fieldArgs, $field)
+    public static function sanitizeNoticeStart($value, $fieldArgs, $field)
     {
         $value = absint($value);
         return $value * DAY_IN_SECONDS;
     }
 
-    public function escapeNoticeStartValue($value, $fieldArgs, $field)
+    public static function escapeNoticeStartValue($value, $fieldArgs, $field)
     {
         $value = absint($value);
         return ceil($value / DAY_IN_SECONDS);
@@ -483,12 +453,12 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return mixed string|array
      */
-    public function sanitizeTextarea($value, $fieldArgs, $field)
+    public static function sanitizeTextarea($value, $fieldArgs, $field)
     {
         if (!empty($value)) {
             $value = explode(PHP_EOL, sanitize_textarea_field($value));
             $value = array_unique(array_filter(array_map('trim', $value)));
-            $value = array_filter(array_map([$this, 'validateDate'], $value));
+            $value = array_filter(array_map([__CLASS__, 'validateDate'], $value));
             sort($value);
         }
         return !empty($value) ? $value : '';
@@ -502,7 +472,7 @@ class MetaBoxes
      * @param \CMB2_Field $field
      * @return string
      */
-    public function escapeTextareaValue($value, $fieldArgs, $field)
+    public static function escapeTextareaValue($value, $fieldArgs, $field)
     {
         if (!empty($value) && is_array($value)) {
             return implode(PHP_EOL, $value);
@@ -516,7 +486,7 @@ class MetaBoxes
      * @param string $date
      * @return string
      */
-    public function validateDate($date)
+    public static function validateDate($date)
     {
         $d = \DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date ? $d->format('Y-m-d') : '';
