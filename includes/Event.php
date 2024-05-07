@@ -251,10 +251,10 @@ class Event
 
     public static function isExpired($postId)
     {
+        $currentTime = current_time('timestamp');
         $event = self::getData($postId);
         $tsEnd = $event['event']['end'] ?? 0;
         $tsEnd = strtotime($tsEnd);
-        $currentTime = current_time('timestamp');
         $repeat = $event['repeat'] ?? '';
         $ocurrences = $event['ocurrences'] ?? [];
         if ($repeat == 'on' && !empty($ocurrences)) {
