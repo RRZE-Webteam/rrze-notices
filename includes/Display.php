@@ -36,8 +36,6 @@ class Display
             $this->previewNotice();
             $this->notices->boot();
         }, 99);
-
-        //add_filter('user_can_richedit', [$this, 'disableRichedit']);        
     }
 
     protected function setNetworkWideNotices()
@@ -265,15 +263,5 @@ class Display
                 'is_dismissible' => false
             ]
         );
-    }
-
-    public function disableRichedit($can)
-    {
-        global $post;
-
-        if ($this->customPostType == $post->post_type) {
-            return false;
-        }
-        return $can;
     }
 }
