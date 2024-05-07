@@ -8,36 +8,25 @@ class CPT
 {
     const POST_TYPE = 'notice';
 
-    const EXPIRED_POST_STATUS = 'expired';    
+    const EXPIRED_POST_STATUS = 'expired';
 
-    protected $siteOptions;
-
-    protected $metaBoxes;
-
-    public function __construct()
+    public static function loaded()
     {
-        $this->siteOptions = Options::getSiteOptions();
-    }
-
-    public function loaded()
-    {
-        add_action('init', [$this, 'registerCPT']);
+        add_action('init', [__CLASS__, 'registerCPT']);
         add_action('init', [__CLASS__, 'registerPostStatus']);
+        add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
+        add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
 
-        $post = new Post;
-        $post->loaded();
+        Post::loaded();
+
+        Metaboxes::loaded();
 
         $columns = new Columns;
         $columns->loaded();
-
-        $metaBoxes = new MetaBoxes;
-        $metaBoxes->loaded();
     }
 
-    public function registerCPT()
+    public static function registerCPT()
     {
-        $capability = Utils::isPluginActiveForNetwork() ? $this->siteOptions->access : 'manage_options';
-
         $labels = [
             'name'               => _x('Notices', 'post type general name', 'rrze-notices'),
             'singular_name'      => _x('Notice', 'post type singular name', 'rrze-notices'),
@@ -55,6 +44,21 @@ class CPT
             'not_found_in_trash' => __('No notices found in Trash.', 'rrze-notices')
         ];
 
+        $siteOptions = Options::getSiteOptions();
+        $capability = Utils::isPluginActiveForNetwork() ? $siteOptions->access : 'manage_options';
+
+        $capabilityType = $capability == 'manage_options' ? 'page' : self::POST_TYPE;
+        $capabilities = [
+            'edit_post'              => 'edit_' . $capabilityType,
+            'read_post'              => 'read_' . $capabilityType,
+            'delete_post'            => 'delete_' . $capabilityType,
+            'edit_posts'             => 'edit_' . $capabilityType . 's',
+            'edit_others_posts'      => 'edit_others_' . $capabilityType . 's',
+            'delete_posts'           => 'delete_' . $capabilityType . 's',
+            'publish_posts'          => 'publish_' . $capabilityType . 's',
+            'read_private_posts'     => 'read_private_' . $capabilityType . 's',
+        ];
+
         $args = [
             'labels'                => $labels,
             'description'           => '',
@@ -67,30 +71,17 @@ class CPT
             'show_in_admin_bar'     => false,
             'menu_position'         => null,
             'menu_icon'             => 'dashicons-warning',
-            'capability_type'       => 'page',
-            'capabilities'          => [
-                'edit_post'          => $capability,
-                'read_post'          => $capability,
-                'delete_posts'       => $capability,
-                'edit_posts'         => $capability,
-                'edit_others_posts'  => $capability,
-                'publish_posts'      => $capability,
-                'read_private_posts' => $capability,
-                'create_posts'       => $capability
-            ],
-            //'map_meta_cap'          => null,
+            'capability_type'       => $capabilityType,
+            'capabilities'          => $capabilities,
+            'map_meta_cap'          => true,
             'hierarchical'          => false,
             'supports'              => ['title', 'editor'],
-            //'taxonomies'            => [],
             'has_archive'           => false,
             'rewrite'               => false,
-            //'permalink_epmask'    => EP_PERMALINK,
             'query_var'             => true,
             'can_export'            => true,
             'delete_with_user'      => null,
             'show_in_rest'          => false,
-            //'rest_base'             => self::POST_TYPE,
-            //'rest_controller_class' => WP_REST_Posts_Controller,
         ];
 
         register_post_type(self::POST_TYPE, $args);
@@ -98,8 +89,11 @@ class CPT
 
     public static function registerPostStatus()
     {
+        if (in_array(self::EXPIRED_POST_STATUS, get_post_stati())) {
+            return;
+        }
         register_post_status(self::EXPIRED_POST_STATUS, [
-            'label'                     => _x('Expired', 'post', 'rrze-notices'),
+            'label'                     => _x('Expired', 'custom post status', 'rrze-notices'),
             'public'                    => false,
             'private'                   => false,
             'exclude_from_search'       => true,
@@ -112,5 +106,46 @@ class CPT
                 'rrze-notices'
             )
         ]);
-    }    
+    }
+
+    public static function appendPostStatusPostbox()
+    {
+        $post = get_post();
+        if (!$post || $post->post_type !== self::POST_TYPE) {
+            return;
+        }
+
+        $selected = '';
+        $postStatusDisplay = '';
+        $title = _x('Expired', 'custom post status', 'rrze-notices');
+        if ($post->post_status == self::EXPIRED_POST_STATUS) {
+            $postStatusDisplay = '$(".misc-pub-post-status span#post-status-display").text("' . $title . '");';
+            $selected = ' selected=\"selected\"';
+        }
+        $script = '
+        <script>
+        jQuery(document).ready(function($){
+        $("select#post_status").append("<option value=\"expired\"' . $selected . '>' . $title . '</option>");
+        ' . $postStatusDisplay . '
+        });
+        </script>
+        ';
+        echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
+    }
+
+    public static function appendPostStatusQuickEdit()
+    {
+        $post = get_post();
+        if (!$post || $post->post_type !== self::POST_TYPE) {
+            return;
+        }
+
+        $title = _x('Expired', 'custom post status', 'rrze-notices');
+        $script = "<script>
+        jQuery(document).ready(function($) {
+        $('select[name=\"_status\"]').append('<option value=\"expired\">" . $title . "</option>');
+        });
+        </script>";
+        echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
+    }
 }
