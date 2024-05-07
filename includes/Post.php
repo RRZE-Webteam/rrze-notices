@@ -8,94 +8,59 @@ use RRZE\Notices\CPT;
 
 class Post
 {
-    protected $siteOptionsName;
-
-    protected $siteOptions;
-
-    public function __construct()
+    public static function loaded()
     {
-        $this->siteOptionsName = Options::getSiteOptionName();
-        $this->siteOptions = Options::getSiteOptions();
+        add_action('updated_post_meta', [__CLASS__, 'updatePostMeta'], 10, 4);
+        add_action('delete_post', [__CLASS__, 'deletePost'], 10, 2);
+        add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
     }
 
-    public function loaded()
-    {
-        add_action('updated_post_meta', [$this, 'updatePostMeta'], 10, 4);
-        add_action('delete_post', [$this, 'deletePost'], 10, 2);
-        add_action('pre_get_posts', [$this, 'excludeNetworkWidePosts']);
-        add_filter('user_has_cap', [$this, 'restrictPostEditing'], 10, 4);
-    }
-
-    public function updatePostMeta($metaId, $postId, $metaKey, $metaValue)
+    public static function updatePostMeta($metaId, $postId, $metaKey, $metaValue)
     {
         if (get_post_type($postId) != CPT::POST_TYPE) {
             return;
         }
-        $repeat = get_post_meta($postId, 'event_repeat', true);
-        $rruleArgs = Event::makeRRuleArgs($postId);
+
         if (
-            $repeat == 'on' &&
-            $rruleArgs = json_encode($rruleArgs)
+            $metaKey == 'event_repeat'
+            && $metaValue == 'on'
+        ) {
+            $rruleArgs = Event::makeRRuleArgs($postId);
+        }
+
+        if (
+            $metaKey == 'event_repeat'
+            && $metaValue == 'on'
+            && $rruleArgs = json_encode($rruleArgs)
         ) {
             update_post_meta($postId, 'event_rrule_args', $rruleArgs);
         }
 
         if (
-            Utils::isPluginActiveForNetwork() &&
-            current_user_can('manage_network_options')
+            Utils::isPluginActiveForNetwork()
+            && current_user_can('manage_network_options')
         ) {
             if (self::isNetworkWide($postId)) {
-                $this->updateNetworkWideSiteOption($postId);
+                self::updateNetworkWideSiteOption($postId);
                 update_post_meta($postId, 'notice_network_wide', 'on');
             } else {
-                $this->deleteNetworkWideSiteOption($postId);
+                self::deleteNetworkWideSiteOption($postId);
                 delete_post_meta($postId, 'notice_network_wide');
             }
         }
-
-        // $currentTime = current_time('timestamp');
-        // $tsStart = self::getNoticeStart($postId);
-        // if ($tsStart && $tsStart > $currentTime) {
-        //     wp_update_post([
-        //         'ID' => $postId,
-        //         'post_status' => 'future'
-        //     ]);
-        // }
     }
 
-    public function deletePost($postId, $post)
+    public static function deletePost($postId, $post)
     {
-        $this->deleteNetworkWideSiteOption($postId);
+        self::deleteNetworkWideSiteOption($postId);
     }
 
-    public function excludeNetworkWidePosts($query)
+    public static function restrictPostEditing($allcaps, $caps, $args, $user)
     {
-        if (
-            !current_user_can('manage_network_options') &&
-            $query->is_main_query() &&
-            $query->get('post_type') == CPT::POST_TYPE
-        ) {
-            $meta_query = [
-                'relation' => 'OR',
-                [
-                    'key' => 'notice_network_wide',
-                    'compare' => 'NOT EXISTS',
-                ],
-                [
-                    'key' => 'notice_network_wide',
-                    'value' => 'on',
-                    'compare' => '!=',
-                ],
-            ];
-            $query->set('meta_query', $meta_query);
-        }
-    }
-
-    public function restrictPostEditing($allcaps, $caps, $args, $user)
-    {
-        if (isset($caps[0], $args[2]) && $caps[0] == 'edit_post') {
+        if (isset($caps[0], $args[2])) {
             $post = get_post($args[2]);
             if (
+                $post &&
                 $post->post_type == CPT::POST_TYPE &&
                 get_post_meta($post->ID, 'notice_network_wide', true) == 'on' &&
                 !current_user_can('manage_network_options')
@@ -106,8 +71,11 @@ class Post
         return $allcaps;
     }
 
-    protected function updateNetworkWideSiteOption(int $postId)
+    public static function updateNetworkWideSiteOption(int $postId)
     {
+        $siteOptionsName = Options::getSiteOptionName();
+        $siteOptions = Options::getSiteOptions();
+
         $post = get_post($postId);
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
@@ -121,7 +89,7 @@ class Post
         $noticeStart = self::getNoticeStart($postId, true);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-        $this->siteOptions->network_wide[$noticeId] = [
+        $siteOptions->network_wide[$noticeId] = [
             'title' => $title,
             'content' => $content,
             'type' => $type,
@@ -132,16 +100,19 @@ class Post
             'admin_link' => $adminLink
         ];
 
-        update_site_option($this->siteOptionsName, $this->siteOptions);
+        update_site_option($siteOptionsName, $siteOptions);
     }
 
-    protected function deleteNetworkWideSiteOption(int $postId)
+    public static function deleteNetworkWideSiteOption(int $postId)
     {
+        $siteOptionsName = Options::getSiteOptionName();
+        $siteOptions = Options::getSiteOptions();
+
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
-        if (isset($this->siteOptions->network_wide[$noticeId])) {
-            unset($this->siteOptions->network_wide[$noticeId]);
-            update_site_option($this->siteOptionsName, $this->siteOptions);
+        if (isset($siteOptions->network_wide[$noticeId])) {
+            unset($siteOptions->network_wide[$noticeId]);
+            update_site_option($siteOptionsName, $siteOptions);
         }
     }
 
@@ -254,21 +225,27 @@ class Post
         ];
         $posts = get_posts($args);
 
-        $siteOptions = Options::getSiteOptions();
-        $currentBlogId = get_current_blog_id();
-
         foreach ($posts as $post) {
             $postId = $post->ID;
-            if (self::isNetworkWide($postId)) {
-                // $noticeId = sprintf('%1$d-%2$d', $currentBlogId, $postId);
-                // $siteOptions->network_wide[$noticeId] = $siteOptions->network_wide[$noticeId] ?? [];
-                // $siteOptions->network_wide[$noticeId]['status'] = Event::isExpired($postId) ? 'expired' : 'active';
-            }
-            if (Event::isExpired($postId)) {
+            $expired = Event::isExpired($postId);
+            if ($expired) {
                 wp_update_post([
                     'ID' => $postId,
                     'post_status' => CPT::EXPIRED_POST_STATUS
                 ]);
+            }
+
+            if (
+                Utils::isPluginActiveForNetwork()
+                && self::isNetworkWide($postId)
+            ) {
+                if (!$expired) {
+                    self::updateNetworkWideSiteOption($postId);
+                    update_post_meta($postId, 'notice_network_wide', 'on');
+                } else {
+                    self::deleteNetworkWideSiteOption($postId);
+                    delete_post_meta($postId, 'notice_network_wide');
+                }
             }
         }
     }
