@@ -6,8 +6,6 @@ defined('ABSPATH') || exit;
 
 class Display
 {
-    protected $customPostType;
-
     protected $siteOptions;
 
     protected $siteOptionsName;
@@ -18,7 +16,6 @@ class Display
 
     public function __construct()
     {
-        $this->customPostType = CPT::POST_TYPE;
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = new Notices;
@@ -53,11 +50,16 @@ class Display
             $idArray = explode('-', $noticeId);
             $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
             $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
+
             if (!$blogId || !$postId) {
                 continue;
             }
 
             if (get_current_blog_id() == $blogId) {
+                continue;
+            }
+
+            if (!get_blog_status($blogId, 'public')) {
                 continue;
             }
 
@@ -67,19 +69,14 @@ class Display
 
             $notice = (object) $notice;
 
-            $title = isset($notice->title) ? $notice->title : '';
-            $content = isset($notice->content) ? $notice->content : '';
-            $type = isset($notice->type) ? $notice->type : 'info';
-            $altStyle = isset($notice->alt_style) ? $notice->alt_style : false;
-            $hideTitle = isset($notice->hide_title) ? $notice->hide_title : false;
-            $visibility = isset($notice->visibility) ? $notice->visibility : true;
-            $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
-
-            if (Event::isExpired($postId)) {
-                unset($this->siteOptions->network_wide[$noticeId]);
-                update_site_option($this->siteOptionsName, $this->siteOptions);
-                continue;
-            }
+            $title = $notice->title ?? '';
+            $content = $notice->content ?? '';
+            $type = $notice->type ?? 'info';
+            $altStyle = $notice->alt_style ?? false;
+            $hideTitle = $notice->hide_title ?? false;
+            $visibility = $notice->visibility ?? true;
+            $subscriptionLink = $notice->subscription_link ?? '';
+            $adminLink = $notice->admin_link ?? '';
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
@@ -111,13 +108,22 @@ class Display
             $title = !$hideTitle ? $title : '';
             $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
 
+            $subscriptionLink = sprintf(
+                '<a href="%1$s">%2$s</a>',
+                $subscriptionLink,
+                __('Add to calendar', 'rrze-notices')
+            );
+
             $editLink = '';
             if (
                 current_user_can('manage_network_options')
                 && Utils::isPluginActiveForNetwork()
             ) {
-                $editText = __('Edit (Network-Wide)', 'rrze-notices');
-                $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
+                $editLink = sprintf(
+                    '<a href="%1$s">%2$s</a>',
+                    $adminLink,
+                    __('Edit (Network-Wide)', 'rrze-notices')
+                );
             }
 
             $this->notices->add(
@@ -125,11 +131,12 @@ class Display
                 $title,
                 $content,
                 [
-                    'screens'       => ['dashboard'],
-                    'type'          => $type,
-                    'alt_style'     => $altStyle,
-                    'capability'    => 'read',
-                    'edit_link'     => $editLink
+                    'screens'           => ['dashboard'],
+                    'type'              => $type,
+                    'alt_style'         => $altStyle,
+                    'capability'        => 'read',
+                    'subscription_link' => $subscriptionLink,
+                    'edit_link'         => $editLink
                 ]
             );
         }
@@ -138,13 +145,14 @@ class Display
     protected function setNotices()
     {
         $posts = get_posts([
-            'post_type' => $this->customPostType,
+            'post_type' => CPT::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1
         ]);
         if (!$posts) {
             return;
         }
+
         foreach ($posts as $post) {
             $postId = $post->ID;
             $blogId = get_current_blog_id();
@@ -155,6 +163,7 @@ class Display
             $altStyle = Post::altStyle($postId);
             $hideTitle = Post::hideTitle($postId);
             $visibility = Post::getVisibility($postId);
+            $subscriptionLink = Export::makeIcsLink($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
             if (Event::isExpired($postId)) {
@@ -188,6 +197,12 @@ class Display
             $title = !$hideTitle ? $title : '';
             $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
 
+            $subscriptionLink = sprintf(
+                '<a href="%1$s">%2$s</a>',
+                Export::makeIcsLink($postId),
+                __('Add to calendar', 'rrze-notices')
+            );
+
             $editLink = '';
             $editText = __('Edit', 'rrze-notices');
             $capability = 'manage_options';
@@ -202,7 +217,11 @@ class Display
             }
 
             if (current_user_can($capability)) {
-                $editLink = sprintf('<a class="admin-edit-link" href="%1$s">%2$s</a>', $adminLink, $editText);
+                $editLink = sprintf(
+                    '<a href="%1$s">%2$s</a>',
+                    $adminLink,
+                    $editText
+                );
             }
 
             $this->notices->add(
@@ -210,11 +229,12 @@ class Display
                 $title,
                 $content,
                 [
-                    'screens'       => ['dashboard'],
-                    'type'          => $type,
-                    'alt_style'     => $altStyle,
-                    'capability'    => 'read',
-                    'edit_link'     => $editLink
+                    'screens'           => ['dashboard'],
+                    'type'              => $type,
+                    'alt_style'         => $altStyle,
+                    'capability'        => 'read',
+                    'subscription_link' => $subscriptionLink,
+                    'edit_link'         => $editLink
                 ]
             );
         }
@@ -223,7 +243,7 @@ class Display
     protected function previewNotice()
     {
         $screen = get_current_screen();
-        if ($screen->id != $this->customPostType) {
+        if ($screen->id != CPT::POST_TYPE) {
             return;
         }
 
@@ -246,7 +266,17 @@ class Display
         $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
         $altStyle = Post::altStyle($postId);
 
-        $editLink = sprintf('<span class="preview">%s</span>', __('Preview', 'rrze-notices'));;
+        $subscriptionLink = sprintf(
+            '<a href="%1$s">%2$s</a>',
+            Export::makeIcsLink($postId),
+            __('Add to calendar', 'rrze-notices')
+        );
+
+        $editLink = sprintf(
+            '<span class="notice-preview">%s</span>',
+            __('Preview', 'rrze-notices')
+        );
+
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%d-%d', $blogId, $postId);
 
@@ -255,12 +285,13 @@ class Display
             $title,
             $content,
             [
-                'screens'        => [$this->customPostType],
-                'type'           => $type,
-                'alt_style'      => $altStyle,
-                'capability'     => 'read',
-                'edit_link'      => $editLink,
-                'is_dismissible' => false
+                'screens'           => [CPT::POST_TYPE],
+                'type'              => $type,
+                'alt_style'         => $altStyle,
+                'capability'        => 'read',
+                'subscription_link' => $subscriptionLink,
+                'edit_link'         => $editLink,
+                'is_dismissible'    => false
             ]
         );
     }
