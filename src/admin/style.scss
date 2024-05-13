@@ -9,15 +9,12 @@
 }
 
 .rrze-notices.notice {
-    span.preview {
-        float: right;
-        position: relative;
-        bottom: 26px;
+    span.notice-preview {
         text-transform: uppercase;
         font-weight: bold;
     }
 
-    a.admin-edit-link {
+    .notice-actions {
         float: right;
         position: relative;
         bottom: 26px;
