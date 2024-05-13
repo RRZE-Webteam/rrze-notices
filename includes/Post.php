@@ -87,6 +87,7 @@ class Post
         $hideTitle = self::hideTitle($postId);
         $visibility = self::getVisibility($postId);
         $noticeStart = self::getNoticeStart($postId, true);
+        $subscriptionLink = Export::makeIcsLink($postId);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
         $siteOptions->network_wide[$noticeId] = [
@@ -97,6 +98,7 @@ class Post
             'alt_style' => $altStyle,
             'visibility' => $visibility,
             'notice_start' => $noticeStart,
+            'subscription_link' => $subscriptionLink,
             'admin_link' => $adminLink
         ];
 
@@ -221,7 +223,7 @@ class Post
         $args = [
             'post_type' => CPT::POST_TYPE,
             'post_status' => 'publish',
-            'posts_per_page' => -1,
+            'numberposts' => -1,
         ];
         $posts = get_posts($args);
 
