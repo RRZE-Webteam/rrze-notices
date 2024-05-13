@@ -164,7 +164,7 @@ class ICal
      */
     private function escStr(string $input): string
     {
-        $input = preg_replace('/([\,;])/', '\\\$1', $input);
+        // $input = preg_replace('/([\,;])/', '\\\$1', $input);
         $input = str_replace("\n", "\\n", $input);
         $input = str_replace("\r", "\\r", $input);
         return $input;
