@@ -169,7 +169,7 @@ class MetaBoxes
                     ]
                 ),
             ],
-            'classes'   => ['event-repeat'],
+            'classes' => ['event-repeat'],
         ]);
         // Reapeat Interval
         $cmb->add_field([
@@ -181,7 +181,7 @@ class MetaBoxes
                 'week' => __('Weekly', 'rrze-notices'),
                 'month' => __('Monthly', 'rrze-notices'),
             ],
-            'classes'   => ['event-repeat'],
+            'classes' => ['event-repeat'],
         ]);
         // Reapeats weekly
         $cmb->add_field([
@@ -195,14 +195,14 @@ class MetaBoxes
             ],
             'before_field' => __('every', 'rrze-notices') . ' ',
             'after_field' =>  ' ' . __('week(s)', 'rrze-notices'),
-            'classes'   => ['event-repeat', 'event-repeat-weekly'],
+            'classes' => ['event-repeat', 'event-repeat-weekly'],
         ]);
         $cmb->add_field([
             'name' => __('Repeats On', 'rrze-notices'),
             'id' => 'event_repeat_weekly_day',
             'type' => 'multicheck_inline',
             'options' => self::getDowOptions(),
-            'classes'   => ['event-repeat', 'event-repeat-weekly'],
+            'classes' => ['event-repeat', 'event-repeat-weekly'],
         ]);
         // Repeats monthly
         $cmb->add_field([
@@ -213,7 +213,7 @@ class MetaBoxes
                 'date' => __('Date', 'rrze-notices'),
                 'dow' => __('Weekday', 'rrze-notices'),
             ],
-            'classes'   => ['event-repeat', 'event-repeat-monthly'],
+            'classes' => ['event-repeat', 'event-repeat-monthly'],
         ]);
         $cmb->add_field([
             'name' => __('Repeats On', 'rrze-notices'),
@@ -230,7 +230,7 @@ class MetaBoxes
             'type' => 'select_weekdayofmonth',
             'before_field' => __('each', 'rrze-notices') . ' ',
             'after_field' =>  ' ' . __('of month', 'rrze-notices'),
-            'classes'   => ['event-repeat', 'event-repeat-monthly', 'event-repeat-monthly-dow'],
+            'classes' => ['event-repeat', 'event-repeat-monthly', 'event-repeat-monthly-dow'],
         ]);
         $cmb->add_field([
             'name' => __('Repeats In', 'rrze-notices'),
@@ -238,7 +238,7 @@ class MetaBoxes
             'type' => 'multicheck_inline',
             'options' => self::getMonthsOptions(),
             'default' => array_keys(self::getMonthsOptions()),
-            'classes'   => ['event-repeat', 'event-repeat-monthly'],
+            'classes' => ['event-repeat', 'event-repeat-monthly'],
         ]);
         // Exceptions
         $cmb->add_field([
@@ -248,7 +248,7 @@ class MetaBoxes
             'type' => 'textarea_small',
             'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
             'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
-            'classes'   => ['event-repeat'],
+            'classes' => ['event-repeat'],
         ]);
         // Additions
         $cmb->add_field([
@@ -258,7 +258,7 @@ class MetaBoxes
             'type' => 'textarea_small',
             'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
             'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
-            'classes'   => ['event-repeat'],
+            'classes' => ['event-repeat'],
         ]);
     }
 
