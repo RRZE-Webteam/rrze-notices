@@ -40,13 +40,14 @@ class Notice
      * @var array
      */
     private $options = [
-        'screens'        => [],
-        'type'           => 'info',
-        'alt_style'      => false,
-        'edit_link'      => '',
-        'capability'     => 'edit_theme_options',
-        'option_prefix'  => 'rrze_notices_dismissed',
-        'is_dismissible' => true
+        'screens'           => [],
+        'type'              => 'info',
+        'alt_style'         => false,
+        'subscription_link' => '',
+        'edit_link'         => '',
+        'capability'        => 'edit_theme_options',
+        'option_prefix'     => 'rrze_notices_dismissed',
+        'is_dismissible'    => true
     ];
 
     /**
@@ -117,7 +118,14 @@ class Notice
 
         $html  = $this->getTitle();
         $html .= $this->getMessage();
-        $html .= $this->options['edit_link'] ? $this->options['edit_link'] : '';
+
+        $noticeActions[] = $this->options['subscription_link'] ? $this->options['subscription_link'] : '';
+        $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
+        $noticeActions = array_filter($noticeActions);
+        $html .= sprintf(
+            '<div class="notice-actions">%s</div>',
+            implode('&nbsp;&nbsp;|&nbsp;&nbsp;', $noticeActions)
+        );
 
         printf(
             '<div id="%1$s" class="%2$s">%3$s</div>',
