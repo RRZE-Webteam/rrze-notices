@@ -22,50 +22,51 @@ class Export
         $plugin = $_GET['ical-source'] ?? null;
         $postId = $_GET['id'] ?? null;
         $action = $_GET['action'] ?? null;
+        $post = get_post(absint($postId));
 
         if (
-            $plugin === plugin()->getSlug() &&
-            $postId &&
-            $action === 'export'
-        ) {
-            $postId = absint($postId);
+            $post &&
+            $action === 'export' &&
+            $plugin === plugin()->getSlug()
 
-            $this->set($postId);
+        ) {
+            $this->set($post);
             $this->stream();
         }
     }
 
-    private function set(int $postId)
+    private function set(object $post)
     {
-        $post = get_post($postId);
         if (
-            !$post ||
-            $post->post_type !== CPT::POST_TYPE ||
-            $post->post_status !== 'publish'
+            is_a($post, 'WP_Post') &&
+            $post->post_type === CPT::POST_TYPE &&
+            $post->post_status === 'publish'
         ) {
-            return;
+            $postId = $post->ID;
+            $data = $this->getEvent($postId, $post);
+            self::build(@$data);
         }
-
-        $data = $this->getEvent($post);
-        self::build(@$data);
     }
 
-    private function getEvent(object $post)
+    private function getEvent(int $postId, object $post)
     {
-        $meta = get_post_meta($post->ID, '', true);
-        $data = [
-            'summary' => $post->post_title,
-            'uid' => $meta['event_uid'][0] ?? '',
-            'description' => $post->post_content ?? '',
-            'dtstart' => get_gmt_from_date(date('Y-m-d H:i', $meta['event_start'][0]), 'Y-m-d H:i:s'),
-            'dtend' => !empty($meta['end'][0]) ? get_gmt_from_date(date('Y-m-d H:i', $meta['end'][0]), 'Y-m-d H:i:s') : '',
-            'location' => $meta['location'][0] ?? '',
-        ];
-        $icsMeta = !empty($meta['ics_event_meta'][0]) ? maybe_unserialize($meta['ics_event_meta'][0]) : null;
-        $rrule = !empty($icsMeta['rrule']) ? maybe_unserialize($icsMeta['rrule']) : null;
-        if (empty($rrule)) {
-            $rrule = !empty($meta['event-rrule-args'][0]) ? json_decode($meta['event-rrule-args'][0], true) : null;
-            if (!empty($rrule) && is_array($rrule)) {
+        $meta = get_post_meta($postId);
+        $repeat = Utils::getMeta($meta, 'event_repeat');
+
+        $tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt');
+        $startDay = date('Y-m-d H:i:s', $tsStartUTC);
+
+        $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
+        $endDay = date('Y-m-d H:i:s', $tsEndUTC);
+
+        $meta = get_post_meta($post->ID);
+        $eventUid = Utils::getMeta($meta, 'event_uid');
+        $repeat = Utils::getMeta($meta, 'event_repeat');
+
+        $rrule = null;
+        if ($repeat) {
+            $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
+            if ($rrule = json_decode($rruleArgs, true)) {
                 $rruleObj = new RRule($rrule);
                 $rrule = $rruleObj->rfcString();
                 $rruleStartPos = strpos($rrule, 'RRULE:');
@@ -74,7 +75,16 @@ class Export
                 }
             }
         }
-        $data['rrule'] = !empty($rrule) ? $rrule : '';
+
+        $data[$postId] = [
+            'summary' => $post->post_title,
+            'uid' => $eventUid ?: '',
+            'description' => $post->post_content ?: '',
+            'dtstart' => $startDay,
+            'dtend' => $endDay,
+            'location' => '',
+            'rrule' => $rrule ?: ''
+        ];
 
         return $data;
     }
