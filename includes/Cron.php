@@ -11,9 +11,16 @@ defined('ABSPATH') || exit;
  */
 class Cron
 {
+    /**
+     * The action hook name for the scheduled event
+     */
     const UPDATE_STATUS = 'rrze_notices_update_status';
 
-    // Initialize the class by setting up action hooks
+    /**
+     * Initialize the class by setting up action hooks
+     * 
+     * @return void
+     */
     public static function init()
     {
         // Add an action hook to run the 'updateStatus' method when scheduled.
@@ -23,7 +30,11 @@ class Cron
         add_action('init', [__CLASS__, 'activateScheduledEvents']);
     }
 
-    // Activate the scheduled event if it's not already scheduled
+    /**
+     * Activate the scheduled event if it's not already scheduled
+     * 
+     * @return void
+     */
     public static function activateScheduledEvents()
     {
         // Check if the scheduled event is not already in the queue.
@@ -33,13 +44,21 @@ class Cron
         }
     }
 
-    // Method to be executed when the scheduled event is triggered
+    /**
+     * Method to be executed when the scheduled event is triggered
+     * 
+     * @return void
+     */
     public static function updateStatus()
     {
         Post::updateStatus();
     }
 
-    // Clear the scheduled event hook
+    /**
+     * Clear the scheduled event hook
+     * 
+     * @return void
+     */
     public static function clearSchedule()
     {
         // Clear the scheduled event hook for the specified action hook.
