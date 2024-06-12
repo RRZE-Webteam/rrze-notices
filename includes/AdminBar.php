@@ -70,7 +70,7 @@ class AdminBar
             $type = $notice->type ?? 'info';
             $visibility = $notice->visibility ?? true;
 
-            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
+            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
                 continue;
             }
 
@@ -129,7 +129,7 @@ class AdminBar
                 continue;
             }
 
-            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
+            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
                 continue;
             }
 
