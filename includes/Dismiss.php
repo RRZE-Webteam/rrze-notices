@@ -109,4 +109,18 @@ class Dismiss
     {
         update_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true);
     }
+
+    /**
+     * Delete the dismissed notice.
+     */
+    public function deleteDismissedNotice()
+    {
+        global $wpdb;
+        $metaKey = "{$this->prefix}_{$this->id}";
+        $sql = $wpdb->prepare(
+            "DELETE FROM $wpdb->usermeta WHERE meta_key = %s",
+            $metaKey
+        );
+        $wpdb->query($sql);
+    }
 }
