@@ -7,12 +7,12 @@ defined('ABSPATH') || exit;
 class Main
 {
     /**
-     * @var Main
+     * @var object Main
      */
     private static $instance;
 
     /**
-     * @var Options
+     * @var object
      */
     private $siteOptions;
 
@@ -29,7 +29,7 @@ class Main
     }
 
     /**
-     * Main constructor.
+     * Main constructor
      */
     public function __construct()
     {
@@ -58,16 +58,28 @@ class Main
         add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
     }
 
+    /**
+     * Prevent cloning
+     */
     public function __clone()
     {
         trigger_error('Cloning is not allowed.', E_USER_ERROR);
     }
 
+    /**
+     * Prevent unserializing
+     */
     public function __wakeup()
     {
         trigger_error('Unserialize is forbidden.', E_USER_ERROR);
     }
 
+    /**
+     * Enqueue scripts and styles for the admin area
+     *
+     * @param string $hook The current admin page
+     * @return void
+     */
     public function adminEnqueueScripts($hook)
     {
         global $post;
