@@ -57,7 +57,7 @@ class Columns
                 $data = Post::getEventData($postId);
                 $eventDate = [
                     ($data['event']['date'] ?? '') . (isset($data['event']['time']) ? ', ' . $data['event']['time'] : '&mdash;'),
-                    Post::getEventReccurence($postId)
+                    Post::getHumanReadableRecurrence($postId)
                 ];
                 $eventDate = array_filter($eventDate);
                 echo implode('<br>', $eventDate);
