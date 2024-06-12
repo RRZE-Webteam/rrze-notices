@@ -17,7 +17,7 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-const RRZE_PHP_VERSION = '8.1';
+const RRZE_PHP_VERSION = '8.2';
 const RRZE_WP_VERSION = '6.5';
 
 /**
