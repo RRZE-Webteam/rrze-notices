@@ -9,15 +9,26 @@
 }
 
 .rrze-notices.notice {
+    .notice-actions {
+        position: absolute;
+        bottom: 0;
+        right: 10px;
+        margin: 0;
+        padding: 10px;
+    }
+}
+
+.rrze-notices.notice.notice-preview {
+    .notice-actions {
+        position: relative;
+        float: right;
+        bottom: 36px;
+        right: 0;
+    }
+
     span.notice-preview {
         text-transform: uppercase;
         font-weight: bold;
-    }
-
-    .notice-actions {
-        float: right;
-        position: relative;
-        bottom: 26px;
     }
 }
 
