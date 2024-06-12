@@ -43,6 +43,7 @@ class Notice
         'screens'           => [],
         'type'              => 'info',
         'alt_style'         => false,
+        'preview'           => false,
         'subscription_link' => '',
         'edit_link'         => '',
         'capability'        => 'edit_theme_options',
@@ -168,6 +169,10 @@ class Notice
             'rrze-notices',
             'notice'
         ];
+
+        if ($this->options['preview']) {
+            $classes[] = 'notice-preview';
+        }
 
         if ($this->options['is_dismissible']) {
             $classes[] = 'is-dismissible';
