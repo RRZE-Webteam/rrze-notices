@@ -6,8 +6,16 @@ defined('ABSPATH') || exit;
 
 use RRZE\Notices\CPT;
 
+/**
+ * Class Post
+ *
+ * A class for managing post-related functionality.
+ */
 class Post
 {
+    /**
+     * Initialize the class by setting up action hooks
+     */
     public static function loaded()
     {
         add_action('updated_post_meta', [__CLASS__, 'updatePostMeta'], 10, 4);
@@ -15,7 +23,15 @@ class Post
         add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
     }
 
-    public static function updatePostMeta($metaId, $postId, $metaKey, $metaValue)
+    /**
+     * Update the post meta for the notice
+     *
+     * @param int $metaId
+     * @param int $postId
+     * @param string $metaKey
+     * @param mixed $metaValue
+     */
+    public static function updatePostMeta(int $metaId, int $postId, string $metaKey, mixed $metaValue)
     {
         if (get_post_type($postId) != CPT::POST_TYPE) {
             return;
@@ -50,11 +66,26 @@ class Post
         }
     }
 
+    /**
+     * Delete the network-wide site option when the notice is deleted
+     *
+     * @param int $postId
+     * @param object $post
+     */
     public static function deletePost($postId, $post)
     {
         self::deleteNetworkWideSiteOption($postId);
     }
 
+    /**
+     * Restrict editing of network-wide notices
+     *
+     * @param array $allcaps
+     * @param array $caps
+     * @param array $args
+     * @param object $user
+     * @return array
+     */
     public static function restrictPostEditing($allcaps, $caps, $args, $user)
     {
         if (isset($caps[0], $args[2])) {
@@ -71,6 +102,11 @@ class Post
         return $allcaps;
     }
 
+    /**
+     * Update the network-wide site option for the notice
+     *
+     * @param int $postId
+     */
     public static function updateNetworkWideSiteOption(int $postId)
     {
         $siteOptionsName = Options::getSiteOptionName();
@@ -105,6 +141,11 @@ class Post
         update_site_option($siteOptionsName, $siteOptions);
     }
 
+    /**
+     * Delete the network-wide site option for the notice
+     *
+     * @param int $postId
+     */
     public static function deleteNetworkWideSiteOption(int $postId)
     {
         $siteOptionsName = Options::getSiteOptionName();
@@ -118,6 +159,11 @@ class Post
         }
     }
 
+    /**
+     * Get the available notice types
+     *
+     * @return array
+     */
     public static function getNoticeTypes()
     {
         return [
@@ -126,6 +172,12 @@ class Post
         ];
     }
 
+    /**
+     * Get the type of the notice
+     *
+     * @param int $postId
+     * @return string
+     */
     public static function getType(int $postId): string
     {
         if (!$type = get_post_meta($postId, 'notice_type', true)) {
@@ -135,6 +187,12 @@ class Post
         return array_key_exists($type, self::getNoticeTypes()) ? $type : '&mdash;';
     }
 
+    /**
+     * Check if the notice should hide the title
+     *
+     * @param int $postId
+     * @return bool
+     */
     public static function hideTitle(int $postId): bool
     {
         if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
@@ -148,6 +206,12 @@ class Post
         }
     }
 
+    /**
+     * Check if the notice has an alternative style
+     *
+     * @param int $postId
+     * @return bool
+     */
     public static function altStyle(int $postId): bool
     {
         if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
@@ -161,6 +225,12 @@ class Post
         }
     }
 
+    /**
+     * Check if the notice is network-wide
+     *
+     * @param int $postId
+     * @return int
+     */
     public static function isNetworkWide(int $postId): int
     {
         if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
@@ -174,6 +244,12 @@ class Post
         }
     }
 
+    /**
+     * Get the visibility settings for the notice
+     *
+     * @param int $postId
+     * @return array
+     */
     public static function getVisibility(int $postId): array
     {
         if ($visibility = get_post_meta($postId, 'notice_visibility', true)) {
@@ -186,38 +262,65 @@ class Post
         }
     }
 
-    public static function getNoticeStart(int $postId, bool $gmt = false): mixed
+    /**
+     * Get the timestamp when the notice should start displaying
+     *
+     * @param int $postId
+     * @param bool $gmt
+     * @return int
+     */
+    public static function getNoticeStart(int $postId, bool $gmt = false): int
     {
-        $noticeStart = get_post_meta($postId, 'notice_start', true);
         $event = self::getEventData($postId);
         if ($gmt) {
-            $eventStart = $event['event']['start_gmt'] ?? null;
+            $noticeStart = (int) get_post_meta($postId, 'notice_start_gmt', true);
+            $eventStart = $event['event']['start_gmt'];
         } else {
-            $eventStart = $event['event']['start'] ?? null;
+            $noticeStart = (int) get_post_meta($postId, 'notice_start', true);
+            $eventStart = $event['event']['start'];
         }
-        if (!$noticeStart || !$eventStart) {
-            return null;
-        }
-        $noticeStart = absint($noticeStart);
-        $eventStart = strtotime($eventStart);
-        return $eventStart - $noticeStart;
+        return strtotime($eventStart) - $noticeStart;
     }
 
-    public static function isEventRepeat(int $postId): int
+    /**
+     * Check if the notice should start displaying
+     *
+     * @param int $postId
+     * @param bool $gmt
+     * @return bool
+     */
+    public static function isNoticeStarting(int $postId, bool $gmt = false): bool
     {
-        return (bool) get_post_meta($postId, 'event_repeat', true);
+        $noticeStart = self::getNoticeStart($postId, $gmt);
+        $currentTimestamp = $gmt ? time() : current_time('timestamp');
+        return $noticeStart < $currentTimestamp;
     }
 
+    /**
+     * Get the event data for the notice
+     *
+     * @param int $postId
+     * @return array
+     */
     public static function getEventData($postId)
     {
         return Event::getData($postId);
     }
 
-    public static function getEventReccurence($postId)
+    /**
+     * Get the human-readable event recurrence
+     *
+     * @param int $postId
+     * @return string
+     */
+    public static function getHumanReadableRecurrence($postId)
     {
         return Event::getHumanReadableRecurrence($postId);
     }
 
+    /**
+     * Update the status of the notice
+     */
     public static function updateStatus()
     {
         $args = [
