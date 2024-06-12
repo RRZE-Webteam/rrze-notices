@@ -4,16 +4,36 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Class Display
+ *
+ * A class for managing the display of notices.
+ */
 class Display
 {
+    /**
+     * @var object
+     */
     protected $siteOptions;
 
+    /**
+     * @var string
+     */
     protected $siteOptionsName;
 
+    /**
+     * @var string
+     */
     protected $userMeta = 'rrze_notices_dismissed';
 
+    /**
+     * @var object
+     */
     protected $notices;
 
+    /**
+     * Display constructor
+     */
     public function __construct()
     {
         $this->siteOptionsName = Options::getSiteOptionName();
@@ -21,6 +41,9 @@ class Display
         $this->notices = new Notices;
     }
 
+    /**
+     * Initialize the class by setting up action hooks
+     */
     public function loaded()
     {
         add_action('admin_init', function () {
@@ -35,6 +58,9 @@ class Display
         }, 99);
     }
 
+    /**
+     * Set network-wide notices
+     */
     protected function setNetworkWideNotices()
     {
         if (!Utils::isPluginActiveForNetwork()) {
@@ -142,6 +168,9 @@ class Display
         }
     }
 
+    /**
+     * Set notices
+     */
     protected function setNotices()
     {
         $posts = get_posts([
@@ -166,7 +195,7 @@ class Display
             $subscriptionLink = Export::makeIcsLink($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-            if (Event::isExpired($postId)) {
+            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
                 continue;
             }
 
@@ -240,6 +269,9 @@ class Display
         }
     }
 
+    /**
+     * Set the preview notice
+     */
     protected function previewNotice()
     {
         $screen = get_current_screen();
@@ -291,6 +323,7 @@ class Display
                 'capability'        => 'read',
                 'subscription_link' => $subscriptionLink,
                 'edit_link'         => $editLink,
+                'preview'           => true,
                 'is_dismissible'    => false
             ]
         );
