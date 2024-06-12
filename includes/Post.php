@@ -289,7 +289,7 @@ class Post
      * @param bool $gmt
      * @return bool
      */
-    public static function isNoticeStarting(int $postId, bool $gmt = false): bool
+    public static function isNoticeStarted(int $postId, bool $gmt = false): bool
     {
         $noticeStart = self::getNoticeStart($postId, $gmt);
         $currentTimestamp = $gmt ? time() : current_time('timestamp');
@@ -333,11 +333,19 @@ class Post
         foreach ($posts as $post) {
             $postId = $post->ID;
             $expired = Event::isExpired($postId);
+            $noticeStarted = Post::isNoticeStarted($postId);
             if ($expired) {
                 wp_update_post([
                     'ID' => $postId,
                     'post_status' => CPT::EXPIRED_POST_STATUS
                 ]);
+            }
+
+            if ($expired || !$noticeStarted) {
+                $blogId = get_current_blog_id();
+                $noticeId = $blogId . '-' . $postId;
+                $dismiss = new Dismiss($noticeId, 'rrze_notices_dismissed', true);
+                $dismiss->deleteDismissedNotice();
             }
 
             if (
