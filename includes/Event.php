@@ -7,9 +7,20 @@ defined('ABSPATH') || exit;
 use RRule\RRule;
 use RRule\RSet;
 
+/**
+ * Class Event
+ *
+ * A class for managing events.
+ */
 class Event
 {
-    public static function getData($postId)
+    /**
+     * Get event data
+     *
+     * @param int $postId
+     * @return array|null
+     */
+    public static function getData(int $postId)
     {
         $meta = get_post_meta($postId);
         $allDay = Utils::getMeta($meta, 'event_all_day');
@@ -17,14 +28,28 @@ class Event
 
         $data['event'] = [];
 
-        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+        $occurences = self::getOcurrences($postId);
+        if (!empty($occurences)) {
+            $tsStart = strtotime($occurences[0]);
+            $tsStartUTC = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $tsStart)));
+        } elseif ($tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+            $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+        } else {
             return null;
         }
-        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+
         $startDay = date('Y-m-d', $tsStart);
 
-        $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
-        $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+        if (!empty($occurences)) {
+            $eventStartGMT = (int) Utils::getMeta($meta, 'event_start_gmt');
+            $eventEndGMT = (int) Utils::getMeta($meta, 'event_end_gmt');
+            $tsEndUTC = $tsStartUTC + ($eventEndGMT - $eventStartGMT);
+            $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+        } else {
+            $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
+            $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+        }
+
         $endDay = date('Y-m-d', $tsEnd);
 
         // Multiday event
@@ -100,6 +125,12 @@ class Event
         return $data;
     }
 
+    /**
+     * Make RRule arguments
+     *
+     * @param int $postId
+     * @return array
+     */
     public static function makeRRuleArgs($postId): array
     {
         $meta = get_post_meta($postId);
@@ -176,6 +207,12 @@ class Event
         return $rruleArgs;
     }
 
+    /**
+     * Get event ocurrences
+     *
+     * @param int $postId
+     * @return array
+     */
     public static function getOcurrences(int $postId): array
     {
         $meta = get_post_meta($postId);
@@ -208,8 +245,13 @@ class Event
                 }
             }
 
+            $currentTime = current_time('timestamp');
             $occurrences = [];
             foreach ($rset->getOccurrences() as $occurrence) {
+                $timestamp = $occurrence->getTimestamp();
+                if ($timestamp < $currentTime) {
+                    continue;
+                }
                 $occurrences[] = $occurrence->format('Y-m-d H:i:s');
             }
             return $occurrences;
@@ -217,20 +259,32 @@ class Event
         return [];
     }
 
-    public static function getHumanReadableRecurrence($postId)
+    /**
+     * Get human readable recurrence
+     *
+     * @param int $postId
+     * @return string
+     */
+    public static function getHumanReadableRecurrence(int $postId): string
     {
         $repeat = get_post_meta($postId, 'event_repeat', true);
         $readableRrule = '';
         if ($repeat) {
             $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
             if ($rruleArgs = json_decode($rruleArgs, true)) {
-                $readableRrule = self::humanReadableRecurrence($rruleArgs);
+                $readableRrule = self::humanReadableRRule($rruleArgs);
             }
         }
         return $readableRrule;
     }
 
-    public static function humanReadableRecurrence(array $args)
+    /**
+     * Get human readable rrule
+     *
+     * @param array $args
+     * @return string
+     */
+    public static function humanReadableRRule(array $args): string
     {
         $opt = [
             'use_intl' => true,
@@ -249,21 +303,21 @@ class Event
         return $rrule->humanReadable($opt);
     }
 
-    public static function isExpired($postId)
+    /**
+     * Check if event is expired
+     *
+     * @param int $postId
+     * @return bool
+     */
+    public static function isExpired(int $postId): bool
     {
         $currentTime = current_time('timestamp');
         $event = self::getData($postId);
-        $tsEnd = $event['event']['end'] ?? 0;
-        $tsEnd = strtotime($tsEnd);
-        $repeat = $event['repeat'] ?? '';
         $ocurrences = $event['ocurrences'] ?? [];
-        if ($repeat == 'on' && !empty($ocurrences)) {
-            foreach ($ocurrences as $occurrence) {
-                $tsOccurrence = strtotime($occurrence);
-                if ($tsOccurrence > $currentTime) {
-                    return false;
-                }
-            }
+        if ($ocurrences) {
+            $tsEnd = strtotime(end($ocurrences));
+        } else {
+            $tsEnd = strtotime($event['event']['end']);
         }
         return $tsEnd < $currentTime;
     }
