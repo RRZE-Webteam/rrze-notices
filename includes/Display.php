@@ -104,6 +104,12 @@ class Display
             $subscriptionLink = $notice->subscription_link ?? '';
             $adminLink = $notice->admin_link ?? '';
 
+            switch_to_blog($blogId);
+            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
+                continue;
+            }
+            restore_current_blog();
+
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
