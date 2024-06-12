@@ -105,7 +105,7 @@ class Display
             $adminLink = $notice->admin_link ?? '';
 
             switch_to_blog($blogId);
-            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
+            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
                 continue;
             }
             restore_current_blog();
@@ -201,7 +201,7 @@ class Display
             $subscriptionLink = Export::makeIcsLink($postId);
             $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-            if (Event::isExpired($postId) || !Post::isNoticeStarting($postId)) {
+            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
                 continue;
             }
 
