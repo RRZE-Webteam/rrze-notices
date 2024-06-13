@@ -29,7 +29,7 @@ class CPT
     {
         register_post_type(
             CPTNotice::POST_TYPE,
-            CPTNotice::hidden()
+            CPTNotice::nonPublic()
                 ->merge([
                     'menu_icon' => 'dashicons-warning',
                     'supports' => [
