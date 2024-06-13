@@ -33,7 +33,7 @@ class Post
      */
     public static function updatePostMeta(int $metaId, int $postId, string $metaKey, mixed $metaValue)
     {
-        if (get_post_type($postId) != CPT::POST_TYPE) {
+        if (get_post_type($postId) != CPTNotice::POST_TYPE) {
             return;
         }
 
@@ -92,7 +92,7 @@ class Post
             $post = get_post($args[2]);
             if (
                 $post &&
-                $post->post_type == CPT::POST_TYPE &&
+                $post->post_type == CPTNotice::POST_TYPE &&
                 get_post_meta($post->ID, 'notice_network_wide', true) == 'on' &&
                 !current_user_can('manage_network_options')
             ) {
@@ -324,7 +324,7 @@ class Post
     public static function updateStatus()
     {
         $args = [
-            'post_type' => CPT::POST_TYPE,
+            'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1,
         ];
