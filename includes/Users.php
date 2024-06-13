@@ -11,7 +11,7 @@ class Users
     /**
      * Built-in roles
      */
-    const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
+    public const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
 
     /**
      * Get translated user roles names
