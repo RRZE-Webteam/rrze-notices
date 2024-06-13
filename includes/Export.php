@@ -39,7 +39,7 @@ class Export
     {
         if (
             is_a($post, 'WP_Post') &&
-            $post->post_type === CPT::POST_TYPE &&
+            $post->post_type === CPTNotice::POST_TYPE &&
             $post->post_status === 'publish'
         ) {
             $postId = $post->ID;
