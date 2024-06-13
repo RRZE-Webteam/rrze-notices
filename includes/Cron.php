@@ -14,7 +14,7 @@ class Cron
     /**
      * The action hook name for the scheduled event
      */
-    const UPDATE_STATUS = 'rrze_notices_update_status';
+    public const UPDATE_STATUS = 'rrze_notices_update_status';
 
     /**
      * Initialize the class by setting up action hooks
