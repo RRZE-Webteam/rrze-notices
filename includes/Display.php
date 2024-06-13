@@ -180,7 +180,7 @@ class Display
     protected function setNotices()
     {
         $posts = get_posts([
-            'post_type' => CPT::POST_TYPE,
+            'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1
         ]);
@@ -281,7 +281,7 @@ class Display
     protected function previewNotice()
     {
         $screen = get_current_screen();
-        if ($screen->id != CPT::POST_TYPE) {
+        if ($screen->id != CPTNotice::POST_TYPE) {
             return;
         }
 
@@ -323,7 +323,7 @@ class Display
             $title,
             $content,
             [
-                'screens'           => [CPT::POST_TYPE],
+                'screens'           => [CPTNotice::POST_TYPE],
                 'type'              => $type,
                 'alt_style'         => $altStyle,
                 'capability'        => 'read',
