@@ -12,7 +12,6 @@ class CPT
     public static function loaded()
     {
         add_action('init', [__CLASS__, 'registerCPT']);
-        add_action('init', [__CLASS__, 'registerPostStatus']);
 
         Post::loaded();
 
