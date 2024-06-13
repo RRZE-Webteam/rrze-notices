@@ -19,7 +19,7 @@ class Post
     public const EXPIRED_POST_STATUS = 'expired';
 
     /**
-     * Initialize the class by setting up action hooks
+     * Setting up action hooks
      */
     public static function loaded()
     {
