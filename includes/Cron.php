@@ -17,7 +17,7 @@ class Cron
     public const UPDATE_STATUS = 'rrze_notices_update_status';
 
     /**
-     * Initialize the class by setting up action hooks
+     * Setting up action hooks
      * 
      * @return void
      */
