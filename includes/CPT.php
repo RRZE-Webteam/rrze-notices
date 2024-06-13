@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 class CPT
 {
     /**
-     * Initialize the class by setting up action hooks
+     * Setting up action hooks
      */
     public static function loaded()
     {
