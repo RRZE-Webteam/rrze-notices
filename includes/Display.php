@@ -32,7 +32,7 @@ class Display
     protected $notices;
 
     /**
-     * Display constructor
+     * Constructor
      */
     public function __construct()
     {
@@ -42,7 +42,7 @@ class Display
     }
 
     /**
-     * Initialize the class by setting up action hooks
+     * Setting up action hooks
      */
     public function loaded()
     {
