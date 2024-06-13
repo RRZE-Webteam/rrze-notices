@@ -29,7 +29,7 @@ class MetaBoxes
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
             'title' => __('Notice Settings', 'rrze-notices'),
-            'object_types' => [CPT::POST_TYPE],
+            'object_types' => [CPTNotice::POST_TYPE],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true
