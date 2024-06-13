@@ -60,13 +60,13 @@ class CPT
             return;
         }
         register_post_status(self::EXPIRED_POST_STATUS, [
-            'label'                     => _x('Expired', 'custom post status', 'rrze-notices'),
-            'public'                    => false,
-            'private'                   => false,
-            'exclude_from_search'       => true,
-            'show_in_admin_all_list'    => false,
+            'label' => _x('Expired', 'custom post status', 'rrze-notices'),
+            'public' => false,
+            'private' => false,
+            'exclude_from_search' => true,
+            'show_in_admin_all_list' => false,
             'show_in_admin_status_list' => true,
-            'label_count'               => _n_noop(
+            'label_count' => _n_noop(
                 /* translators: %s: Number of expired posts. */
                 'Expired <span class="count">(%s)</span>',
                 'Expired <span class="count">(%s)</span>',
