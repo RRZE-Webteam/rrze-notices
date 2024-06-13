@@ -61,11 +61,11 @@ class CPTNotice
     }
 
     /**
-     * Merge the default arguments with the none-public arguments.
+     * Merge the default arguments with the non-public arguments.
      * 
      * @return CPTNotice
      */
-    public static function hidden(): self
+    public static function nonPublic(): self
     {
         return self::default()->merge(
             [
