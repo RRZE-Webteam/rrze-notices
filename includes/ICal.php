@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 class ICal
 {
-    const DT_FORMAT = 'Ymd\THis\Z';
+    public const DT_FORMAT = 'Ymd\THis\Z';
 
     /**
      * iCalendar data array.
