@@ -12,7 +12,7 @@ class Columns
 
     public function __construct()
     {
-        $this->customPostType = CPT::POST_TYPE;
+        $this->customPostType = CPTNotice::POST_TYPE;
         $this->siteOptions = Options::getSiteOptions();
     }
 
