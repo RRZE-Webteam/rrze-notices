@@ -81,7 +81,7 @@ class CPT
     public static function appendPostStatusPostbox()
     {
         $post = get_post();
-        if (!$post || $post->post_type !== self::POST_TYPE) {
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
         }
 
@@ -109,7 +109,7 @@ class CPT
     public static function appendPostStatusQuickEdit()
     {
         $post = get_post();
-        if (!$post || $post->post_type !== self::POST_TYPE) {
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
         }
 
