@@ -23,6 +23,7 @@ class Post
      */
     public static function loaded()
     {
+        add_action('init', [__CLASS__, 'registerPostStatus']);
         add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
