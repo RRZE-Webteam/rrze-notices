@@ -18,7 +18,7 @@ class AdminBar
 
     public function __construct()
     {
-        $this->customPostType = CPT::POST_TYPE;
+        $this->customPostType = CPTNotice::POST_TYPE;
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
