@@ -6,10 +6,14 @@ defined('ABSPATH') || exit;
 
 class CPT
 {
-    const POST_TYPE = 'notice';
+    /**
+     * Custom post status.
+     */
+    public const EXPIRED_POST_STATUS = 'expired';
 
-    const EXPIRED_POST_STATUS = 'expired';
-
+    /**
+     * Initialize the class by setting up action hooks
+     */
     public static function loaded()
     {
         add_action('init', [__CLASS__, 'registerCPT']);
@@ -25,68 +29,31 @@ class CPT
         $columns->loaded();
     }
 
+    /**
+     * Register custom post type.
+     */
     public static function registerCPT()
     {
-        $labels = [
-            'name'               => _x('Notices', 'post type general name', 'rrze-notices'),
-            'singular_name'      => _x('Notice', 'post type singular name', 'rrze-notices'),
-            'menu_name'          => _x('Notices', 'admin menu', 'rrze-notices'),
-            'name_admin_bar'     => _x('Notice', 'add new on admin bar', 'rrze-notices'),
-            'add_new'            => _x('Add New', 'notice', 'rrze-notices'),
-            'add_new_item'       => __('Add New Notice', 'rrze-notices'),
-            'new_item'           => __('New Notice', 'rrze-notices'),
-            'edit_item'          => __('Edit Notice', 'rrze-notices'),
-            'view_item'          => __('View Notice', 'rrze-notices'),
-            'all_items'          => __('All Notices', 'rrze-notices'),
-            'search_items'       => __('Search Notices', 'rrze-notices'),
-            'parent_item_colon'  => __('Parent Notices:', 'rrze-notices'),
-            'not_found'          => __('No notices found.', 'rrze-notices'),
-            'not_found_in_trash' => __('No notices found in Trash.', 'rrze-notices')
-        ];
-
-        $siteOptions = Options::getSiteOptions();
-        $capability = Utils::isPluginActiveForNetwork() ? $siteOptions->access : 'manage_options';
-
-        $capabilityType = $capability == 'manage_options' ? 'page' : self::POST_TYPE;
-        $capabilities = [
-            'edit_post'              => 'edit_' . $capabilityType,
-            'read_post'              => 'read_' . $capabilityType,
-            'delete_post'            => 'delete_' . $capabilityType,
-            'edit_posts'             => 'edit_' . $capabilityType . 's',
-            'edit_others_posts'      => 'edit_others_' . $capabilityType . 's',
-            'delete_posts'           => 'delete_' . $capabilityType . 's',
-            'publish_posts'          => 'publish_' . $capabilityType . 's',
-            'read_private_posts'     => 'read_private_' . $capabilityType . 's',
-        ];
-
-        $args = [
-            'labels'                => $labels,
-            'description'           => '',
-            'public'                => false,
-            'exclude_from_search'   => true,
-            'publicly_queryable'    => false,
-            'show_ui'               => true,
-            'show_in_nav_menus'     => false,
-            'show_in_menu'          => true,
-            'show_in_admin_bar'     => false,
-            'menu_position'         => null,
-            'menu_icon'             => 'dashicons-warning',
-            'capability_type'       => $capabilityType,
-            'capabilities'          => $capabilities,
-            'map_meta_cap'          => true,
-            'hierarchical'          => false,
-            'supports'              => ['title', 'editor'],
-            'has_archive'           => false,
-            'rewrite'               => false,
-            'query_var'             => true,
-            'can_export'            => true,
-            'delete_with_user'      => null,
-            'show_in_rest'          => false,
-        ];
-
-        register_post_type(self::POST_TYPE, $args);
+        register_post_type(
+            CPTNotice::POST_TYPE,
+            CPTNotice::hidden()
+                ->merge([
+                    'menu_icon' => 'dashicons-warning',
+                    'supports' => [
+                        'title',
+                        'editor',
+                    ],
+                    'show_ui' => true,
+                    'show_in_nav_menus' => false,
+                    'show_in_admin_bar' => false,
+                ])
+                ->args()
+        );
     }
 
+    /**
+     * Register custom post status.
+     */
     public static function registerPostStatus()
     {
         if (in_array(self::EXPIRED_POST_STATUS, get_post_stati())) {
@@ -108,6 +75,9 @@ class CPT
         ]);
     }
 
+    /**
+     * Append custom post status to the postbox.
+     */
     public static function appendPostStatusPostbox()
     {
         $post = get_post();
@@ -133,6 +103,9 @@ class CPT
         echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
     }
 
+    /**
+     * Append custom post status to the quick edit.
+     */
     public static function appendPostStatusQuickEdit()
     {
         $post = get_post();
