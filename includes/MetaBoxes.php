@@ -4,8 +4,6 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Notices\CPT;
-
 class MetaBoxes
 {
     /**
