@@ -27,7 +27,9 @@ class ICal
         'dtstart',
         'location',
         'summary',
-        'rrule'
+        'rrule',
+        'exdate', // For excluding dates
+        'rdate;value=date-time'   // For including dates
     ];
 
     /**
