@@ -9,6 +9,10 @@
 }
 
 .rrze-notices.notice {
+    .notice-date {
+        font-weight: bold;
+        color: #555;
+    }
     .notice-actions {
         position: absolute;
         bottom: 0;
