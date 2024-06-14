@@ -144,6 +144,8 @@ class Post
             update_post_meta($postId, 'event_rrule_args', $rruleArgs);
         }
 
+        self::updateLocalNotice($postId);
+
         if (
             Utils::isPluginActiveForNetwork()
             && current_user_can('manage_network_options')
@@ -489,6 +491,10 @@ class Post
                 $dismiss->deleteDismissedNotice();
             }
 
+            if (!$expired) {
+                self::updateLocalNotice($postId);
+            }
+
             if (
                 Utils::isPluginActiveForNetwork()
                 && self::isNetworkWide($postId)
@@ -499,12 +505,6 @@ class Post
                 } else {
                     self::deleteNetworkWideNotice($postId);
                     delete_post_meta($postId, 'notice_network_wide');
-                }
-            } else {
-                if (!$expired) {
-                    self::updateLocalNotice($postId);
-                } else {
-                    delete_post_meta($postId, 'notice_data');
                 }
             }
         }
