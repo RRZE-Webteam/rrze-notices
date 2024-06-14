@@ -5,6 +5,7 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 use RRule\RRule;
+use RRule\RSet;
 use function RRZE\notices\plugin;
 
 
@@ -64,14 +65,45 @@ class Export
         $repeat = Utils::getMeta($meta, 'event_repeat');
 
         $rrule = null;
+        $exDate = null;
+        $rDate = null;
         if ($repeat) {
+            // RRULE
             $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
-            if ($rrule = json_decode($rruleArgs, true)) {
-                $rruleObj = new RRule($rrule);
+            if ($decodedRruleArgs = json_decode($rruleArgs, true)) {
+                $rruleObj = new RRule($decodedRruleArgs);
                 $rrule = $rruleObj->rfcString();
                 $rruleStartPos = strpos($rrule, 'RRULE:');
                 if ($rruleStartPos !== false) {
                     $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
+                }
+            }
+            if ($rrule) {
+                // EXDATE (dates exceptions)
+                $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
+                if (!empty($exceptions) && is_array($exceptions)) {
+                    foreach ($exceptions as $datetimeStr) {
+                        if (Utils::validateDate($datetimeStr)) {
+                            $datetime = new \DateTime($datetimeStr);
+                            $exDate[] = $datetime->format('Ymd\THis') . 'Z';
+                        }
+                    }
+                }
+                // RDATE (dates additions)
+                $additions = Utils::getMeta($meta, 'event_date_additions');
+                if (!empty($additions) && is_array($additions)) {
+                    foreach ($additions as $datetimeStr) {
+                        if (Utils::validateDate($datetimeStr)) {
+                            $datetime = new \DateTime($datetimeStr);
+                            $rDate[] = $datetime->format('Ymd\THis') . 'Z';
+                        }
+                    }
+                }
+                if (!empty($exDate)) {
+                    $exDate = implode(',', $exDate);
+                }
+                if (!empty($rDate)) {
+                    $rDate = implode(',', $rDate);
                 }
             }
         }
@@ -83,7 +115,9 @@ class Export
             'dtstart' => $startDay,
             'dtend' => $endDay,
             'location' => '',
-            'rrule' => $rrule ?: ''
+            'rrule' => $rrule ?: '',
+            'exdate' => $exDate ?: '',
+            'rdate;value=date-time' => $rDate ?: ''
         ];
 
         return $data;
