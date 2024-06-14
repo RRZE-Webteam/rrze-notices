@@ -55,12 +55,11 @@ class Columns
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
-                $eventDate = [
-                    ($data['event']['date'] ?? '') . (isset($data['event']['time']) ? ', ' . $data['event']['time'] : '&mdash;'),
+                $eventReadableDateTime = [
+                    $data['event']['readable_date'],
                     Post::getHumanReadableRecurrence($postId)
                 ];
-                $eventDate = array_filter($eventDate);
-                echo implode('<br>', $eventDate);
+                echo implode('<br>', $eventReadableDateTime);
                 break;
             case 'network_wide':
                 echo Post::isNetworkWide($postId) ?
