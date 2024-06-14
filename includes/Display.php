@@ -168,7 +168,8 @@ class Display
                     'alt_style'         => $altStyle,
                     'capability'        => 'read',
                     'subscription_link' => $subscriptionLink,
-                    'edit_link'         => $editLink
+                    'edit_link'         => $editLink,
+                    'readable_datetime' => true
                 ]
             );
         }
