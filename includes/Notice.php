@@ -56,7 +56,9 @@ class Notice
      * @var array
      */
     private $allowedHtml = [
-        'p' => [],
+        'p' => [
+            'class' => [],
+        ],
         'a' => [
             'href' => [],
             'rel' => [],
