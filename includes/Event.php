@@ -57,10 +57,10 @@ class Event
             // All day event
             if ($allDay == 'on') {
                 $event = [
-                    'date' => date_i18n(get_option('date_format'), $tsStart)
+                    'readable_date' => date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd),
-                    'time' => '',
+                    'readable_time' => '',
                     'all_day' => 'on',
                     'multiday' => 'on',
                     'start' => $startDay,
@@ -71,10 +71,10 @@ class Event
                 // Timed event
             } else {
                 $event = [
-                    'date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
+                    'readable_date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd),
-                    'time' => '',
+                    'readable_time' => '',
                     'all_day' => '',
                     'multiday' => 'on',
                     'start' => date('Y-m-d H:i:s', $tsStart),
@@ -88,10 +88,10 @@ class Event
             // All day event
             if ($allDay == 'on') {
                 $event = [
-                    'date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
+                    'readable_date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd)),
-                    'time' => '',
+                    'readable_time' => '',
                     'all_day' => 'on',
                     'multiday' => '',
                     'start' => $startDay,
@@ -102,8 +102,8 @@ class Event
                 // Timed event
             } else {
                 $event = [
-                    'date' => date_i18n(get_option('date_format'), $tsStart),
-                    'time' => date_i18n(get_option('time_format'), $tsStart)
+                    'readable_date' => date_i18n(get_option('date_format'), $tsStart),
+                    'readable_time' => date_i18n(get_option('time_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('time_format'), $tsEnd),
                     'all_day' => '',
@@ -115,6 +115,12 @@ class Event
                 ];
             }
         }
+        if ($event['all_day'] || $event['multiday']) {
+            $event['readable_datetime'] = $event['readable_date'];
+        } else {
+            $event['readable_datetime'] = $event['readable_date'] . ' ' . $event['readable_time'];
+        }
+
         $data['event'] = $event;
 
         if ($repeat) {
