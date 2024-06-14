@@ -110,7 +110,7 @@ class Post
         if ($newStatus == 'publish' && $oldStatus != 'publish') {
             $blogId = get_current_blog_id();
             $noticeId = $blogId . '-' . $post->ID;
-            $dismiss = new Dismiss($noticeId, 'rrze_notices_dismissed', true);
+            $dismiss = new Dismiss($noticeId, true);
             $dismiss->deleteDismissedNotice();
         }
     }
@@ -436,7 +436,7 @@ class Post
             if ($expired || !$noticeStarted) {
                 $blogId = get_current_blog_id();
                 $noticeId = $blogId . '-' . $postId;
-                $dismiss = new Dismiss($noticeId, 'rrze_notices_dismissed', true);
+                $dismiss = new Dismiss($noticeId, true);
                 $dismiss->deleteDismissedNotice();
             }
 
