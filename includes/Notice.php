@@ -47,7 +47,6 @@ class Notice
         'subscription_link' => '',
         'edit_link'         => '',
         'capability'        => 'edit_theme_options',
-        'option_prefix'     => 'rrze_notices_dismissed',
         'is_dismissible'    => true
     ];
 
@@ -94,10 +93,10 @@ class Notice
      */
     public function __construct($id, $title, $message, $options = [])
     {
-        $this->id         = $id;
-        $this->title      = $title;
-        $this->message    = $message;
-        $this->options    = wp_parse_args($options, $this->options);
+        $this->id = $id;
+        $this->title = $title;
+        $this->message = $message;
+        $this->options = wp_parse_args($options, $this->options);
 
         if (!$this->id || !$this->message) {
             return;
@@ -105,7 +104,7 @@ class Notice
 
         $this->allowedHtml = apply_filters('rrze_notices_allowed_html', $this->allowedHtml);
 
-        $this->dismiss = new Dismiss($this->id, $this->options['option_prefix'], $this->options['is_dismissible']);
+        $this->dismiss = new Dismiss($this->id, $this->options['is_dismissible']);
     }
 
     /**
