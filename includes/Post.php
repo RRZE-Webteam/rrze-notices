@@ -149,10 +149,10 @@ class Post
             && current_user_can('manage_network_options')
         ) {
             if (self::isNetworkWide($postId)) {
-                self::updateNetworkWideSiteOption($postId);
+                self::updateNetworkWideNotice($postId);
                 update_post_meta($postId, 'notice_network_wide', 'on');
             } else {
-                self::deleteNetworkWideSiteOption($postId);
+                self::deleteNetworkWideNotice($postId);
                 delete_post_meta($postId, 'notice_network_wide');
             }
         }
@@ -166,7 +166,7 @@ class Post
      */
     public static function deletePost($postId, $post)
     {
-        self::deleteNetworkWideSiteOption($postId);
+        self::deleteNetworkWideNotice($postId);
     }
 
     /**
@@ -195,16 +195,64 @@ class Post
     }
 
     /**
-     * Update the network-wide site option for the notice
+     * Update the local notice
      *
      * @param int $postId
      */
-    public static function updateNetworkWideSiteOption(int $postId)
+    public static function updateLocalNotice($postId)
     {
+        $post = get_post($postId);
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
+        $data = self::getEventData($postId);
+        $eventReadableDateTime = $data['event']['readable_datetime'];
+
+        $title = $post->post_title;
+        $content = $post->post_content;
+        $type = self::getType($postId);
+        $altStyle = self::altStyle($postId);
+        $hideTitle = self::hideTitle($postId);
+        $visibility = self::getVisibility($postId);
+        $noticeStart = self::getNoticeStart($postId, true);
+        $subscriptionLink = Export::makeIcsLink($postId);
+        $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
+
+        $notice = [
+            'title' => $title,
+            'content' => $content,
+            'type' => $type,
+            'hide_title' => $hideTitle,
+            'alt_style' => $altStyle,
+            'visibility' => $visibility,
+            'notice_start' => $noticeStart,
+            'subscription_link' => $subscriptionLink,
+            'admin_link' => $adminLink,
+            'event_readable_datetime' => $eventReadableDateTime
+        ];
+
+        update_post_meta($postId, 'notice_data', $notice);
+    }
+
+    /**
+     * Update the network-wide notice
+     *
+     * @param int $postId
+     */
+    public static function updateNetworkWideNotice(int $postId)
+    {
+        $post = get_post($postId);
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
         $siteOptionsName = Options::getSiteOptionName();
         $siteOptions = Options::getSiteOptions();
 
-        $post = get_post($postId);
+        $data = self::getEventData($postId);
+        $eventReadableDateTime = $data['event']['readable_datetime'];
+
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
@@ -227,7 +275,8 @@ class Post
             'visibility' => $visibility,
             'notice_start' => $noticeStart,
             'subscription_link' => $subscriptionLink,
-            'admin_link' => $adminLink
+            'admin_link' => $adminLink,
+            'event_readable_datetime' => $eventReadableDateTime
         ];
 
         update_site_option($siteOptionsName, $siteOptions);
@@ -238,7 +287,7 @@ class Post
      *
      * @param int $postId
      */
-    public static function deleteNetworkWideSiteOption(int $postId)
+    public static function deleteNetworkWideNotice(int $postId)
     {
         $siteOptionsName = Options::getSiteOptionName();
         $siteOptions = Options::getSiteOptions();
@@ -445,11 +494,17 @@ class Post
                 && self::isNetworkWide($postId)
             ) {
                 if (!$expired) {
-                    self::updateNetworkWideSiteOption($postId);
+                    self::updateNetworkWideNotice($postId);
                     update_post_meta($postId, 'notice_network_wide', 'on');
                 } else {
-                    self::deleteNetworkWideSiteOption($postId);
+                    self::deleteNetworkWideNotice($postId);
                     delete_post_meta($postId, 'notice_network_wide');
+                }
+            } else {
+                if (!$expired) {
+                    self::updateLocalNotice($postId);
+                } else {
+                    delete_post_meta($postId, 'notice_data');
                 }
             }
         }
