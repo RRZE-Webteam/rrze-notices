@@ -467,14 +467,18 @@ class Post
     public static function updateStatus()
     {
         $args = [
+            'fields' => 'ids',
             'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1,
         ];
         $posts = get_posts($args);
 
-        foreach ($posts as $post) {
-            $postId = $post->ID;
+        if (!$posts) {
+            return;
+        }
+
+        foreach ($posts as $postId) {
             $expired = Event::isExpired($postId);
             $noticeStarted = Post::isNoticeStarted($postId);
             if ($expired) {
@@ -493,6 +497,8 @@ class Post
 
             if (!$expired) {
                 self::updateLocalNotice($postId);
+            } else {
+                delete_post_meta($postId, 'notice_data');
             }
 
             if (
