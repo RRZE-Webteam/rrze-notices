@@ -80,22 +80,24 @@ class Export
             }
             if ($rrule) {
                 // EXDATE (dates exceptions)
+                $exDate = [];
                 $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
                 if (!empty($exceptions) && is_array($exceptions)) {
                     foreach ($exceptions as $datetimeStr) {
                         if (Utils::validateDate($datetimeStr)) {
                             $datetime = new \DateTime($datetimeStr);
-                            $exDate[] = $datetime->format('Ymd\THis') . 'Z';
+                            $exDate[] = $datetime->format('Ymd');
                         }
                     }
                 }
                 // RDATE (dates additions)
+                $rDate = [];
                 $additions = Utils::getMeta($meta, 'event_date_additions');
                 if (!empty($additions) && is_array($additions)) {
                     foreach ($additions as $datetimeStr) {
                         if (Utils::validateDate($datetimeStr)) {
                             $datetime = new \DateTime($datetimeStr);
-                            $rDate[] = $datetime->format('Ymd\THis') . 'Z';
+                            $rDate[] = $datetime->format('Ymd');
                         }
                     }
                 }
@@ -116,8 +118,8 @@ class Export
             'dtend' => $endDay,
             'location' => '',
             'rrule' => $rrule ?: '',
-            'exdate' => $exDate ?: '',
-            'rdate;value=date-time' => $rDate ?: ''
+            'exdate;value=date' => $exDate ?: '',
+            'rdate;value=date' => $rDate ?: ''
         ];
 
         return $data;
