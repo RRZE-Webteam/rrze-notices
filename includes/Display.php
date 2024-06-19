@@ -93,6 +93,10 @@ class Display
                 continue;
             }
 
+            switch_to_blog($blogId);
+            $currentUser = wp_get_current_user();
+            restore_current_blog();
+
             $notice = (object) $notice;
 
             $title = $notice->title ?? '';
@@ -100,18 +104,15 @@ class Display
             $type = $notice->type ?? 'info';
             $altStyle = $notice->alt_style ?? false;
             $hideTitle = $notice->hide_title ?? false;
-            $visibility = $notice->visibility ?? true;
+            $roleVisibility = $notice->visibility ?? ['all'];
             $subscriptionLink = $notice->subscription_link ?? '';
             $adminLink = $notice->admin_link ?? '';
 
-            switch_to_blog($blogId);
-            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
+            if (!$content) {
                 continue;
             }
-            restore_current_blog();
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -128,12 +129,12 @@ class Display
             } else {
                 $visibility = [];
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
-                continue;
-            }
 
-            if (!$content) {
+            if (
+                !current_user_can('manage_network_options') &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
@@ -181,33 +182,27 @@ class Display
     protected function setNotices()
     {
         $posts = get_posts([
+            'fields' => 'ids',
             'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1
         ]);
+
         if (!$posts) {
             return;
         }
 
-        foreach ($posts as $post) {
-            $postId = $post->ID;
-            $blogId = get_current_blog_id();
-            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
-            $title = $post->post_title;
-            $content = $post->post_content;
-            $type = Post::getType($postId);
-            $altStyle = Post::altStyle($postId);
-            $hideTitle = Post::hideTitle($postId);
-            $visibility = Post::getVisibility($postId);
-            $subscriptionLink = Export::makeIcsLink($postId);
-            $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
-
-            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
+        foreach ($posts as $postId) {
+            if ($notice = get_post_meta($postId, 'notice_data', true)) {
+                $notice = (object) $notice;
+            } else {
                 continue;
             }
 
+            $currentUser = wp_get_current_user();
+
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $visibility;
+            $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -219,29 +214,31 @@ class Display
                     $visibility[] = $k;
                 }
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (
+                !current_user_can('manage_network_options') &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
-            if (!$content) {
+            if (!$content = $notice->content) {
                 continue;
             }
 
-            $title = !$hideTitle ? $title : '';
+            $title = $notice->hideTitle;
 
-            $title = !$hideTitle ? $title : '';
-            $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
 
-            $subscriptionLink = sprintf(
-                '<a href="%1$s">%2$s</a>',
-                Export::makeIcsLink($postId),
-                __('Add to calendar', 'rrze-notices')
-            );
+            $altStyle = $notice->altStyle;
+
+            $subscriptionLink = $notice->subscriptionLink;
+
+            $blogId = get_current_blog_id();
+            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
             $editLink = '';
             $editText = __('Edit', 'rrze-notices');
-            $capability = 'manage_options';
 
             if (
                 current_user_can('manage_network_options')
@@ -252,14 +249,28 @@ class Display
                 $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
             }
 
-            if (current_user_can($capability)) {
+            if (current_user_can('manage_options')) {
                 $editLink = sprintf(
                     '<a href="%1$s">%2$s</a>',
-                    $adminLink,
+                    $notice->adminLink,
                     $editText
                 );
             }
 
+            error_log(print_r(
+                [
+                    'noticeId'          => $noticeId,
+                    'title'             => $title,
+                    'content'           => $content,
+                    'screens'           => ['dashboard'],
+                    'type'              => $type,
+                    'alt_style'         => $altStyle,
+                    'capability'        => 'read',
+                    'subscription_link' => $subscriptionLink,
+                    'edit_link'         => $editLink
+                ],
+                true
+            ));
             $this->notices->add(
                 $noticeId,
                 $title,
@@ -294,8 +305,7 @@ class Display
         global $post;
         $postId = $post->ID;
 
-        $content = $post->post_content;
-        if (!$content) {
+        if (!$content = $post->post_content) {
             return;
         }
 
