@@ -6,8 +6,6 @@ defined('ABSPATH') || exit;
 
 class AdminBar
 {
-    protected $customPostType;
-
     protected $siteOptionsName;
 
     protected $siteOptions;
@@ -18,7 +16,6 @@ class AdminBar
 
     public function __construct()
     {
-        $this->customPostType = CPTNotice::POST_TYPE;
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
@@ -63,16 +60,15 @@ class AdminBar
                 continue;
             }
 
+            switch_to_blog($blogId);
+            $currentUser = wp_get_current_user();
+            restore_current_blog();
+
             $notice = (object) $notice;
 
             $title = $notice->title ?? '';
-            $content = $notice->content ?? '';
             $type = $notice->type ?? 'info';
-            $visibility = $notice->visibility ?? true;
-
-            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
-                continue;
-            }
+            $visibility = $notice->visibility ?? ['all'];
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
@@ -92,12 +88,11 @@ class AdminBar
             } else {
                 $visibility = [];
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
-                continue;
-            }
-
-            if (!$content) {
+            if (
+                !current_user_can('manage_network_options') &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
@@ -113,28 +108,34 @@ class AdminBar
     protected function setNotices()
     {
         $posts = get_posts([
-            'post_type' => $this->customPostType,
+            'fields' => 'ids',
+            'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1
         ]);
+
         if (!$posts) {
             return;
         }
-        foreach ($posts as $post) {
+
+        foreach ($posts as $postId) {
+            if ($notice = get_post_meta($postId, 'notice_data', true)) {
+                $notice = (object) $notice;
+            } else {
+                continue;
+            }
+
             $blogId = get_current_blog_id();
-            $postId = $post->ID;
             $noticeId = sprintf('%d-%d', $blogId, $postId);
 
             if ($this->isDismissed($noticeId)) {
                 continue;
             }
 
-            if (Event::isExpired($postId) || !Post::isNoticeStarted($postId)) {
-                continue;
-            }
+            $currentUser = wp_get_current_user();
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = Post::getVisibility($postId);
+            $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -146,17 +147,20 @@ class AdminBar
                     $visibility[] = $k;
                 }
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!empty($visibility)) {
+                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
+            } else {
+                $visibility = [];
+            }
+            if (
+                !current_user_can('manage_network_options') &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
-            $content = $post->post_content;
-            if (!$content) {
-                continue;
-            }
-
-            $title = $post->post_title;
+            $title = $notice->title;
 
             $noticeType = Post::getType($postId);
             $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
