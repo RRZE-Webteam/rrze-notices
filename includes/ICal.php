@@ -28,8 +28,8 @@ class ICal
         'location',
         'summary',
         'rrule',
-        'exdate', // For excluding dates
-        'rdate;value=date-time'   // For including dates
+        'exdate;value=date', // For excluding dates
+        'rdate;value=date'   // For including dates
     ];
 
     /**
@@ -83,7 +83,7 @@ class ICal
     public function build(): string
     {
         $rows = array_map(
-            fn ($row): string => $this->split($row),
+            fn ($row) => $this->split($row),
             $this->render()
         );
         return implode("\r\n", $rows);
@@ -139,6 +139,11 @@ class ICal
             case 'dtstart':
                 $value = $this->formatTimestamp($value);
                 break;
+            case 'summary':
+            case 'description':
+            case 'location':
+                $value = preg_replace('/([\,;])/', '\\\$1', $value);
+                break;
             default:
                 $value = $this->escStr($value);
         }
@@ -166,7 +171,6 @@ class ICal
      */
     private function escStr(string $input): string
     {
-        // $input = preg_replace('/([\,;])/', '\\\$1', $input);
         $input = str_replace("\n", "\\n", $input);
         $input = str_replace("\r", "\\r", $input);
         return $input;
