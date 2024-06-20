@@ -25,7 +25,7 @@ class Post
         add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
-        add_action('updated_post_meta', [__CLASS__, 'updatePostMeta'], 10, 4);
+        add_action('updated_post_meta', [__CLASS__, 'updatePostMeta'], 10, 2);
         add_action('delete_post', [__CLASS__, 'deletePost'], 10, 2);
         add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
     }
@@ -116,32 +116,15 @@ class Post
     }
 
     /**
-     * Update the post meta for the notice
+     * Update local & network post meta (if applicable) for the notice
      *
      * @param int $metaId
      * @param int $postId
-     * @param string $metaKey
-     * @param mixed $metaValue
      */
-    public static function updatePostMeta(int $metaId, int $postId, string $metaKey, mixed $metaValue)
+    public static function updatePostMeta(int $metaId, int $postId)
     {
         if (get_post_type($postId) != CPTNotice::POST_TYPE) {
             return;
-        }
-
-        if (
-            $metaKey == 'event_repeat'
-            && $metaValue == 'on'
-        ) {
-            $rruleArgs = Event::makeRRuleArgs($postId);
-        }
-
-        if (
-            $metaKey == 'event_repeat'
-            && $metaValue == 'on'
-            && $rruleArgs = json_encode($rruleArgs)
-        ) {
-            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
         }
 
         self::updateLocalNotice($postId);
@@ -417,10 +400,10 @@ class Post
         $event = self::getEventData($postId);
         if ($gmt) {
             $noticeStart = (int) get_post_meta($postId, 'notice_start_gmt', true);
-            $eventStart = $event['event']['start_gmt'];
+            $eventStart = $event['event']['start_gmt'] ?? current_time('mysql', true);
         } else {
             $noticeStart = (int) get_post_meta($postId, 'notice_start', true);
-            $eventStart = $event['event']['start'];
+            $eventStart = $event['event']['start'] ?? current_time('mysql');
         }
         return strtotime($eventStart) - $noticeStart;
     }
@@ -507,10 +490,8 @@ class Post
             ) {
                 if (!$expired) {
                     self::updateNetworkWideNotice($postId);
-                    update_post_meta($postId, 'notice_network_wide', 'on');
                 } else {
                     self::deleteNetworkWideNotice($postId);
-                    delete_post_meta($postId, 'notice_network_wide');
                 }
             }
         }
