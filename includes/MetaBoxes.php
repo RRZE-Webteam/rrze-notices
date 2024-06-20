@@ -17,6 +17,7 @@ class MetaBoxes
         add_action('cmb2_save_field_notice_start', [__CLASS__, 'saveNoticeStartField'], 10, 3);
         add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
+        add_action('cmb2_save_field_event_repeat', [__CLASS__, 'saveEventRepeatField'], 10, 3);
         add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
     }
 
@@ -412,6 +413,25 @@ class MetaBoxes
         $timestamp = $field->value;
         $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
         update_post_meta($postId, 'event_end_gmt', $timestampGmt);
+    }
+
+    /**
+     * Save event_repeat
+     *
+     * @param bool $updated
+     * @param string $action
+     * @param \CMB2_Field $field
+     * @return void
+     */
+    public static function saveEventRepeatField(bool $updated, string $action, \CMB2_Field $field)
+    {
+        $postId = $field->object_id;
+        if ($field->value === 'on') {
+            $rruleArgs = Event::makeRRuleArgs($postId);
+            if ($rruleArgs = json_encode($rruleArgs)) {
+                update_post_meta($postId, 'event_rrule_args', $rruleArgs);
+            }
+        }
     }
 
     /**
