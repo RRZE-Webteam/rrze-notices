@@ -129,7 +129,7 @@ class Display
             } else {
                 $visibility = [];
             }
-
+            
             if (
                 !current_user_can('manage_network_options') &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
@@ -158,7 +158,7 @@ class Display
                     __('Edit (Network-Wide)', 'rrze-notices')
                 );
             }
-
+            
             $this->notices->add(
                 $noticeId,
                 $title,
@@ -226,13 +226,17 @@ class Display
                 continue;
             }
 
-            $title = $notice->hideTitle;
+            $title = $notice->hide_title;
 
             $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
 
-            $altStyle = $notice->altStyle;
+            $altStyle = $notice->alt_style;
 
-            $subscriptionLink = $notice->subscriptionLink;
+            $subscriptionLink = sprintf(
+                '<a href="%1$s">%2$s</a>',
+                $notice->subscription_link,
+                __('Add to calendar', 'rrze-notices')
+            );
 
             $blogId = get_current_blog_id();
             $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
@@ -245,32 +249,17 @@ class Display
                 && Utils::isPluginActiveForNetwork()
                 && isset($this->siteOptions->network_wide[$noticeId])
             ) {
-                $capability = $this->siteOptions->access;
                 $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
             }
 
             if (current_user_can('manage_options')) {
                 $editLink = sprintf(
                     '<a href="%1$s">%2$s</a>',
-                    $notice->adminLink,
+                    $notice->admin_link,
                     $editText
                 );
             }
 
-            error_log(print_r(
-                [
-                    'noticeId'          => $noticeId,
-                    'title'             => $title,
-                    'content'           => $content,
-                    'screens'           => ['dashboard'],
-                    'type'              => $type,
-                    'alt_style'         => $altStyle,
-                    'capability'        => 'read',
-                    'subscription_link' => $subscriptionLink,
-                    'edit_link'         => $editLink
-                ],
-                true
-            ));
             $this->notices->add(
                 $noticeId,
                 $title,
