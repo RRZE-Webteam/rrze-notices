@@ -64,51 +64,9 @@ class Export
         $eventUid = Utils::getMeta($meta, 'event_uid');
         $repeat = Utils::getMeta($meta, 'event_repeat');
 
-        $rrule = null;
-        $exDate = null;
-        $rDate = null;
-        if ($repeat) {
-            // RRULE
-            $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
-            if ($decodedRruleArgs = json_decode($rruleArgs, true)) {
-                $rruleObj = new RRule($decodedRruleArgs);
-                $rrule = $rruleObj->rfcString();
-                $rruleStartPos = strpos($rrule, 'RRULE:');
-                if ($rruleStartPos !== false) {
-                    $rrule = substr($rrule, $rruleStartPos + strlen('RRULE:'));
-                }
-            }
-            if ($rrule) {
-                // EXDATE (dates exceptions)
-                $exDate = [];
-                $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
-                if (!empty($exceptions) && is_array($exceptions)) {
-                    foreach ($exceptions as $datetimeStr) {
-                        if (Utils::validateDate($datetimeStr)) {
-                            $datetime = new \DateTime($datetimeStr);
-                            $exDate[] = $datetime->format('Ymd');
-                        }
-                    }
-                }
-                // RDATE (dates additions)
-                $rDate = [];
-                $additions = Utils::getMeta($meta, 'event_date_additions');
-                if (!empty($additions) && is_array($additions)) {
-                    foreach ($additions as $datetimeStr) {
-                        if (Utils::validateDate($datetimeStr)) {
-                            $datetime = new \DateTime($datetimeStr);
-                            $rDate[] = $datetime->format('Ymd');
-                        }
-                    }
-                }
-                if (!empty($exDate)) {
-                    $exDate = implode(',', $exDate);
-                }
-                if (!empty($rDate)) {
-                    $rDate = implode(',', $rDate);
-                }
-            }
-        }
+        $eventData = self::getEventData($postId);
+        error_log(print_r($eventData, true));
+
 
         $data[$postId] = [
             'summary' => $post->post_title,
@@ -116,13 +74,21 @@ class Export
             'description' => $post->post_content ?: '',
             'dtstart' => $startDay,
             'dtend' => $endDay,
-            'location' => '',
-            'rrule' => $rrule ?: '',
-            'exdate;value=date' => $exDate ?: '',
-            'rdate;value=date' => $rDate ?: ''
+            'location' => ''
         ];
 
         return $data;
+    }
+
+    /**
+     * Get the event data for the notice
+     *
+     * @param int $postId
+     * @return array
+     */
+    public static function getEventData($postId)
+    {
+        return Event::getData($postId);
     }
 
     private function build(array $data)
