@@ -18,7 +18,7 @@ class Event
      * Get event data
      *
      * @param int $postId
-     * @return array|null
+     * @return array
      */
     public static function getData(int $postId)
     {
@@ -28,19 +28,18 @@ class Event
 
         $data['event'] = [];
 
-        $occurences = self::getOcurrences($postId);
-        if (!empty($occurences)) {
-            $tsStart = strtotime($occurences[0]);
+        $occurrences = $repeat ? self::getOccurrences($postId) : null;
+
+        if (!empty($occurrences)) {
+            $tsStart = strtotime($occurrences[0]);
             $tsStartUTC = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $tsStart)));
         } elseif ($tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
             $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
         } else {
-            return null;
+            return $data;
         }
 
-        $startDay = date('Y-m-d', $tsStart);
-
-        if (!empty($occurences)) {
+        if (!empty($occurrences)) {
             $eventStartGMT = (int) Utils::getMeta($meta, 'event_start_gmt');
             $eventEndGMT = (int) Utils::getMeta($meta, 'event_end_gmt');
             $tsEndUTC = $tsStartUTC + ($eventEndGMT - $eventStartGMT);
@@ -50,6 +49,7 @@ class Event
             $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
         }
 
+        $startDay = date('Y-m-d', $tsStart);
         $endDay = date('Y-m-d', $tsEnd);
 
         // Multiday event
@@ -125,7 +125,7 @@ class Event
 
         if ($repeat) {
             $data['repeat'] = $repeat;
-            $data['ocurrences'] = self::getOcurrences($postId);
+            $data['occurrences'] = $occurrences;
         }
 
         return $data;
@@ -141,8 +141,7 @@ class Event
     {
         $meta = get_post_meta($postId);
 
-        $repeat = Utils::getMeta($meta, 'event_repeat');
-        if ($repeat !== 'on') {
+        if (Utils::getMeta($meta, 'event_repeat') !== 'on') {
             return [];
         }
 
@@ -160,17 +159,14 @@ class Event
         if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
             return [];
         }
-        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
-        $dtstart = date('Y-m-d H:i:s', $tsStart);
 
         $rruleArgs = [
-            'DTSTART' => $dtstart,
+            'DTSTART' => date('Y-m-d H:i:s', $tsStartUTC),
         ];
 
         $tsRepeatLastDateUTC = Utils::getMeta($meta, 'event_repeat_lastdate_gmt');
-        $tsRepeatLastDate = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsRepeatLastDateUTC)));
-        if ($tsRepeatLastDate > $tsStart) {
-            $lastDate = '@' . $tsRepeatLastDate;
+        if ($tsRepeatLastDateUTC > $tsStartUTC) {
+            $lastDate = '@' . $tsRepeatLastDateUTC;
         } else {
             $lastDate = '@' . strtotime('+1 year');
         }
@@ -214,21 +210,31 @@ class Event
     }
 
     /**
-     * Get event ocurrences
+     * Get event occurrences
      *
      * @param int $postId
      * @return array
      */
-    public static function getOcurrences(int $postId): array
+    private static function getOccurrences(int $postId): array
     {
         $meta = get_post_meta($postId);
+        $allDay = Utils::getMeta($meta, 'event_all_day');
+
+        $occurrences = [];
+
+        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+            return $occurrences;
+        }
+
+        if ($allDay == 'on') {
+            $tsStartUTC = strtotime(date('Y-m-d', $tsStartUTC));
+        }
 
         $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
         if ($rruleArgs = json_decode($rruleArgs, true)) {
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
-            $tsStart = absint(Utils::getMeta($meta, 'event_start'));
-            $startTime = date('H:i:s', $tsStart);
+            $startTime = date('H:i:s', $tsStartUTC);
 
             // Dates exceptions
             $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
@@ -251,8 +257,8 @@ class Event
                 }
             }
 
-            $currentTime = current_time('timestamp');
-            $occurrences = [];
+            $currentTime = current_time('timestamp', true);
+
             foreach ($rset->getOccurrences() as $occurrence) {
                 $timestamp = $occurrence->getTimestamp();
                 if ($timestamp < $currentTime) {
@@ -260,9 +266,8 @@ class Event
                 }
                 $occurrences[] = $occurrence->format('Y-m-d H:i:s');
             }
-            return $occurrences;
         }
-        return [];
+        return $occurrences;
     }
 
     /**
@@ -273,10 +278,11 @@ class Event
      */
     public static function getHumanReadableRecurrence(int $postId): string
     {
-        $repeat = get_post_meta($postId, 'event_repeat', true);
+        $meta = get_post_meta($postId);
         $readableRrule = '';
-        if ($repeat) {
-            $rruleArgs = get_post_meta($postId, 'event_rrule_args', true);
+
+        if (Utils::getMeta($meta, 'event_repeat') == 'on') {
+            $rruleArgs = Utils::getMeta($meta, 'event_rrule_args', true);
             if ($rruleArgs = json_decode($rruleArgs, true)) {
                 $readableRrule = self::humanReadableRRule($rruleArgs);
             }
@@ -290,7 +296,7 @@ class Event
      * @param array $args
      * @return string
      */
-    public static function humanReadableRRule(array $args): string
+    private static function humanReadableRRule(array $args): string
     {
         $opt = [
             'use_intl' => true,
@@ -319,9 +325,9 @@ class Event
     {
         $currentTime = current_time('timestamp');
         $event = self::getData($postId);
-        $ocurrences = $event['ocurrences'] ?? [];
-        if ($ocurrences) {
-            $tsEnd = strtotime(end($ocurrences));
+        $occurrences = $event['occurrences'] ?? [];
+        if ($occurrences) {
+            $tsEnd = strtotime(end($occurrences));
         } else {
             $tsEnd = strtotime($event['event']['end']);
         }
