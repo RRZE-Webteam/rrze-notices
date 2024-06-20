@@ -26,10 +26,7 @@ class ICal
         'dtend',
         'dtstart',
         'location',
-        'summary',
-        'rrule',
-        'exdate;value=date', // For excluding dates
-        'rdate;value=date'   // For including dates
+        'summary'
     ];
 
     /**
@@ -50,8 +47,9 @@ class ICal
      */
     public function setData(array $data)
     {
-        foreach ($data as $postId => $props) {
-            $this->data[$postId] = $this->setProps($props);
+
+        foreach ($data as $key => $value) {
+            $this->data[$key] = $this->setProperties($value);
         }
     }
 
@@ -61,7 +59,7 @@ class ICal
      * @param array $props
      * @return array
      */
-    private function setProps(array $props): array
+    private function setProperties(array $props): array
     {
         $properties = [];
         foreach ($props as $key => $value) {
@@ -109,12 +107,12 @@ class ICal
             foreach ($this->data as $properties) {
                 $icsProps[] = 'BEGIN:VEVENT';
                 $props = [];
-                foreach ($properties as $k => $v) {
-                    $props[strtoupper($k)] = $v;
+                foreach ($properties as $key => $value) {
+                    $props[strtoupper($key)] = $value;
                 }
                 $props['DTSTAMP'] = $this->formatTimestamp('now');
-                foreach ($props as $k => $v) {
-                    $icsProps[] = "$k:$v";
+                foreach ($props as $key => $value) {
+                    $icsProps[] = "$key:$value";
                 }
                 $icsProps[] = 'END:VEVENT';
             }
@@ -142,7 +140,7 @@ class ICal
             case 'summary':
             case 'description':
             case 'location':
-                $value = preg_replace('/([\,;])/', '\\\$1', $value);
+                $value = $this->escStr($value, true);
                 break;
             default:
                 $value = $this->escStr($value);
@@ -164,13 +162,18 @@ class ICal
     }
 
     /**
-     * Escape content string.
+     * Escape special characters.
      *
      * @param string $input
+     * @param boolean $specialChars
      * @return string
      */
-    private function escStr(string $input): string
+    private function escStr(string $input, $specialChars = false): string
     {
+        if ($specialChars) {
+            $input = wp_strip_all_tags($input);
+            $input = preg_replace('/([\,;])/', '\\\$1', $input);
+        }
         $input = str_replace("\n", "\\n", $input);
         $input = str_replace("\r", "\\r", $input);
         return $input;
@@ -205,7 +208,7 @@ class ICal
                 $output .= mb_substr($line, 0, $lineLimit);
                 $line = mb_substr($line, $lineLimit);
 
-                // Subsequent line break limit is $lineLimit - 1 due to leading whitespace :)
+                // Subsequent line break limit is $lineLimit - 1 due to leading whitespace
                 $output .= "\n " . mb_substr($line, 0, $lineLimit - 1);
 
                 while (mb_strlen($line) > $lineLimit - 1) {
