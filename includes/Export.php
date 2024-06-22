@@ -44,40 +44,83 @@ class Export
             $post->post_status === 'publish'
         ) {
             $postId = $post->ID;
-            $data = $this->getEvent($postId, $post);
+            $data = $this->getEvent($postId);
             self::build(@$data);
         }
     }
 
-    private function getEvent(int $postId, object $post)
+    private function getEvent(int $postId)
     {
         $meta = get_post_meta($postId);
-        $repeat = Utils::getMeta($meta, 'event_repeat');
 
-        $tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt');
-        $startDay = date('Y-m-d H:i:s', $tsStartUTC);
-
-        $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
-        $endDay = date('Y-m-d H:i:s', $tsEndUTC);
-
-        $meta = get_post_meta($post->ID);
         $eventUid = Utils::getMeta($meta, 'event_uid');
-        $repeat = Utils::getMeta($meta, 'event_repeat');
 
-        $eventData = self::getEventData($postId);
-        error_log(print_r($eventData, true));
+        $notice = (object) Utils::getMeta($meta, 'notice_data');
 
+        $eventData = (object) self::getEventData($postId);
+        $event = (object) $eventData->event;
 
-        $data[$postId] = [
-            'summary' => $post->post_title,
-            'uid' => $eventUid ?: '',
-            'description' => $post->post_content ?: '',
-            'dtstart' => $startDay,
-            'dtend' => $endDay,
-            'location' => ''
-        ];
+        $repeat = $eventData->repeat ?? null;
+        $occurrences = $eventData->occurrences ?? null;
+        if ($repeat && $occurrences) {
+            foreach ($occurrences as $occurrence) {
+                $tsOccurrence = strtotime($occurrence);
+                $startDate = date('Y-m-d H:i:s', $tsOccurrence);
+                $tsStart = strtotime($event->start);
+                $tsEnd = strtotime($event->end);
+                $endDate = date('Y-m-d H:i:s', $tsOccurrence + ($tsEnd - $tsStart));
+                $data[] = self::makeEventData($eventUid, $startDate, $endDate, $notice, $event);
+            }
+        } else {
+            $startDate = $event->start;
+            $endDate = $event->end;
+            $data[] = [self::makeEventData($eventUid, $startDate, $endDate, $notice, $event)];
+        }
 
         return $data;
+    }
+
+    private static function makeEventData(string $eventUid, string $startDate, string $endDate, object $notice, object $event): array
+    {
+        $allDay = $event->all_day;
+        $multiDay = $event->multiday;
+        $tsStart = strtotime($startDate);
+        $tsEnd = strtotime($endDate);
+        $startDay = date('Y-m-d', $tsStart);
+        $endDay = date('Y-m-d', $tsEnd);
+        // Multiday event
+        if ($multiDay == 'on' && $startDay != $endDay) {
+            // All day event
+            if ($allDay == 'on') {
+                $startDate = date('Y-m-d', $tsStart);
+                $endDate = date('Y-m-d', $tsEnd);
+                // Timed event
+            } else {
+                $startDate = date('Y-m-d H:i:s', $tsStart);
+                $endDate = date('Y-m-d H:i:s', $tsEnd);
+            }
+            // Single day event
+        } else {
+            // All day event
+            if ($allDay == 'on') {
+                $startDate = date('Y-m-d', $tsStart);
+                $endDate = $endDay == $startDay ? date('Y-m-d', $tsStart) : date('Y-m-d', $tsEnd);
+                // Timed event
+            } else {
+                $startDate = date('Y-m-d H:i:s', $tsStart);
+                $endDate = date('Y-m-d H:i:s', $tsEnd);
+            }
+        }
+
+        $timezone = wp_timezone_string() ?: 'UTC';
+        return [
+            'summary' => $notice->title,
+            'uid' => $eventUid ?: '',
+            'description' => $notice->content ?: '',
+            'dtstart' => $startDate,
+            'dtend' => $endDate,
+            'location' => ''
+        ];
     }
 
     /**
