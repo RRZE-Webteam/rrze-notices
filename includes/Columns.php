@@ -36,7 +36,7 @@ class Columns
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!current_user_can('manage_network_options') || !Utils::isPluginActiveForNetwork()) {
+        if (!is_super_admin() || !Utils::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
         }
         return $columns;
@@ -51,7 +51,7 @@ class Columns
             case 'notice_start':
                 $tsStart = Post::getNoticeStart($postId);
                 echo $tsStart ? date_i18n(get_option('date_format'), $tsStart) : '&mdash;';
-                echo !current_user_can('manage_network_options') && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
+                echo !is_super_admin() && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
                 break;
             case 'event_date':
                 $data = Post::getEventData($postId);
