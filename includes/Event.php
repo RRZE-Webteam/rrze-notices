@@ -156,17 +156,17 @@ class Event
             return [];
         }
 
-        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+        if (!$tsStart = (int) Utils::getMeta($meta, 'event_start')) {
             return [];
         }
 
         $rruleArgs = [
-            'DTSTART' => date('Y-m-d H:i:s', $tsStartUTC),
+            'DTSTART' => date('Y-m-d H:i:s', $tsStart),
         ];
 
-        $tsRepeatLastDateUTC = Utils::getMeta($meta, 'event_repeat_lastdate_gmt');
-        if ($tsRepeatLastDateUTC > $tsStartUTC) {
-            $lastDate = '@' . $tsRepeatLastDateUTC;
+        $tsRepeatLastDate = Utils::getMeta($meta, 'event_repeat_lastdate');
+        if ($tsRepeatLastDate > $tsStart) {
+            $lastDate = '@' . $tsRepeatLastDate;
         } else {
             $lastDate = '@' . strtotime('+1 year');
         }
@@ -222,19 +222,19 @@ class Event
 
         $occurrences = [];
 
-        if (!$tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+        if (!$tsStart = (int) Utils::getMeta($meta, 'event_start')) {
             return $occurrences;
         }
 
         if ($allDay == 'on') {
-            $tsStartUTC = strtotime(date('Y-m-d', $tsStartUTC));
+            $tsStart = strtotime(date('Y-m-d', $tsStart));
         }
 
         $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
         if ($rruleArgs = json_decode($rruleArgs, true)) {
             $rset = new RSet();
             $rset->addRRule($rruleArgs);
-            $startTime = date('H:i:s', $tsStartUTC);
+            $startTime = date('H:i:s', $tsStart);
 
             // Dates exceptions
             $exceptions = Utils::getMeta($meta, 'event_date_exceptions');
@@ -257,7 +257,7 @@ class Event
                 }
             }
 
-            $currentTime = current_time('timestamp', true);
+            $currentTime = current_time('timestamp');
 
             foreach ($rset->getOccurrences() as $occurrence) {
                 $timestamp = $occurrence->getTimestamp();
