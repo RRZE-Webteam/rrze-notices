@@ -89,7 +89,7 @@ class AdminBar
                 $visibility = [];
             }
             if (
-                !current_user_can('manage_network_options') &&
+                !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
                 !in_array('all', $visibility)
             ) {
@@ -153,7 +153,7 @@ class AdminBar
                 $visibility = [];
             }
             if (
-                !current_user_can('manage_network_options') &&
+                !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
                 !in_array('all', $visibility)
             ) {
@@ -197,7 +197,7 @@ class AdminBar
             [
                 'id'     => 'rrze-notices',
                 'parent' => 'top-secondary',
-                'title'  => $title,
+                'title'  => esc_html($title),
                 'href'   => false
             ]
         );
@@ -211,7 +211,7 @@ class AdminBar
                 [
                     'id'     => 'rrze-notices-item-' . $i,
                     'parent' => 'rrze-notices',
-                    'title'  => $notice->title,
+                    'title'  => esc_html($notice->title),
                     'href'   => $href,
                     'meta'   => [
                         'class' => $metaClass
