@@ -107,6 +107,10 @@ class Display
             $roleVisibility = $notice->visibility ?? ['all'];
             $subscriptionLink = $notice->subscription_link ?? '';
             $adminLink = $notice->admin_link ?? '';
+            $eventAllDay = $notice->event_all_day ?? '';
+            $eventMultiDay = $notice->event_multiday ?? '';
+            $eventStartUTC = $notice->event_start_gmt;
+            $eventEndUTC = $notice->event_end_gmt;
 
             if (!$content) {
                 continue;
@@ -129,36 +133,35 @@ class Display
             } else {
                 $visibility = [];
             }
-            
+
             if (
-                !current_user_can('manage_network_options') &&
+                !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
                 !in_array('all', $visibility)
             ) {
                 continue;
             }
 
-            $title = !$hideTitle ? $title : '';
             $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
 
             $subscriptionLink = sprintf(
-                '<a href="%1$s">%2$s</a>',
+                '<a href="%1$s" target="_blank">%2$s</a>',
                 $subscriptionLink,
                 __('Add to calendar', 'rrze-notices')
             );
 
             $editLink = '';
             if (
-                current_user_can('manage_network_options')
+                is_super_admin()
                 && Utils::isPluginActiveForNetwork()
             ) {
                 $editLink = sprintf(
-                    '<a href="%1$s">%2$s</a>',
+                    '<a href="%1$s" target="_blank">%2$s</a>',
                     $adminLink,
                     __('Edit (Network-Wide)', 'rrze-notices')
                 );
             }
-            
+
             $this->notices->add(
                 $noticeId,
                 $title,
@@ -166,11 +169,14 @@ class Display
                 [
                     'screens'           => ['dashboard'],
                     'type'              => $type,
+                    'hide_title'        => $hideTitle,
                     'alt_style'         => $altStyle,
-                    'capability'        => 'read',
                     'subscription_link' => $subscriptionLink,
                     'edit_link'         => $editLink,
-                    'readable_datetime' => true
+                    'all_day'           => $eventAllDay,
+                    'multiday'          => $eventMultiDay,
+                    'event_start_gmt'   => $eventStartUTC,
+                    'event_end_gmt'     => $eventEndUTC
                 ]
             );
         }
@@ -215,7 +221,7 @@ class Display
                 }
             }
             if (
-                !current_user_can('manage_network_options') &&
+                !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
                 !in_array('all', $visibility)
             ) {
@@ -226,9 +232,11 @@ class Display
                 continue;
             }
 
-            $title = $notice->hide_title;
+            $title = $notice->title;
 
             $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
+
+            $hideTitle = $notice->hide_title;
 
             $altStyle = $notice->alt_style;
 
@@ -245,7 +253,7 @@ class Display
             $editText = __('Edit', 'rrze-notices');
 
             if (
-                current_user_can('manage_network_options')
+                is_super_admin()
                 && Utils::isPluginActiveForNetwork()
                 && isset($this->siteOptions->network_wide[$noticeId])
             ) {
@@ -260,6 +268,8 @@ class Display
                 );
             }
 
+            $readableDatetime = $notice->readable_datetime;
+
             $this->notices->add(
                 $noticeId,
                 $title,
@@ -267,10 +277,11 @@ class Display
                 [
                     'screens'           => ['dashboard'],
                     'type'              => $type,
+                    'hide_title'        => $hideTitle,
                     'alt_style'         => $altStyle,
-                    'capability'        => 'read',
                     'subscription_link' => $subscriptionLink,
-                    'edit_link'         => $editLink
+                    'edit_link'         => $editLink,
+                    'readable_datetime' => $readableDatetime
                 ]
             );
         }
@@ -298,7 +309,9 @@ class Display
             return;
         }
 
-        $title = !Post::hideTitle($postId) ? $post->post_title : false;
+        $title = $post->post_title;
+
+        $hideTitle = Post::hideTitle($postId);
 
         $noticeType = Post::getType($postId);
         $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
@@ -318,6 +331,11 @@ class Display
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%d-%d', $blogId, $postId);
 
+        if ($notice = get_post_meta($postId, 'notice_data', true)) {
+            $notice = (object) $notice;
+        }
+        $readableDatetime = $notice->readable_datetime;
+
         $this->notices->add(
             $noticeId,
             $title,
@@ -325,12 +343,13 @@ class Display
             [
                 'screens'           => [CPTNotice::POST_TYPE],
                 'type'              => $type,
+                'hide_title'        => $hideTitle,
                 'alt_style'         => $altStyle,
-                'capability'        => 'read',
                 'subscription_link' => $subscriptionLink,
                 'edit_link'         => $editLink,
                 'preview'           => true,
-                'is_dismissible'    => false
+                'is_dismissible'    => false,
+                'readable_datetime' => $readableDatetime
             ]
         );
     }
