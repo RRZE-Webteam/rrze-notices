@@ -274,7 +274,7 @@ class MetaBoxes
             'alt_style' => __('Use alternative style', 'rrze-notices')
         ];
         if (
-            current_user_can('manage_network_options') &&
+            is_super_admin() &&
             Utils::isPluginActiveForNetwork()
         ) {
             $options['network_wide'] = __('Network-Wide', 'rrze-notices');
@@ -301,7 +301,7 @@ class MetaBoxes
 
         $options = [];
         if (
-            current_user_can('manage_network_options') &&
+            is_super_admin() &&
             Utils::isPluginActiveForNetwork()
         ) {
             foreach ($availableRoles as $role => $name) {
