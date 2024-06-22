@@ -6,14 +6,12 @@ defined('ABSPATH') || exit;
 
 class ICal
 {
-    public const DT_FORMAT = 'Ymd\THis\Z';
-
     /**
      * iCalendar data array.
      *
      * @var array
      */
-    protected $data = [];
+    private $data = [];
 
     /**
      * Available iCalendar properties.
@@ -47,7 +45,6 @@ class ICal
      */
     public function setData(array $data)
     {
-
         foreach ($data as $key => $value) {
             $this->data[$key] = $this->setProperties($value);
         }
@@ -112,7 +109,7 @@ class ICal
                 }
                 $props['DTSTAMP'] = $this->formatTimestamp('now');
                 foreach ($props as $key => $value) {
-                    $icsProps[] = "$key:$value";
+                    $icsProps[] = "$key$value";
                 }
                 $icsProps[] = 'END:VEVENT';
             }
@@ -140,25 +137,30 @@ class ICal
             case 'summary':
             case 'description':
             case 'location':
-                $value = $this->escStr($value, true);
+                $value = ':' . $this->escStr($value, true);
                 break;
             default:
-                $value = $this->escStr($value);
+                $value = ':' . $this->escStr($value);
         }
 
         return $value;
     }
 
     /**
-     * Format the date and time.
+     * Formats a timestamp for iCalendar.
      *
-     * @param string $timestamp
-     * @return string
+     * @param string $value The date/time to format, or 'now' for the current time.
+     * @return string The formatted timestamp.
      */
-    private function formatTimestamp(string $timestamp): string
+    private function formatTimestamp($value): string
     {
-        $dt = new \DateTime($timestamp);
-        return $dt->format(self::DT_FORMAT);
+        $timezoneString = wp_timezone_string() ?: 'UTC';
+        $date = new \DateTime($value, new \DateTimeZone($timezoneString));
+        return sprintf(
+            ';TZID=%1$s:%2$s',
+            $timezoneString,
+            $date->format('Ymd\THis')
+        );
     }
 
     /**
