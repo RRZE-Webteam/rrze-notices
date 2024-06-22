@@ -25,7 +25,7 @@ class Post
         add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
-        add_action('updated_post_meta', [__CLASS__, 'updatePostMeta'], 10, 2);
+        add_action('save_post', [__CLASS__, 'savePost']);
         add_action('delete_post', [__CLASS__, 'deletePost'], 10, 2);
         add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
     }
@@ -118,10 +118,9 @@ class Post
     /**
      * Update local & network post meta (if applicable) for the notice
      *
-     * @param int $metaId
      * @param int $postId
      */
-    public static function updatePostMeta(int $metaId, int $postId)
+    public static function savePost(int $postId)
     {
         if (get_post_type($postId) != CPTNotice::POST_TYPE) {
             return;
@@ -130,8 +129,8 @@ class Post
         self::updateLocalNotice($postId);
 
         if (
+            is_super_admin() &&
             Utils::isPluginActiveForNetwork()
-            && current_user_can('manage_network_options')
         ) {
             if (self::isNetworkWide($postId)) {
                 self::updateNetworkWideNotice($postId);
@@ -171,7 +170,7 @@ class Post
                 $post &&
                 $post->post_type == CPTNotice::POST_TYPE &&
                 get_post_meta($post->ID, 'notice_network_wide', true) == 'on' &&
-                !current_user_can('manage_network_options')
+                !is_super_admin()
             ) {
                 $allcaps[$caps[0]] = false;
             }
@@ -192,7 +191,7 @@ class Post
         }
 
         $data = self::getEventData($postId);
-        $eventReadableDateTime = $data['event']['readable_datetime'];
+        $readableDatetime = $data['event']['readable_datetime'];
 
         $title = $post->post_title;
         $content = $post->post_content;
@@ -214,7 +213,7 @@ class Post
             'notice_start' => $noticeStart,
             'subscription_link' => $subscriptionLink,
             'admin_link' => $adminLink,
-            'event_readable_datetime' => $eventReadableDateTime
+            'readable_datetime' => $readableDatetime,
         ];
 
         update_post_meta($postId, 'notice_data', $notice);
@@ -235,11 +234,14 @@ class Post
         $siteOptionsName = Options::getSiteOptionName();
         $siteOptions = Options::getSiteOptions();
 
-        $data = self::getEventData($postId);
-        $eventReadableDateTime = $data['event']['readable_datetime'];
-
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
+
+        $data = self::getEventData($postId);
+        $eventAllDay = $data['event']['all_day'];
+        $eventMultiDay = $data['event']['multiday'];
+        $eventStartUTC = $data['event']['start_gmt'] ?? '';
+        $eventEndUTC = $data['event']['end_gmt'] ?? '';
 
         $title = $post->post_title;
         $content = $post->post_content;
@@ -261,7 +263,10 @@ class Post
             'notice_start' => $noticeStart,
             'subscription_link' => $subscriptionLink,
             'admin_link' => $adminLink,
-            'event_readable_datetime' => $eventReadableDateTime
+            'event_all_day' => $eventAllDay,
+            'event_multiday' => $eventMultiDay,
+            'event_start_gmt' => $eventStartUTC,
+            'event_end_gmt' => $eventEndUTC
         ];
 
         update_site_option($siteOptionsName, $siteOptions);
