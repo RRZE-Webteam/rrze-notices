@@ -25,7 +25,7 @@ class Settings
 
     public function networkAdminPluginActionLink($links)
     {
-        if (!current_user_can('manage_network_options')) {
+        if (!is_super_admin()) {
             return $links;
         }
         return array_merge(
@@ -45,7 +45,7 @@ class Settings
 
     public function networkAdminMenu()
     {
-        if (isset($_POST['_wpnonce']) &&  wp_verify_nonce($_POST['_wpnonce'], 'rrze_notices_network-options') && current_user_can('manage_network_options')) {
+        if (isset($_POST['_wpnonce']) &&  wp_verify_nonce($_POST['_wpnonce'], 'rrze_notices_network-options') && is_super_admin()) {
             if (isset($_POST['rrze_notices_settings_submit'])) {
                 $settings = isset($_POST['rrze_notices_settings']) ? $_POST['rrze_notices_settings'] : [];
 
