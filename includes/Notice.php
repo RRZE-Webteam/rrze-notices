@@ -42,11 +42,16 @@ class Notice
     private $options = [
         'screens'           => [],
         'type'              => 'info',
+        'hide_title'        => false,
         'alt_style'         => false,
         'preview'           => false,
         'subscription_link' => '',
         'edit_link'         => '',
-        'capability'        => 'edit_theme_options',
+        'event_all_day'     => '',
+        'event_multiday'    => '',
+        'event_start_gmt'   => '',
+        'event_end_gmt'     => '',
+        'readable_datetime' => '',
         'is_dismissible'    => true
     ];
 
@@ -118,7 +123,54 @@ class Notice
             return;
         }
 
+        $eventDate = '';
+        $readableDatetime = $this->options['readable_datetime'];
+        if (!$readableDatetime) {
+            $allDay = $this->options['event_all_day'];
+            $multiDay = $this->options['event_multiday'];
+            $tsStartUTC = strtotime($this->options['event_start_gmt']);
+            $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+            $tsEndUTC = strtotime($this->options['event_end_gmt']);
+            $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+            $startDay = date('Y-m-d', $tsStart);
+            $endDay = date('Y-m-d', $tsEnd);
+            // Multiday event
+            if ($multiDay == 'on' && $startDay != $endDay) {
+                // All day event
+                if ($allDay == 'on') {
+                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format'), $tsEnd);
+                    // Timed event
+                } else {
+                    $readableDatetime = date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd);
+                }
+                // Single day event
+            } else {
+                // All day event
+                if ($allDay == 'on') {
+                    $readableDatetime = ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format'), $tsEnd));
+                    // Timed event
+                } else {
+                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                        . ' '
+                        . date_i18n(get_option('time_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('time_format'), $tsEnd);
+                }
+            }
+        }
+        $eventDate = sprintf(
+            '<p class="notice-event-date">%s</p>',
+            $readableDatetime
+        );
+
         $html  = $this->getTitle();
+        $html .= $eventDate;
         $html .= $this->getMessage();
 
         $noticeActions[] = $this->options['subscription_link'] ? $this->options['subscription_link'] : '';
@@ -144,10 +196,6 @@ class Notice
      */
     public function show()
     {
-        if (!current_user_can($this->options['capability'])) {
-            return false;
-        }
-
         if (!$this->isScreen()) {
             return false;
         }
@@ -197,13 +245,13 @@ class Notice
      */
     public function getTitle()
     {
-        if (!$this->title) {
+        if (!$this->title || $this->options['hide_title']) {
             return '';
         }
 
         return sprintf(
             '<h2 class="notice-title">%s</h2>',
-            wp_strip_all_tags($this->title)
+            esc_html($this->title)
         );
     }
 
