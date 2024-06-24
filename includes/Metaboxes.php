@@ -4,7 +4,7 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-class MetaBoxes
+class Metaboxes
 {
     /**
      * Load hooks
