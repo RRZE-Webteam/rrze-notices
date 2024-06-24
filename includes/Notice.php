@@ -40,13 +40,19 @@ class Notice
      * @var array
      */
     private $options = [
-        'screens'        => [],
-        'type'           => 'info',
-        'alt_style'      => false,
-        'edit_link'      => '',
-        'capability'     => 'edit_theme_options',
-        'option_prefix'  => 'rrze_notices_dismissed',
-        'is_dismissible' => true
+        'screens'           => [],
+        'type'              => 'info',
+        'hide_title'        => false,
+        'alt_style'         => false,
+        'preview'           => false,
+        'subscription_link' => '',
+        'edit_link'         => '',
+        'event_all_day'     => '',
+        'event_multiday'    => '',
+        'event_start_gmt'   => '',
+        'event_end_gmt'     => '',
+        'readable_datetime' => '',
+        'is_dismissible'    => true
     ];
 
     /**
@@ -54,8 +60,10 @@ class Notice
      *
      * @var array
      */
-    private $allowed_html = [
-        'p' => [],
+    private $allowedHtml = [
+        'p' => [
+            'class' => [],
+        ],
         'a' => [
             'href' => [],
             'rel' => [],
@@ -75,7 +83,7 @@ class Notice
      *
      * @var array
      */
-    private $allowed_types = [
+    private $allowedTypes = [
         'info',
         'success',
         'error',
@@ -92,32 +100,86 @@ class Notice
      */
     public function __construct($id, $title, $message, $options = [])
     {
-        $this->id         = $id;
-        $this->title      = $title;
-        $this->message    = $message;
-        $this->options    = wp_parse_args($options, $this->options);
+        $this->id = $id;
+        $this->title = $title;
+        $this->message = $message;
+        $this->options = wp_parse_args($options, $this->options);
 
         if (!$this->id || !$this->message) {
             return;
         }
 
-        $this->allowed_html = apply_filters('rrze_notices_allowed_html', $this->allowed_html);
+        $this->allowedHtml = apply_filters('rrze_notices_allowed_html', $this->allowedHtml);
 
-        $this->dismiss = new Dismiss($this->id, $this->options['option_prefix'], $this->options['is_dismissible']);
+        $this->dismiss = new Dismiss($this->id, $this->options['is_dismissible']);
     }
 
     /**
      * Prints the notice.
      */
-    public function theNotice()
+    public function printNotice()
     {
         if (!$this->show()) {
             return;
         }
 
+        $eventDate = '';
+        $readableDatetime = $this->options['readable_datetime'];
+        if (!$readableDatetime) {
+            $allDay = $this->options['event_all_day'];
+            $multiDay = $this->options['event_multiday'];
+            $tsStartUTC = strtotime($this->options['event_start_gmt']);
+            $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+            $tsEndUTC = strtotime($this->options['event_end_gmt']);
+            $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+            $startDay = date('Y-m-d', $tsStart);
+            $endDay = date('Y-m-d', $tsEnd);
+            // Multiday event
+            if ($multiDay == 'on' && $startDay != $endDay) {
+                // All day event
+                if ($allDay == 'on') {
+                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format'), $tsEnd);
+                    // Timed event
+                } else {
+                    $readableDatetime = date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd);
+                }
+                // Single day event
+            } else {
+                // All day event
+                if ($allDay == 'on') {
+                    $readableDatetime = ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('date_format'), $tsEnd));
+                    // Timed event
+                } else {
+                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                        . ' '
+                        . date_i18n(get_option('time_format'), $tsStart)
+                        . ' &ndash; '
+                        . date_i18n(get_option('time_format'), $tsEnd);
+                }
+            }
+        }
+        $eventDate = sprintf(
+            '<p class="notice-event-date">%s</p>',
+            $readableDatetime
+        );
+
         $html  = $this->getTitle();
+        $html .= $eventDate;
         $html .= $this->getMessage();
-        $html .= $this->options['edit_link'] ? $this->options['edit_link'] : '';
+
+        $noticeActions[] = $this->options['subscription_link'] ? $this->options['subscription_link'] : '';
+        $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
+        $noticeActions = array_filter($noticeActions);
+        $html .= sprintf(
+            '<div class="notice-actions">%s</div>',
+            implode('&nbsp;&nbsp;|&nbsp;&nbsp;', $noticeActions)
+        );
 
         printf(
             '<div id="%1$s" class="%2$s">%3$s</div>',
@@ -134,10 +196,6 @@ class Notice
      */
     public function show()
     {
-        if (!current_user_can($this->options['capability'])) {
-            return false;
-        }
-
         if (!$this->isScreen()) {
             return false;
         }
@@ -161,11 +219,15 @@ class Notice
             'notice'
         ];
 
+        if ($this->options['preview']) {
+            $classes[] = 'notice-preview';
+        }
+
         if ($this->options['is_dismissible']) {
             $classes[] = 'is-dismissible';
         }
 
-        $this->options['type'] = in_array($this->options['type'], $this->allowed_types) ? $this->options['type'] : 'info';
+        $this->options['type'] = in_array($this->options['type'], $this->allowedTypes) ? $this->options['type'] : 'info';
 
         $classes[] = 'notice-' . $this->options['type'];
 
@@ -183,13 +245,13 @@ class Notice
      */
     public function getTitle()
     {
-        if (!$this->title) {
+        if (!$this->title || $this->options['hide_title']) {
             return '';
         }
 
         return sprintf(
             '<h2 class="notice-title">%s</h2>',
-            wp_strip_all_tags($this->title)
+            esc_html($this->title)
         );
     }
 
@@ -200,7 +262,7 @@ class Notice
      */
     public function getMessage()
     {
-        return wpautop(wp_kses($this->message, $this->allowed_html));
+        return wpautop(wp_kses($this->message, $this->allowedHtml));
     }
 
     /**

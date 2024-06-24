@@ -7,6 +7,11 @@ defined('ABSPATH') || exit;
 class Dismiss
 {
     /**
+     * The prefix to be using for the user-meta key.
+     */
+    public const PREFIX = 'rrze_notices_dismissed';
+
+    /**
      * The notice-ID.
      *
      * @var string
@@ -14,7 +19,7 @@ class Dismiss
     private $id;
 
     /**
-     * The prefix we'll be using for the option/user-meta.
+     * The prefix to be using for the option/user-meta.
      *
      * @var string
      */
@@ -31,13 +36,12 @@ class Dismiss
      * Constructor.
      * 
      * @param string $id A unique ID for this notice. Can contain lowercase characters and underscores.
-     * @param string $prefix The prefix that will be used for the option/user-meta.
      * @param boolean $isDismissible Should be the notice dismissible?
      */
-    public function __construct(string $id, string $prefix, bool $isDismissible = true)
+    public function __construct(string $id, bool $isDismissible = true)
     {
         $this->id = sanitize_key($id);
-        $this->prefix = sanitize_key($prefix);
+        $this->prefix = self::PREFIX;
         $this->isDismissible = $isDismissible;
 
         add_action('wp_ajax_rrze_notices_dismiss', [$this, 'ajaxDismissNotice']);
@@ -69,7 +73,7 @@ class Dismiss
                 });
             });
         </script>
-        <?php
+<?php
     }
 
     /**
@@ -108,5 +112,19 @@ class Dismiss
     private function dismissNotice()
     {
         update_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true);
+    }
+
+    /**
+     * Delete the dismissed notice.
+     */
+    public function deleteDismissedNotice()
+    {
+        global $wpdb;
+        $metaKey = "{$this->prefix}_{$this->id}";
+        $sql = $wpdb->prepare(
+            "DELETE FROM $wpdb->usermeta WHERE meta_key = %s",
+            $metaKey
+        );
+        $wpdb->query($sql);
     }
 }

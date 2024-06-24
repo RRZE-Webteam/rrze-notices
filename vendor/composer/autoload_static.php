@@ -4,20 +4,26 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitebe75f2d1fd28a93fff39b343acee84a
+class ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e
 {
     public static $files = array (
-        '01ca16b748ed2d3122fc3842f29c78cb' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
+        'ad901de1e5d16b81f427bfe3dc3de508' => __DIR__ . '/..' . '/cmb2/cmb2/init.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'R' => 
         array (
+            'RRule\\' => 6,
             'RRZE\\Notices\\' => 13,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'RRule\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
+            1 => __DIR__ . '/..' . '/rlanvin/php-rrule/src',
+        ),
         'RRZE\\Notices\\' => 
         array (
             0 => __DIR__ . '/../..' . '/includes',
@@ -31,9 +37,9 @@ class ComposerStaticInitebe75f2d1fd28a93fff39b343acee84a
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitebe75f2d1fd28a93fff39b343acee84a::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitebe75f2d1fd28a93fff39b343acee84a::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitebe75f2d1fd28a93fff39b343acee84a::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e::$classMap;
 
         }, null, ClassLoader::class);
     }

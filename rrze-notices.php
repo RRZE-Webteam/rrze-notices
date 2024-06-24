@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Notices
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
 Description:     Management and listing of admin notices.
-Version:         2.1.1
+Version:         3.0.0
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
@@ -17,8 +17,8 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-const RRZE_PHP_VERSION = '8.0';
-const RRZE_WP_VERSION = '6.1';
+const RRZE_PHP_VERSION = '8.2';
+const RRZE_WP_VERSION = '6.5';
 
 /**
  * Composer autoload
@@ -45,7 +45,7 @@ function loadTextdomain()
  */
 function systemRequirements(): string
 {
-    global $wp_version, $is_apache;
+    global $wp_version;
     // Strip off any -alpha, -RC, -beta, -src suffixes.
     list($wpVersion) = explode('-', $wp_version);
     $phpVersion = phpversion();

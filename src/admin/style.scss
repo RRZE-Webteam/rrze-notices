@@ -9,18 +9,30 @@
 }
 
 .rrze-notices.notice {
-    span.preview {
-        float: right;
-        position: relative;
-        bottom: 26px;
-        text-transform: uppercase;
+    .notice-event-date {
         font-weight: bold;
+        color: #555;
+    }
+    .notice-actions {
+        position: absolute;
+        bottom: 0;
+        right: 10px;
+        margin: 0;
+        padding: 10px;
+    }
+}
+
+.rrze-notices.notice.notice-preview {
+    .notice-actions {
+        position: relative;
+        float: right;
+        bottom: 36px;
+        right: 0;
     }
 
-    a.admin-edit-link {
-        float: right;
-        position: relative;
-        bottom: 26px;
+    span.notice-preview {
+        text-transform: uppercase;
+        font-weight: bold;
     }
 }
 
@@ -42,9 +54,6 @@
     }
 
     .ab-sub-wrapper {
-        max-height: 500px;
-        overflow-y: scroll;
-
         ul.ab-submenu {
             width: 400px;
             padding: 0;

@@ -6,9 +6,9 @@ defined('ABSPATH') || exit;
 
 class Options
 {
-    const OPTION_NAME = 'rrze_notices';
+    public const OPTION_NAME = 'rrze_notices';
 
-    const SITE_OPTION_NAME = 'rrze_notices_site';
+    public const SITE_OPTION_NAME = 'rrze_notices_site';
 
     protected static function deafaultOptions()
     {

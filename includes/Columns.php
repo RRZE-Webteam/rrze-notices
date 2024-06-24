@@ -12,85 +12,79 @@ class Columns
 
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
+        $this->customPostType = CPTNotice::POST_TYPE;
         $this->siteOptions = Options::getSiteOptions();
     }
 
-    public function onLoaded()
+    public function loaded()
     {
-        add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageEdit']);
-        add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'managePosts'], 10, 2);
-        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortable']);
+        add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageColumns']);
+        add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'managePostsCustomColumn'], 10, 2);
+        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortableColumns']);
         add_action('load-edit.php', [$this, 'loadEdit']);
     }
 
-    public function manageEdit($columns)
+    public function manageColumns($columns)
     {
         $columns = [
             'cb' => '<input type="checkbox">',
             'title' => __('Notice', 'rrze-notices'),
-            'type' => __('Type', 'rrze-notices'),
-            'expiration' => __('Expiration', 'rrze-notices'),
+            'notice_type' => __('Type', 'rrze-notices'),
+            'notice_start' => __('Start', 'rrze-notices'),
+            'event_date' => __('Event Date', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             'date' => __('Date', 'rrze-notices')
         ];
-        if (!is_super_admin() || !is_multisite() || !Utils::isPluginActiveForNetwork()) {
+        if (!is_super_admin() || !Utils::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
         }
         return $columns;
     }
 
-    public function managePosts($column, $postId)
+    public function managePostsCustomColumn($column, $postId)
     {
         switch ($column) {
-            case 'type':
-                $allTypes = Utils::getNoticeTypes();
-                $noticeType = Utils::getType($postId);
-                $type = isset($allTypes[$noticeType]) ? $allTypes[$noticeType] : $allTypes[array_key_first($allTypes)];
-                echo $type;
+            case 'notice_type':
+                echo Post::getType($postId);
                 break;
-            case 'expiration':
-                $expiration = Utils::getExpiration($postId);
-                $expirationGmt = Utils::getExpirationGmt($postId);
-                $expired = Utils::isExpired($expirationGmt);
-                $expireDateTime = Utils::dateTimeFormat($expiration);
-                if ($expired) {
-                    printf('<span class="expired">%s</span><br><span class="expired">%s</span>', __('Expired', 'rrze-notices'), $expireDateTime);
-                } else {
-                    printf('<span>%s</span>', $expireDateTime);
-                }
+            case 'notice_start':
+                $tsStart = Post::getNoticeStart($postId);
+                echo $tsStart ? date_i18n(get_option('date_format'), $tsStart) : '&mdash;';
+                echo !is_super_admin() && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
+                break;
+            case 'event_date':
+                $data = Post::getEventData($postId);
+                $eventReadableDateTime = [
+                    $data['event']['readable_date'],
+                    Post::getHumanReadableRecurrence($postId)
+                ];
+                echo implode('<br>', $eventReadableDateTime);
                 break;
             case 'network_wide':
-                if (Utils::networkWide($postId)) {
-                    echo '<span class="dashicons dashicons-yes"></span>';
-                }
+                echo Post::isNetworkWide($postId) ?
+                    '<span class="dashicons dashicons-yes"></span>' :
+                    '&mdash;';
                 break;
             case 'visibility':
-                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
-                $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
-                if (!empty($roleVisibility)) {
-                    $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-                } else {
-                    $roleVisibility = [];
-                }
-                $roles = [];
-                foreach ($roleVisibility as $k) {
+                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
+                $roles = Post::getVisibility($postId);
+                $visibility = [];
+                foreach ($roles as $k) {
                     if (isset($availableRoles[$k])) {
-                        $roles[] = $availableRoles[$k];
+                        $visibility[] = $availableRoles[$k];
                     }
                 }
-                echo !empty($roles) ? implode(', ', $roles) : '&#65293;';
+                echo !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
                 break;
             default:
                 break;
         }
     }
 
-    public function manageSortable($columns)
+    public function manageSortableColumns($columns)
     {
-        $columns['type'] = 'type';
-        $columns['expiration'] = 'expiration';
+        $columns['notice_type'] = 'notice_type';
         return $columns;
     }
 
@@ -108,9 +102,6 @@ class Columns
         switch ($orderBy) {
             case 'type':
                 $query->set('meta_key', 'rrze_notices_type');
-                break;
-            case 'expiration':
-                $query->set('meta_key', 'rrze_notices_expiration');
                 break;
             default:
                 break;

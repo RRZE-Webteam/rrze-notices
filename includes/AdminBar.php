@@ -6,8 +6,6 @@ defined('ABSPATH') || exit;
 
 class AdminBar
 {
-    protected $customPostType;
-
     protected $siteOptionsName;
 
     protected $siteOptions;
@@ -18,13 +16,12 @@ class AdminBar
 
     public function __construct()
     {
-        $this->customPostType = CPT::getPostTypeName();
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
         $this->notices = [];
     }
 
-    public function onLoaded()
+    public function loaded()
     {
         add_action('admin_head', [$this, 'adminHead']);
         add_action('init', [$this, 'redirectRequest']);
@@ -38,7 +35,7 @@ class AdminBar
 
     protected function setNetworkWideNotices()
     {
-        if (!is_multisite() || !Utils::isPluginActiveForNetwork()) {
+        if (!Utils::isPluginActiveForNetwork()) {
             return;
         }
 
@@ -63,24 +60,17 @@ class AdminBar
                 continue;
             }
 
+            switch_to_blog($blogId);
+            $currentUser = wp_get_current_user();
+            restore_current_blog();
+
             $notice = (object) $notice;
 
-            $title = isset($notice->title) ? $notice->title : '';
-            $content = isset($notice->content) ? $notice->content : '';
-            $type = isset($notice->type) ? $notice->type : 'info';
-            $expiration = isset($notice->expiration) ? $notice->expiration : current_time('timestamp');
-            $expirationGmt = isset($notice->expiration_gmt) ? $notice->expiration_gmt : time();
-            $altStyle = isset($notice->alt_style) ? $notice->alt_style : false;
-            $hideTitle = isset($notice->hide_title) ? $notice->hide_title : false;
-            $visibility = isset($notice->visibility) ? $notice->visibility : true;
-            $adminLink = isset($notice->admin_link) ? $notice->admin_link : '';
+            $title = $notice->title ?? '';
+            $type = $notice->type ?? 'info';
+            $visibility = $notice->visibility ?? ['all'];
 
-            $expired = Utils::isExpired($expirationGmt);
-            if ($expired) {
-                continue;
-            }
-
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roleVisibility = $visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
@@ -98,16 +88,15 @@ class AdminBar
             } else {
                 $visibility = [];
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (
+                !is_super_admin() &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
-            if (!$content) {
-                continue;
-            }
-
-            $type = array_key_exists($type, Utils::getNoticeTypes()) ? $type : 'info';
+            $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
 
             $this->addNotices($noticeId, $title, $type);
         }
@@ -119,30 +108,34 @@ class AdminBar
     protected function setNotices()
     {
         $posts = get_posts([
-            'post_type' => $this->customPostType,
+            'fields' => 'ids',
+            'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
             'numberposts' => -1
         ]);
+
         if (!$posts) {
             return;
         }
-        foreach ($posts as $post) {
+
+        foreach ($posts as $postId) {
+            if ($notice = get_post_meta($postId, 'notice_data', true)) {
+                $notice = (object) $notice;
+            } else {
+                continue;
+            }
+
             $blogId = get_current_blog_id();
-            $postId = $post->ID;
             $noticeId = sprintf('%d-%d', $blogId, $postId);
 
             if ($this->isDismissed($noticeId)) {
                 continue;
             }
 
-            $expiration = Utils::getExpirationGmt($postId);
-            $expired = Utils::isExpired($expiration);
-            if ($expired) {
-                continue;
-            }
+            $currentUser = wp_get_current_user();
 
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Utils::getRoles());
-            $roleVisibility = get_post_meta($postId, 'rrze_notices_visibility', true);
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
+            $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -154,20 +147,23 @@ class AdminBar
                     $visibility[] = $k;
                 }
             }
-            $current_user = wp_get_current_user();
-            if (!Utils::arrayValInArray($current_user->roles, $visibility) && !in_array('all', $visibility)) {
+            if (!empty($visibility)) {
+                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
+            } else {
+                $visibility = [];
+            }
+            if (
+                !is_super_admin() &&
+                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
+                !in_array('all', $visibility)
+            ) {
                 continue;
             }
 
-            $content = $post->post_content;
-            if (!$content) {
-                continue;
-            }
+            $title = $notice->title;
 
-            $title = $post->post_title;
-
-            $noticeType = Utils::getType($postId);
-            $type = array_key_exists($noticeType, Utils::getNoticeTypes()) ? $noticeType : 'info';
+            $noticeType = Post::getType($postId);
+            $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
 
             $this->addNotices($postId, $title, $type);
         }
@@ -186,12 +182,10 @@ class AdminBar
     }
 
     /**
-     * Undocumented function
-     *
-     * @param object \WP_Admin_Bar $wp_admin_bar
-     * @return void
+     *  Add items to the admin bar.
+     * @param \WP_Admin_Bar $wpAdminBar
      */
-    public function addItems(&$wp_admin_bar)
+    public function addItems(&$wpAdminBar)
     {
         $title = sprintf(
             '<span class="ab-icon dashicons"></span><span class="ab-label">%s</span> <span class="notices-count">%s</span>',
@@ -199,11 +193,11 @@ class AdminBar
             count($this->notices)
         );
 
-        $wp_admin_bar->add_menu(
+        $wpAdminBar->add_menu(
             [
                 'id'     => 'rrze-notices',
                 'parent' => 'top-secondary',
-                'title'  => $title,
+                'title'  => esc_html($title),
                 'href'   => false
             ]
         );
@@ -213,11 +207,11 @@ class AdminBar
             $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice->id), 'rrze_notices_redirect_nonce');
             $metaClass = 'notices-' . $notice->type;
 
-            $wp_admin_bar->add_menu(
+            $wpAdminBar->add_menu(
                 [
                     'id'     => 'rrze-notices-item-' . $i,
                     'parent' => 'rrze-notices',
-                    'title'  => $notice->title,
+                    'title'  => esc_html($notice->title),
                     'href'   => $href,
                     'meta'   => [
                         'class' => $metaClass

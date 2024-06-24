@@ -18,7 +18,7 @@ class Notices
      */
     public function boot()
     {
-        add_action('admin_notices', [$this, 'theNotices']);
+        add_action('admin_notices', [$this, 'printNotices']);
         add_action('admin_footer', [$this, 'printScripts']);
     }
 
@@ -77,12 +77,12 @@ class Notices
      *
      * @return void
      */
-    public function theNotices()
+    public function printNotices()
     {
         $notices = $this->getAll();
 
         foreach ($notices as $notice) {
-            $notice->theNotice();
+            $notice->printNotice();
         }
     }
 
