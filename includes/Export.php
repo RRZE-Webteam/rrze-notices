@@ -4,8 +4,6 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use RRule\RRule;
-use RRule\RSet;
 use function RRZE\notices\plugin;
 
 
