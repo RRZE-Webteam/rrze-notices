@@ -174,7 +174,7 @@ class Event
 
         $repeatInterval = Utils::getMeta($meta, 'event_repeat_interval');
         if ($repeatInterval == 'week') {
-            $rruleArgs['FREQ'] = 'weekly';
+            $rruleArgs['FREQ'] = 'WEEKLY';
             $rruleArgs['INTERVAL'] = Utils::getMeta($meta, 'event_repeat_weekly_interval');
             if ($dows = Utils::getMeta($meta, 'event_repeat_weekly_day')) {
                 $daysOfWeek = Utils::daysOfWeek('rrule');
@@ -184,7 +184,7 @@ class Event
                 $rruleArgs['BYDAY'] = $dows;
             }
         } elseif ($repeatInterval == 'month') {
-            $rruleArgs['FREQ'] = 'monthly';
+            $rruleArgs['FREQ'] = 'MONTHLY';
 
             $months = (array) Utils::getMeta($meta, 'event_repeat_monthly_month');
             if (count($months) < 12) {
@@ -311,7 +311,11 @@ class Event
             'custom_path' => plugin()->getPath('languages/rrule'),
         ];
 
-        $rrule = new RRule($args);
+        try {
+            $rrule = new RRule($args);
+        } catch (\Exception $e) {
+            return '';
+        }
         return $rrule->humanReadable($opt);
     }
 
