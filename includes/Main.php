@@ -45,11 +45,11 @@ class Main
 
         CPT::loaded();
 
-        $display = new Display;
-        $display->loaded();
-
         $adminBar = new AdminBar;
         $adminBar->loaded();
+
+        $display = new Display;
+        $display->loaded();
 
         new Export();
 
