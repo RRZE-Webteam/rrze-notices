@@ -9,13 +9,24 @@ use function RRZE\notices\plugin;
 
 class Export
 {
+    /**
+     * The iCal formatted calendar data
+     *
+     * @var string
+     */
     private $vcalendar = '';
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         add_action('init', [$this, 'request']);
     }
 
+    /**
+     * Handle the request
+     */
     public function request()
     {
         $plugin = $_GET['ical-source'] ?? null;
@@ -34,6 +45,11 @@ class Export
         }
     }
 
+    /**
+     * Set the notice data
+     *
+     * @param object $post
+     */
     private function set(object $post)
     {
         if (
@@ -47,19 +63,22 @@ class Export
         }
     }
 
+    /**
+     * Get the event data for the notice
+     *
+     * @param int $postId
+     * @return array
+     */
     private function getEvent(int $postId)
     {
         $meta = get_post_meta($postId);
 
-        $eventUid = Utils::getMeta($meta, 'event_uid');
-
         $notice = (object) Utils::getMeta($meta, 'notice_data');
 
-        $eventData = (object) self::getEventData($postId);
-        $event = (object) $eventData->event;
+        $event = (object) self::getEventData($postId);
 
-        $repeat = $eventData->repeat ?? null;
-        $occurrences = $eventData->occurrences ?? null;
+        $repeat = $event->repeat ?? null;
+        $occurrences = $event->occurrences ?? null;
         if ($repeat && $occurrences) {
             foreach ($occurrences as $occurrence) {
                 $tsOccurrence = strtotime($occurrence);
@@ -67,19 +86,60 @@ class Export
                 $tsStart = strtotime($event->start);
                 $tsEnd = strtotime($event->end);
                 $endDate = date('Y-m-d H:i:s', $tsOccurrence + ($tsEnd - $tsStart));
-                $data[] = self::makeEventData($eventUid, $startDate, $endDate, $notice, $event);
+                $data[] = self::getIcalData($event->uid, $startDate, $endDate, $notice, $event);
             }
         } else {
             $startDate = $event->start;
             $endDate = $event->end;
-            $data[] = [self::makeEventData($eventUid, $startDate, $endDate, $notice, $event)];
+            $data[] = [self::getIcalData($event->uid, $startDate, $endDate, $notice, $event)];
         }
 
         return $data;
     }
 
-    private static function makeEventData(string $eventUid, string $startDate, string $endDate, object $notice, object $event): array
-    {
+    /**
+     * Get the iCal data for the notice
+     *
+     * @param string $eventUid
+     * @param string $startDate
+     * @param string $endDate
+     * @param object $notice
+     * @param object $event
+     * @return array
+     */
+    private static function getIcalData(
+        string $eventUid,
+        string $startDate,
+        string $endDate,
+        object $notice,
+        object $event
+    ): array {
+        return self::makeIcalData(
+            $eventUid,
+            $startDate,
+            $endDate,
+            $notice,
+            $event
+        );
+    }
+
+    /**
+     * Make the iCal data for the notice
+     *
+     * @param string $eventUid
+     * @param string $startDate
+     * @param string $endDate
+     * @param object $notice
+     * @param object $event
+     * @return array
+     */
+    private static function makeIcalData(
+        string $eventUid,
+        string $startDate,
+        string $endDate,
+        object $notice,
+        object $event
+    ): array {
         $allDay = $event->all_day;
         $multiDay = $event->multiday;
         $tsStart = strtotime($startDate);
@@ -110,7 +170,6 @@ class Export
             }
         }
 
-        $timezone = wp_timezone_string() ?: 'UTC';
         return [
             'summary' => $notice->title,
             'uid' => $eventUid ?: '',
@@ -129,9 +188,14 @@ class Export
      */
     public static function getEventData($postId)
     {
-        return Event::getData($postId);
+        return Event::makeData($postId);
     }
 
+    /**
+     * Build the iCal formatted calendar data
+     *
+     * @param array $data
+     */
     private function build(array $data)
     {
         // Setup calendar
