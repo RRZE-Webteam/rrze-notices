@@ -15,20 +15,21 @@ use RRule\RSet;
 class Event
 {
     /**
-     * Get event data
+     * Make event data
      *
      * @param int $postId
      * @return array
      */
-    public static function getData(int $postId)
+    public static function makeData(int $postId)
     {
         $meta = get_post_meta($postId);
+        $uid = Utils::getMeta($meta, 'event_uid');
         $allDay = Utils::getMeta($meta, 'event_all_day');
         $repeat = Utils::getMeta($meta, 'event_repeat');
 
-        $data['event'] = [];
+        $data = [];
 
-        $occurrences = $repeat ? self::getOccurrences($postId) : null;
+        $occurrences = $repeat == 'on' ? self::getOccurrences($postId) : [];
 
         if (!empty($occurrences)) {
             $tsStart = strtotime($occurrences[0]);
@@ -49,6 +50,8 @@ class Event
             $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
         }
 
+        $data['uid'] = $uid;
+
         $startDay = date('Y-m-d', $tsStart);
         $endDay = date('Y-m-d', $tsEnd);
 
@@ -56,7 +59,7 @@ class Event
         if ($startDay != $endDay) {
             // All day event
             if ($allDay == 'on') {
-                $event = [
+                $data = [
                     'readable_date' => date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd),
@@ -70,7 +73,7 @@ class Event
                 ];
                 // Timed event
             } else {
-                $event = [
+                $data = [
                     'readable_date' => date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd),
@@ -87,7 +90,7 @@ class Event
         } else {
             // All day event
             if ($allDay == 'on') {
-                $event = [
+                $data = [
                     'readable_date' => ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
                         . ' &ndash; '
                         . date_i18n(get_option('date_format'), $tsEnd)),
@@ -101,7 +104,7 @@ class Event
                 ];
                 // Timed event
             } else {
-                $event = [
+                $data = [
                     'readable_date' => date_i18n(get_option('date_format'), $tsStart),
                     'readable_time' => date_i18n(get_option('time_format'), $tsStart)
                         . ' &ndash; '
@@ -115,18 +118,14 @@ class Event
                 ];
             }
         }
-        if ($event['all_day'] || $event['multiday']) {
-            $event['readable_datetime'] = $event['readable_date'];
+        if ($data['all_day'] || $data['multiday']) {
+            $data['readable_datetime'] = $data['readable_date'];
         } else {
-            $event['readable_datetime'] = $event['readable_date'] . ' ' . $event['readable_time'];
+            $data['readable_datetime'] = $data['readable_date'] . ' ' . $data['readable_time'];
         }
 
-        $data['event'] = $event;
-
-        if ($repeat) {
-            $data['repeat'] = $repeat;
-            $data['occurrences'] = $occurrences;
-        }
+        $data['repeat'] = $repeat;
+        $data['occurrences'] = $occurrences;
 
         return $data;
     }
@@ -187,12 +186,9 @@ class Event
             $rruleArgs['FREQ'] = 'MONTHLY';
 
             $months = (array) Utils::getMeta($meta, 'event_repeat_monthly_month');
-            if (count($months) < 12) {
-                $monthsRrule = Utils::getMonthNames('rrule');
-                foreach ($months as $i => $month) {
-                    $months[$i] = $monthsRrule[$month];
-                }
-                $rruleArgs['BYMONTH'] = $months;
+            error_log(print_r($months, true));
+            if (!empty($months) && is_array($months)) {
+                $rruleArgs['BYMONTH'] = implode(',', $months);
             }
 
             $monthlyType = Utils::getMeta($meta, 'event_repeat_monthly_type');
@@ -232,8 +228,13 @@ class Event
 
         $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
         if ($rruleArgs = json_decode($rruleArgs, true)) {
-            $rset = new RSet();
-            $rset->addRRule($rruleArgs);
+            try {
+                $rset = new RSet();
+                $rset->addRRule($rruleArgs);
+            } catch (\Exception $e) {
+                return $occurrences;
+            }
+
             $startTime = date('H:i:s', $tsStart);
 
             // Dates exceptions
@@ -317,24 +318,5 @@ class Event
             return '';
         }
         return $rrule->humanReadable($opt);
-    }
-
-    /**
-     * Check if event is expired
-     *
-     * @param int $postId
-     * @return bool
-     */
-    public static function isExpired(int $postId): bool
-    {
-        $currentTime = current_time('timestamp');
-        $event = self::getData($postId);
-        $occurrences = $event['occurrences'] ?? [];
-        if ($occurrences) {
-            $tsEnd = strtotime(end($occurrences));
-        } else {
-            $tsEnd = strtotime($event['event']['end']);
-        }
-        return $tsEnd < $currentTime;
     }
 }
