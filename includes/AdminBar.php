@@ -23,8 +23,8 @@ class AdminBar
 
     public function loaded()
     {
+        add_action('admin_init', [$this, 'redirectRequest']);
         add_action('admin_head', [$this, 'adminHead']);
-        add_action('init', [$this, 'redirectRequest']);
     }
 
     public function adminHead()
@@ -52,6 +52,8 @@ class AdminBar
                 continue;
             }
 
+            // Avoid duplicate notices by not displaying 
+            // a network-wide notice on the current blog.
             if (get_current_blog_id() == $blogId) {
                 continue;
             }
@@ -60,18 +62,30 @@ class AdminBar
                 continue;
             }
 
-            switch_to_blog($blogId);
-            $currentUser = wp_get_current_user();
-            restore_current_blog();
-
             $notice = (object) $notice;
+            $event = (object) $notice->event;
 
-            $title = $notice->title ?? '';
-            $type = $notice->type ?? 'info';
-            $visibility = $notice->visibility ?? ['all'];
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+            $expired = $tsEnd < $currentTimeGmt;
+
+            if ($expired || !$noticeStarted) {
+                continue;
+            }
+
+            $currentUser = wp_get_current_user();
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $visibility;
+            $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -96,10 +110,14 @@ class AdminBar
                 continue;
             }
 
-            $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
+            $title = $notice->title;
+
+            $noticeType = Post::getType($postId);
+            $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
 
             $this->addNotices($noticeId, $title, $type);
         }
+
         if (!empty($this->notices)) {
             add_action('admin_bar_menu', [$this, 'addItems'], 99);
         }
@@ -119,9 +137,28 @@ class AdminBar
         }
 
         foreach ($posts as $postId) {
-            if ($notice = get_post_meta($postId, 'notice_data', true)) {
-                $notice = (object) $notice;
-            } else {
+            $notice = get_post_meta($postId, 'notice_data', true);
+            if (empty($notice) || !isset($notice['event'])) {
+                continue;
+            }
+
+            $notice = (object) $notice;
+            $event = (object) $notice->event;
+
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+            $expired = $tsEnd < $currentTimeGmt;
+
+            if ($expired || !$noticeStarted) {
                 continue;
             }
 
@@ -197,7 +234,7 @@ class AdminBar
             [
                 'id'     => 'rrze-notices',
                 'parent' => 'top-secondary',
-                'title'  => esc_html($title),
+                'title'  => $title,
                 'href'   => false
             ]
         );
