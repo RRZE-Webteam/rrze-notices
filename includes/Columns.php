@@ -44,38 +44,57 @@ class Columns
 
     public function managePostsCustomColumn($column, $postId)
     {
+        $notice = get_post_meta($postId, 'notice_data', true);
+        if (!empty($notice) && isset($notice['event'])) {
+            $notice = (object) $notice;
+            $event = (object) $notice->event;
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $eventReadableDate = !$event->repeat ? $event->readable_datetime : Post::getHumanReadableRecurrence($postId);
+            $readableDate = [
+                $eventReadableDate,
+                Post::getHumanReadableRecurrence($postId)
+            ];
+            $readableDate = implode('<br>', $readableDate);
+
+            $networkWide = $notice->network_wide ?
+                '<span class="dashicons dashicons-yes"></span>' :
+                '&mdash;';
+
+            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
+            $roles = $notice->visibility;
+            $visibility = [];
+            foreach ($roles as $k) {
+                if (isset($availableRoles[$k])) {
+                    $visibility[] = $availableRoles[$k];
+                }
+            }
+            $visibility = !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
+        } else {
+            $noticeType = '&mdash;';
+            $noticeStart = '&mdash;';
+            $readableDate = '&mdash;';
+            $visibility = '&mdash;';
+            $networkWide = '&mdash;';
+        }
+
         switch ($column) {
             case 'notice_type':
-                echo Post::getType($postId);
+                echo $noticeType;
                 break;
             case 'notice_start':
-                $tsStart = Post::getNoticeStart($postId);
-                echo $tsStart ? date_i18n(get_option('date_format'), $tsStart) : '&mdash;';
+                echo $tsNoticeStart > 0 ? date_i18n(get_option('date_format'), $tsNoticeStart) : '&mdash;';
                 echo !is_super_admin() && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
                 break;
             case 'event_date':
-                $data = Post::getEventData($postId);
-                $eventReadableDateTime = [
-                    $data['event']['readable_date'],
-                    Post::getHumanReadableRecurrence($postId)
-                ];
-                echo implode('<br>', $eventReadableDateTime);
+                echo $readableDate;
                 break;
             case 'network_wide':
-                echo Post::isNetworkWide($postId) ?
-                    '<span class="dashicons dashicons-yes"></span>' :
-                    '&mdash;';
+                echo $networkWide;
                 break;
             case 'visibility':
-                $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-                $roles = Post::getVisibility($postId);
-                $visibility = [];
-                foreach ($roles as $k) {
-                    if (isset($availableRoles[$k])) {
-                        $visibility[] = $availableRoles[$k];
-                    }
-                }
-                echo !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
+                echo $visibility;
                 break;
             default:
                 break;
