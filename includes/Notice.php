@@ -40,19 +40,14 @@ class Notice
      * @var array
      */
     private $options = [
-        'screens'           => [],
-        'type'              => 'info',
-        'hide_title'        => false,
-        'alt_style'         => false,
-        'preview'           => false,
+        'screens' => [],
+        'type' => 'info',
+        'hide_title' => false,
+        'preview' => false,
         'subscription_link' => '',
-        'edit_link'         => '',
-        'event_all_day'     => '',
-        'event_multiday'    => '',
-        'event_start_gmt'   => '',
-        'event_end_gmt'     => '',
-        'readable_datetime' => '',
-        'is_dismissible'    => true
+        'edit_link' => '',
+        'event' => '',
+        'is_dismissible' => true
     ];
 
     /**
@@ -123,50 +118,48 @@ class Notice
             return;
         }
 
-        $eventDate = '';
-        $readableDatetime = $this->options['readable_datetime'];
-        if (!$readableDatetime) {
-            $allDay = $this->options['event_all_day'];
-            $multiDay = $this->options['event_multiday'];
-            $tsStartUTC = strtotime($this->options['event_start_gmt']);
-            $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
-            $tsEndUTC = strtotime($this->options['event_end_gmt']);
-            $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
-            $startDay = date('Y-m-d', $tsStart);
-            $endDay = date('Y-m-d', $tsEnd);
-            // Multiday event
-            if ($multiDay == 'on' && $startDay != $endDay) {
-                // All day event
-                if ($allDay == 'on') {
-                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
-                        . ' &ndash; '
-                        . date_i18n(get_option('date_format'), $tsEnd);
-                    // Timed event
-                } else {
-                    $readableDatetime = date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
-                        . ' &ndash; '
-                        . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd);
-                }
-                // Single day event
+        $event = (object) $this->options['event'];
+        $allDay = $event->all_day;
+        $multiDay = $event->multiday;
+        $tsStartUTC = strtotime($event->start_gmt);
+        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
+        $tsEndUTC = strtotime($event->end_gmt);
+        $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
+        $startDay = date('Y-m-d', $tsStart);
+        $endDay = date('Y-m-d', $tsEnd);
+        // Multiday event
+        if ($multiDay == 'on' && $startDay != $endDay) {
+            // All day event
+            if ($allDay == 'on') {
+                $eventReadableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                    . ' &ndash; '
+                    . date_i18n(get_option('date_format'), $tsEnd);
+                // Timed event
             } else {
-                // All day event
-                if ($allDay == 'on') {
-                    $readableDatetime = ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
-                        . ' &ndash; '
-                        . date_i18n(get_option('date_format'), $tsEnd));
-                    // Timed event
-                } else {
-                    $readableDatetime = date_i18n(get_option('date_format'), $tsStart)
-                        . ' '
-                        . date_i18n(get_option('time_format'), $tsStart)
-                        . ' &ndash; '
-                        . date_i18n(get_option('time_format'), $tsEnd);
-                }
+                $eventReadableDatetime = date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
+                    . ' &ndash; '
+                    . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd);
+            }
+            // Single day event
+        } else {
+            // All day event
+            if ($allDay == 'on') {
+                $eventReadableDatetime = ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
+                    . ' &ndash; '
+                    . date_i18n(get_option('date_format'), $tsEnd));
+                // Timed event
+            } else {
+                $eventReadableDatetime = date_i18n(get_option('date_format'), $tsStart)
+                    . ' '
+                    . date_i18n(get_option('time_format'), $tsStart)
+                    . ' &ndash; '
+                    . date_i18n(get_option('time_format'), $tsEnd);
             }
         }
+
         $eventDate = sprintf(
             '<p class="notice-event-date">%s</p>',
-            $readableDatetime
+            $eventReadableDatetime
         );
 
         $html  = $this->getTitle();
@@ -231,9 +224,7 @@ class Notice
 
         $classes[] = 'notice-' . $this->options['type'];
 
-        if ($this->options['alt_style']) {
-            $classes[] = 'notice-alt';
-        }
+        $classes[] = 'notice-alt';
 
         return implode(' ', $classes);
     }
