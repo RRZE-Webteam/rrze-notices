@@ -13,12 +13,15 @@ class Metaboxes
      */
     public static function loaded()
     {
+        $postType = CPTNotice::POST_TYPE;
+
         add_action('cmb2_admin_init', [__CLASS__, 'metabox']);
         add_action('cmb2_save_field_notice_start', [__CLASS__, 'saveNoticeStartField'], 10, 3);
         add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
-        add_action('cmb2_save_field_event_repeat', [__CLASS__, 'saveEventRepeatField'], 10, 3);
+        // add_action('cmb2_save_field_event_repeat', [__CLASS__, 'saveEventRepeatField'], 10, 3);
         add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
+        add_action("cmb2_save_{$postType}_fields", [__CLASS__, 'savePost']);
     }
 
     public static function metabox()
@@ -236,7 +239,7 @@ class Metaboxes
             'id' => 'event_repeat_monthly_month',
             'type' => 'multicheck_inline',
             'options' => self::getMonthsOptions(),
-            'default' => array_keys(self::getMonthsOptions()),
+            // 'default' => array_keys(self::getMonthsOptions()),
             'classes' => ['event-repeat', 'event-repeat-monthly'],
         ]);
         // Exceptions
@@ -261,6 +264,14 @@ class Metaboxes
         ]);
     }
 
+    public static function savePost(int $postId)
+    {
+        $rruleArgs = Event::makeRRuleArgs($postId);
+        if ($rruleArgs = json_encode($rruleArgs)) {
+            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
+        }
+    }
+
     /**
      * Get an array of display options
      * e.g. $options['hide_title'] = 'Hide Title'
@@ -271,7 +282,6 @@ class Metaboxes
     {
         $options = [
             'hide_title' => __('Hide Title', 'rrze-notices'),
-            'alt_style' => __('Use alternative style', 'rrze-notices')
         ];
         if (
             is_super_admin() &&
@@ -362,7 +372,7 @@ class Metaboxes
         $options = [];
         for ($i = 1; $i <= 12; $i++) {
             $month = strtolower(substr(date('M', mktime(0, 0, 0, $i, 1)), 0, 3));
-            $options[$month] = $wp_locale->get_month_abbrev($wp_locale->get_month(sprintf('%02d', $i)));
+            $options[$i] = $wp_locale->get_month_abbrev($wp_locale->get_month(sprintf('%02d', $i)));
         }
         return $options;
     }
