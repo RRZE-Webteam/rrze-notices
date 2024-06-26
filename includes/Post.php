@@ -127,10 +127,6 @@ class Post
             return;
         }
 
-        if (!get_post_meta($postId, 'event_uid', true)) {
-            update_post_meta($postId, 'event_uid', Utils::createUid($postId));
-        }
-
         $rruleArgs = Event::makeRRuleArgs($postId);
         if ($rruleArgs = json_encode($rruleArgs)) {
             update_post_meta($postId, 'event_rrule_args', $rruleArgs);
