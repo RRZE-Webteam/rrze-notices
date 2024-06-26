@@ -25,9 +25,9 @@ class Post
         add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
-        add_action('save_post', [__CLASS__, 'savePost']);
         add_action('delete_post', [__CLASS__, 'deletePost'], 10, 2);
         add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
+        add_action('cmb2_save_post_fields', [__CLASS__, 'updatePostmeta']);
     }
 
     /**
@@ -120,8 +120,18 @@ class Post
      *
      * @param int $postId
      */
-    public static function savePost(int $postId)
+    public static function updatePostmeta(int $postId)
     {
+        $post = get_post($postId);
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
+        $rruleArgs = Event::makeRRuleArgs($postId);
+        if ($rruleArgs = json_encode($rruleArgs)) {
+            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
+        }
+
         self::updateLocalNotice($postId);
 
         if (
