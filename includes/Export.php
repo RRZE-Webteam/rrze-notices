@@ -84,17 +84,19 @@ class Export
         $occurrences = $event->occurrences ?? null;
         if ($repeat && $occurrences) {
             foreach ($occurrences as $occurrence) {
+                $uid = Utils::createUid($postId);
                 $tsOccurrence = strtotime($occurrence);
                 $startDate = date('Y-m-d H:i:s', $tsOccurrence);
                 $tsStart = strtotime($event->start);
                 $tsEnd = strtotime($event->end);
                 $endDate = date('Y-m-d H:i:s', $tsOccurrence + ($tsEnd - $tsStart));
-                $data[] = self::getIcalData($event->uid, $startDate, $endDate, $notice, $event);
+                $data[] = self::getIcalData($uid, $startDate, $endDate, $notice, $event);
             }
         } else {
+            $uid = Utils::createUid($postId);
             $startDate = $event->start;
             $endDate = $event->end;
-            $data[] = [self::getIcalData($event->uid, $startDate, $endDate, $notice, $event)];
+            $data[] = [self::getIcalData($uid, $startDate, $endDate, $notice, $event)];
         }
 
         return $data;
