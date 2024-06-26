@@ -17,7 +17,7 @@ class Post
     public const EXPIRED_POST_STATUS = 'expired';
 
     /**
-     * Setting up action hooks
+     * Setting up hooks
      */
     public static function loaded()
     {
@@ -125,6 +125,10 @@ class Post
         $post = get_post($postId);
         if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
+        }
+
+        if (!get_post_meta($postId, 'event_uid', true)) {
+            update_post_meta($postId, 'event_uid', Utils::createUid($postId));
         }
 
         $rruleArgs = Event::makeRRuleArgs($postId);
