@@ -132,7 +132,7 @@ class Display
                 if (isset($availableRoles[$k])) {
                     $visibility[] = $k;
                 }
-            }
+            }         
             if (
                 !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
