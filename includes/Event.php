@@ -50,8 +50,6 @@ class Event
             $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
         }
 
-        $data['uid'] = $uid;
-
         $startDay = date('Y-m-d', $tsStart);
         $endDay = date('Y-m-d', $tsEnd);
 
@@ -118,12 +116,14 @@ class Event
                 ];
             }
         }
+
         if ($data['all_day'] || $data['multiday']) {
             $data['readable_datetime'] = $data['readable_date'];
         } else {
             $data['readable_datetime'] = $data['readable_date'] . ' ' . $data['readable_time'];
         }
 
+        $data['uid'] = $uid;
         $data['repeat'] = $repeat;
         $data['occurrences'] = $occurrences;
 
