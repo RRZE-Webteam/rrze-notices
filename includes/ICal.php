@@ -93,30 +93,30 @@ class ICal
     {
         $locale = strtoupper(mb_substr(get_locale(), 0, 2));
         $prodid = str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST)) . '//Events//' . $locale;
-        $icsProps = [
+        $icalProps = [
             'BEGIN:VCALENDAR',
             'METHOD:PUBLISH',
             'PRODID:' . $this->split($prodid),
             'VERSION:2.0'
         ];
-
+        $icalProps = array_merge($icalProps, $this->vtimezone());
         if (!empty($this->data)) {
             foreach ($this->data as $properties) {
-                $icsProps[] = 'BEGIN:VEVENT';
+                $icalProps[] = 'BEGIN:VEVENT';
                 $props = [];
                 foreach ($properties as $key => $value) {
                     $props[strtoupper($key)] = $value;
                 }
                 $props['DTSTAMP'] = $this->formatTimestamp('now');
                 foreach ($props as $key => $value) {
-                    $icsProps[] = "$key$value";
+                    $icalProps[] = "$key$value";
                 }
-                $icsProps[] = 'END:VEVENT';
+                $icalProps[] = 'END:VEVENT';
             }
         }
 
-        $icsProps[] = 'END:VCALENDAR';
-        return $icsProps;
+        $icalProps[] = 'END:VCALENDAR';
+        return $icalProps;
     }
 
     /**
@@ -222,5 +222,46 @@ class ICal
         }
 
         return $output;
+    }
+
+    private function vtimezone()
+    {
+        $timezoneString = get_option('timezone_string', 'UTC'); // Default to 'UTC' if not set
+        $timezone = new \DateTimeZone($timezoneString);
+        $transitions = $timezone->getTransitions(time(), time() + 365 * 86400); // Get transitions for the next year
+
+        $props[] = "BEGIN:VTIMEZONE";
+        $props[] = "TZID:" . $timezoneString;
+
+        foreach ($transitions as $transition) {
+            if ($transition['isdst']) {
+                $start = new \DateTime($transition['time']);
+                $props[] = "BEGIN:DAYLIGHT";
+                $props[] = "DTSTART:" . $start->format('Ymd\THis');
+                $props[] = "TZOFFSETFROM:" . $this->formatOffset($transition['offset'] - 3600);
+                $props[] = "TZOFFSETTO:" . $this->formatOffset($transition['offset']);
+                $props[] = "RRULE:FREQ=YEARLY;BYMONTH=" . $start->format('n') . ";BYDAY=-1SU";
+                $props[] = "END:DAYLIGHT";
+            } else {
+                $start = new \DateTime($transition['time']);
+                $props[] = "BEGIN:STANDARD";
+                $props[] = "DTSTART:" . $start->format('Ymd\THis');
+                $props[] = "TZOFFSETFROM:" . $this->formatOffset($transition['offset'] + 3600);
+                $props[] = "TZOFFSETTO:" . $this->formatOffset($transition['offset']);
+                $props[] = "RRULE:FREQ=YEARLY;BYMONTH=" . $start->format('n') . ";BYDAY=-1SU";
+                $props[] = "END:STANDARD";
+            }
+        }
+
+        $props[] = "END:VTIMEZONE";
+
+        return $props;
+    }
+
+    private function formatOffset($offset)
+    {
+        $hours = intval($offset / 3600);
+        $minutes = abs(intval(($offset % 3600) / 60));
+        return sprintf("%+03d:%02d", $hours, $minutes);
     }
 }

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
-"POT-Creation-Date: 2024-06-11T15:52:08+00:00\n"
-"PO-Revision-Date: 2024-06-13 12:45+0200\n"
+"POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
+"PO-Revision-Date: 2024-06-26 15:28+0200\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de\n"
@@ -38,58 +38,46 @@ msgstr "RRZE Webteam"
 msgid "https://blogs.fau.de/webworking/"
 msgstr "https://blogs.fau.de/webworking/"
 
-#: includes/AdminBar.php:77 includes/AdminBar.php:136 includes/Columns.php:71
-#: includes/Display.php:113 includes/Display.php:208 includes/MetaBoxes.php:62
+#: includes/AdminBar.php:87 includes/AdminBar.php:172 includes/Columns.php:64
+#: includes/Display.php:123 includes/Display.php:240 includes/Metaboxes.php:61
 msgid "All"
 msgstr "Alle"
 
-#: includes/AdminBar.php:188 includes/Settings.php:68 includes/Settings.php:69
+#: includes/AdminBar.php:225 includes/Settings.php:68 includes/Settings.php:69
 msgid "Notices"
 msgstr "Nachrichten"
 
-#: includes/Columns.php:31
+#: includes/Columns.php:34
 msgid "Notice"
 msgstr "Nachricht"
 
-#: includes/Columns.php:32 includes/MetaBoxes.php:40
+#: includes/Columns.php:35 includes/Metaboxes.php:39
 msgid "Type"
 msgstr "Art"
 
-#: includes/Columns.php:33
+#: includes/Columns.php:36
 msgid "Start"
 msgstr "Start"
 
-#: includes/Columns.php:34
+#: includes/Columns.php:37
 msgid "Event Date"
 msgstr "Event-Datum"
 
-#: includes/Columns.php:35 includes/MetaBoxes.php:58
+#: includes/Columns.php:38 includes/Metaboxes.php:57
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-#: includes/Columns.php:36 includes/MetaBoxes.php:281
+#: includes/Columns.php:39 includes/Metaboxes.php:280
 msgid "Network-Wide"
 msgstr "Netzwerkweit"
 
-#: includes/Columns.php:37 includes/MetaBoxes.php:213
+#: includes/Columns.php:40 includes/Metaboxes.php:213
 msgid "Date"
 msgstr "Datum"
 
-#: includes/Columns.php:54
+#: includes/Columns.php:87
 msgid "(Network-Wide)"
 msgstr "(Netzwerkweit)"
-
-#: includes/CPT.php:63 includes/CPT.php:90 includes/CPT.php:116
-msgctxt "custom post status"
-msgid "Expired"
-msgstr "Abgelaufen"
-
-#. translators: %s: Number of expired posts.
-#: includes/CPT.php:69
-msgid "Expired <span class=\"count\">(%s)</span>"
-msgid_plural "Expired <span class=\"count\">(%s)</span>"
-msgstr[0] "Abgelaufen <span class=\"count\">(%s)</span>"
-msgstr[1] "Abgelaufen <span class=\"count\">(%s)</span>"
 
 #: includes/CPTNotice.php:32
 msgctxt "backend: post type label"
@@ -216,156 +204,156 @@ msgctxt "backend: post type label"
 msgid "Notice updated."
 msgstr "Nachricht aktualisiert."
 
-#: includes/Display.php:146 includes/Display.php:238 includes/Display.php:310
+#: includes/Display.php:157 includes/Display.php:277 includes/Display.php:357
 msgid "Add to calendar"
 msgstr "Zum Kalender hinzufügen"
 
-#: includes/Display.php:157 includes/Display.php:251
-msgid "Edit (Network-Wide)"
-msgstr "Bearbeiten (netzwerkweit)"
-
-#: includes/Display.php:242
+#: includes/Display.php:161 includes/Display.php:281
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: includes/Display.php:315
+#: includes/Display.php:168 includes/Display.php:288
+msgid "Edit (Network-Wide)"
+msgstr "Bearbeiten (netzwerkweit)"
+
+#: includes/Display.php:362
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Event.php:293
+#: includes/Event.php:303
 msgid "Y-m-d"
 msgstr "d.m.Y"
 
-#: includes/MetaBoxes.php:31
+#: includes/Metaboxes.php:30
 msgid "Notice Settings"
 msgstr "Einstellungen"
 
-#: includes/MetaBoxes.php:44 includes/Post.php:170
+#: includes/Metaboxes.php:43 includes/Post.php:282
 msgid "Info"
 msgstr "Info"
 
-#: includes/MetaBoxes.php:45 includes/Post.php:171
+#: includes/Metaboxes.php:44 includes/Post.php:283
 msgid "Warning"
 msgstr "Warnhinweis"
 
-#: includes/MetaBoxes.php:51
+#: includes/Metaboxes.php:50
 msgid "Display"
 msgstr "Anzeige"
 
-#: includes/MetaBoxes.php:63
+#: includes/Metaboxes.php:62
 msgid "By User Role"
 msgstr "Nach Benutzer-Rolle"
 
-#: includes/MetaBoxes.php:68
+#: includes/Metaboxes.php:67
 msgid "User Roles"
 msgstr "Benutzer-Rollen"
 
-#: includes/MetaBoxes.php:70
+#: includes/Metaboxes.php:69
 msgid "(Visibility based on user role)"
 msgstr "(Sichtbarkeit basierend auf Benutzerrolle)"
 
-#: includes/MetaBoxes.php:78
+#: includes/Metaboxes.php:77
 msgid "Notice Start"
 msgstr "Nachricht Start"
 
-#: includes/MetaBoxes.php:79
+#: includes/Metaboxes.php:78
 msgid "days before the start of the event"
 msgstr "Tage vor Veranstaltungsbeginn"
 
-#: includes/MetaBoxes.php:93
+#: includes/Metaboxes.php:92
 msgid "Event Start"
 msgstr "Event-Start"
 
-#: includes/MetaBoxes.php:96 includes/MetaBoxes.php:120
-#: includes/MetaBoxes.php:157
+#: includes/Metaboxes.php:95 includes/Metaboxes.php:119
+#: includes/Metaboxes.php:156
 msgctxt "event date format"
 msgid "Y/m/d"
 msgstr "d.m.Y"
 
-#: includes/MetaBoxes.php:97 includes/MetaBoxes.php:121
-#: includes/MetaBoxes.php:158
+#: includes/Metaboxes.php:96 includes/Metaboxes.php:120
+#: includes/Metaboxes.php:157
 msgctxt "event time format"
 msgid "g:i a"
 msgstr "H:i"
 
-#: includes/MetaBoxes.php:117
+#: includes/Metaboxes.php:116
 msgid "Event End"
 msgstr "Event-Ende"
 
-#: includes/MetaBoxes.php:141
+#: includes/Metaboxes.php:140
 msgid "All Day Event"
 msgstr "Ganztägig"
 
-#: includes/MetaBoxes.php:141
+#: includes/Metaboxes.php:140
 msgid "(Time settings will be ignored)"
 msgstr "(Zeitangaben werden ignoriert)"
 
-#: includes/MetaBoxes.php:147
+#: includes/Metaboxes.php:146
 msgid "Event Repeat"
 msgstr "Event wiederholen"
 
-#: includes/MetaBoxes.php:153
+#: includes/Metaboxes.php:152
 msgid "Repeat Until"
 msgstr "Wiederholen bis"
 
-#: includes/MetaBoxes.php:154
+#: includes/Metaboxes.php:153
 msgid "(optional)"
 msgstr "(Optional)"
 
-#: includes/MetaBoxes.php:176
+#: includes/Metaboxes.php:176
 msgid "Repeat Interval"
 msgstr "Wiederholungsintervall"
 
-#: includes/MetaBoxes.php:181
+#: includes/Metaboxes.php:181
 msgid "Weekly"
 msgstr "Wöchentlich"
 
-#: includes/MetaBoxes.php:182
+#: includes/Metaboxes.php:182
 msgid "Monthly"
 msgstr "Monatlich"
 
-#: includes/MetaBoxes.php:188
+#: includes/Metaboxes.php:188
 msgid "Repeats"
 msgstr "Wiederholt sich"
 
-#: includes/MetaBoxes.php:196
+#: includes/Metaboxes.php:196
 msgid "every"
 msgstr "alle"
 
-#: includes/MetaBoxes.php:197
+#: includes/Metaboxes.php:197
 msgid "week(s)"
 msgstr "Woche(n)"
 
-#: includes/MetaBoxes.php:201 includes/MetaBoxes.php:219
-#: includes/MetaBoxes.php:228
+#: includes/Metaboxes.php:201 includes/Metaboxes.php:219
+#: includes/Metaboxes.php:228
 msgid "Repeats On"
 msgstr "Wiederholt sich an"
 
-#: includes/MetaBoxes.php:209
+#: includes/Metaboxes.php:209
 msgid "Each"
 msgstr "Jeder"
 
-#: includes/MetaBoxes.php:214
+#: includes/Metaboxes.php:214
 msgid "Weekday"
 msgstr "Wochentag"
 
-#: includes/MetaBoxes.php:223 includes/MetaBoxes.php:231
+#: includes/Metaboxes.php:223 includes/Metaboxes.php:231
 msgid "each"
 msgstr "jedem"
 
-#: includes/MetaBoxes.php:224 includes/MetaBoxes.php:232
+#: includes/Metaboxes.php:224 includes/Metaboxes.php:232
 msgid "of month"
 msgstr "des Monats"
 
-#: includes/MetaBoxes.php:236
+#: includes/Metaboxes.php:236
 msgid "Repeats In"
 msgstr "Wiederholt sich im"
 
-#: includes/MetaBoxes.php:245
+#: includes/Metaboxes.php:245
 msgid "Dates Exceptions"
 msgstr "Datenausnahmen"
 
-#: includes/MetaBoxes.php:246
+#: includes/Metaboxes.php:246
 msgid ""
 "Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per "
 "line."
@@ -373,24 +361,32 @@ msgstr ""
 "Hier können Sie Daten angeben, an denen die Events ausnahmsweise ausfällt "
 "(Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum pro Zeile."
 
-#: includes/MetaBoxes.php:255
+#: includes/Metaboxes.php:255
 msgid "Dates Additions"
 msgstr "Datenergänzungen"
 
-#: includes/MetaBoxes.php:256
+#: includes/Metaboxes.php:256
 msgid ""
 "Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line."
 msgstr ""
 "Zusätzliche Daten hinzufügen (Format YYYY-MM-DD, z.B. 2023-12-31). Ein Datum "
 "pro Zeile."
 
-#: includes/MetaBoxes.php:274
+#: includes/Metaboxes.php:274
 msgid "Hide Title"
 msgstr "Titel ausblenden"
 
-#: includes/MetaBoxes.php:275
-msgid "Use alternative style"
-msgstr "Alternativer Stil verwenden"
+#: includes/Post.php:42 includes/Post.php:69 includes/Post.php:95
+msgctxt "custom post status"
+msgid "Expired"
+msgstr "Abgelaufen"
+
+#. translators: %s: Number of expired posts.
+#: includes/Post.php:48
+msgid "Expired <span class=\"count\">(%s)</span>"
+msgid_plural "Expired <span class=\"count\">(%s)</span>"
+msgstr[0] "Abgelaufen <span class=\"count\">(%s)</span>"
+msgstr[1] "Abgelaufen <span class=\"count\">(%s)</span>"
 
 #: includes/Settings.php:40
 msgid "Settings"
@@ -462,3 +458,6 @@ msgstr ""
 #: rrze-notices.php:82 rrze-notices.php:129
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
+
+#~ msgid "Use alternative style"
+#~ msgstr "Alternativer Stil verwenden"

@@ -17,7 +17,7 @@ class Post
     public const EXPIRED_POST_STATUS = 'expired';
 
     /**
-     * Setting up action hooks
+     * Setting up hooks
      */
     public static function loaded()
     {
@@ -25,9 +25,9 @@ class Post
         add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
-        add_action('save_post', [__CLASS__, 'savePost']);
         add_action('delete_post', [__CLASS__, 'deletePost'], 10, 2);
         add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
+        add_action('cmb2_save_post_fields', [__CLASS__, 'updatePostmeta']);
     }
 
     /**
@@ -120,10 +120,16 @@ class Post
      *
      * @param int $postId
      */
-    public static function savePost(int $postId)
+    public static function updatePostmeta(int $postId)
     {
-        if (get_post_type($postId) != CPTNotice::POST_TYPE) {
+        $post = get_post($postId);
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
+        }
+
+        $rruleArgs = Event::makeRRuleArgs($postId);
+        if ($rruleArgs = json_encode($rruleArgs)) {
+            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
         }
 
         self::updateLocalNotice($postId);
@@ -190,31 +196,7 @@ class Post
             return;
         }
 
-        $data = self::getEventData($postId);
-        $readableDatetime = $data['event']['readable_datetime'];
-
-        $title = $post->post_title;
-        $content = $post->post_content;
-        $type = self::getType($postId);
-        $altStyle = self::altStyle($postId);
-        $hideTitle = self::hideTitle($postId);
-        $visibility = self::getVisibility($postId);
-        $noticeStart = self::getNoticeStart($postId, true);
-        $subscriptionLink = Export::makeIcsLink($postId);
-        $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
-
-        $notice = [
-            'title' => $title,
-            'content' => $content,
-            'type' => $type,
-            'hide_title' => $hideTitle,
-            'alt_style' => $altStyle,
-            'visibility' => $visibility,
-            'notice_start' => $noticeStart,
-            'subscription_link' => $subscriptionLink,
-            'admin_link' => $adminLink,
-            'readable_datetime' => $readableDatetime,
-        ];
+        $notice = self::makeNoticeData($postId, $post);
 
         update_post_meta($postId, 'notice_data', $notice);
     }
@@ -237,39 +219,38 @@ class Post
         $blogId = get_current_blog_id();
         $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
-        $data = self::getEventData($postId);
-        $eventAllDay = $data['event']['all_day'];
-        $eventMultiDay = $data['event']['multiday'];
-        $eventStartUTC = $data['event']['start_gmt'] ?? '';
-        $eventEndUTC = $data['event']['end_gmt'] ?? '';
+        $siteOptions->network_wide[$noticeId] = self::makeNoticeData($postId, $post);
+
+        update_site_option($siteOptionsName, $siteOptions);
+    }
+
+    private static function makeNoticeData(int $postId, object $post)
+    {
+        $event = self::getEventData($postId);
+        $noticeStart = get_post_meta($postId, 'notice_start', true);
 
         $title = $post->post_title;
         $content = $post->post_content;
         $type = self::getType($postId);
-        $altStyle = self::altStyle($postId);
         $hideTitle = self::hideTitle($postId);
         $visibility = self::getVisibility($postId);
-        $noticeStart = self::getNoticeStart($postId, true);
+        $networkWide = Post::isNetworkWide($postId);
+        $noticeStart = $noticeStart;
         $subscriptionLink = Export::makeIcsLink($postId);
         $adminLink = admin_url('post.php?post=' . esc_attr($postId) . '&action=edit');
 
-        $siteOptions->network_wide[$noticeId] = [
+        return [
             'title' => $title,
             'content' => $content,
             'type' => $type,
             'hide_title' => $hideTitle,
-            'alt_style' => $altStyle,
             'visibility' => $visibility,
+            'network_wide' => $networkWide,
             'notice_start' => $noticeStart,
             'subscription_link' => $subscriptionLink,
             'admin_link' => $adminLink,
-            'event_all_day' => $eventAllDay,
-            'event_multiday' => $eventMultiDay,
-            'event_start_gmt' => $eventStartUTC,
-            'event_end_gmt' => $eventEndUTC
+            'event' => $event
         ];
-
-        update_site_option($siteOptionsName, $siteOptions);
     }
 
     /**
@@ -315,7 +296,7 @@ class Post
             // Legacy meta key
             $type = get_post_meta($postId, 'rrze_notices_type', true);
         }
-        return array_key_exists($type, self::getNoticeTypes()) ? $type : '&mdash;';
+        return array_key_exists($type, self::getNoticeTypes()) ? $type : 'info';
     }
 
     /**
@@ -334,25 +315,6 @@ class Post
         } else {
             // Legacy meta key
             return get_post_meta($postId, 'rrze_notices_hide_title', true) ? true : false;
-        }
-    }
-
-    /**
-     * Check if the notice has an alternative style
-     *
-     * @param int $postId
-     * @return bool
-     */
-    public static function altStyle(int $postId): bool
-    {
-        if ($display = (array) get_post_meta($postId, 'notice_display', true)) {
-            return in_array('alt_style', $display);
-        } elseif ($display = (array) get_post_meta($postId, 'rrze_notices_display', true)) {
-            // Legacy meta key
-            return in_array('alt_style', $display);
-        } else {
-            // Legacy meta key
-            return get_post_meta($postId, 'rrze_notices_alt_style', true) ? true : false;
         }
     }
 
@@ -394,40 +356,6 @@ class Post
     }
 
     /**
-     * Get the timestamp when the notice should start displaying
-     *
-     * @param int $postId
-     * @param bool $gmt
-     * @return int
-     */
-    public static function getNoticeStart(int $postId, bool $gmt = false): int
-    {
-        $event = self::getEventData($postId);
-        if ($gmt) {
-            $noticeStart = (int) get_post_meta($postId, 'notice_start_gmt', true);
-            $eventStart = $event['event']['start_gmt'] ?? current_time('mysql', true);
-        } else {
-            $noticeStart = (int) get_post_meta($postId, 'notice_start', true);
-            $eventStart = $event['event']['start'] ?? current_time('mysql');
-        }
-        return strtotime($eventStart) - $noticeStart;
-    }
-
-    /**
-     * Check if the notice should start displaying
-     *
-     * @param int $postId
-     * @param bool $gmt
-     * @return bool
-     */
-    public static function isNoticeStarted(int $postId, bool $gmt = false): bool
-    {
-        $noticeStart = self::getNoticeStart($postId, $gmt);
-        $currentTimestamp = $gmt ? time() : current_time('timestamp');
-        return $noticeStart < $currentTimestamp;
-    }
-
-    /**
      * Get the event data for the notice
      *
      * @param int $postId
@@ -435,7 +363,7 @@ class Post
      */
     public static function getEventData($postId)
     {
-        return Event::getData($postId);
+        return Event::makeData($postId);
     }
 
     /**
@@ -467,8 +395,27 @@ class Post
         }
 
         foreach ($posts as $postId) {
-            $expired = Event::isExpired($postId);
-            $noticeStarted = Post::isNoticeStarted($postId);
+            $notice = get_post_meta($postId, 'notice_data', true);
+            if (empty($notice) || empty($notice['event'])) {
+                continue;
+            }
+
+            $notice = (object) $notice;
+            $event = (object) $notice->event;
+
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+            $expired = $tsEnd < $currentTimeGmt;
+
             if ($expired) {
                 wp_update_post([
                     'ID' => $postId,

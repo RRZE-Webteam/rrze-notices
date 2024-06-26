@@ -93,30 +93,35 @@ class Display
                 continue;
             }
 
-            switch_to_blog($blogId);
-            $currentUser = wp_get_current_user();
-            restore_current_blog();
-
-            $notice = (object) $notice;
-
-            $title = $notice->title ?? '';
-            $content = $notice->content ?? '';
-            $type = $notice->type ?? 'info';
-            $altStyle = $notice->alt_style ?? false;
-            $hideTitle = $notice->hide_title ?? false;
-            $roleVisibility = $notice->visibility ?? ['all'];
-            $subscriptionLink = $notice->subscription_link ?? '';
-            $adminLink = $notice->admin_link ?? '';
-            $eventAllDay = $notice->event_all_day ?? '';
-            $eventMultiDay = $notice->event_multiday ?? '';
-            $eventStartUTC = $notice->event_start_gmt;
-            $eventEndUTC = $notice->event_end_gmt;
-
-            if (!$content) {
+            if (empty($notice['event'])) {
                 continue;
             }
 
+            $notice = (object) $notice;
+            $event = (object) $notice->event;
+
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+
+            $expired = $tsEnd < $currentTimeGmt;
+
+            if ($expired || !$noticeStarted) {
+                continue;
+            }
+
+            $currentUser = wp_get_current_user();
+
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
+            $roleVisibility = $notice->visibility;
             if (!empty($roleVisibility)) {
                 $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
             } else {
@@ -127,13 +132,7 @@ class Display
                 if (isset($availableRoles[$k])) {
                     $visibility[] = $k;
                 }
-            }
-            if (!empty($visibility)) {
-                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
-            } else {
-                $visibility = [];
-            }
-
+            }         
             if (
                 !is_super_admin() &&
                 !Utils::arrayValInArray($currentUser->roles, $visibility) &&
@@ -142,23 +141,38 @@ class Display
                 continue;
             }
 
-            $type = array_key_exists($type, Post::getNoticeTypes()) ? $type : 'info';
+            if (!$content = $notice->content) {
+                continue;
+            }
+
+            $title = $notice->title;
+
+            $type = $notice->type;
+
+            $hideTitle = $notice->hide_title;
 
             $subscriptionLink = sprintf(
-                '<a href="%1$s" target="_blank">%2$s</a>',
-                $subscriptionLink,
+                '<a href="%1$s">%2$s</a>',
+                $notice->subscription_link,
                 __('Add to calendar', 'rrze-notices')
             );
 
             $editLink = '';
+            $editText = __('Edit', 'rrze-notices');
+
             if (
                 is_super_admin()
                 && Utils::isPluginActiveForNetwork()
+                && isset($this->siteOptions->network_wide[$noticeId])
             ) {
+                $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
+            }
+
+            if (current_user_can('manage_options')) {
                 $editLink = sprintf(
-                    '<a href="%1$s" target="_blank">%2$s</a>',
-                    $adminLink,
-                    __('Edit (Network-Wide)', 'rrze-notices')
+                    '<a href="%1$s">%2$s</a>',
+                    $notice->admin_link,
+                    $editText
                 );
             }
 
@@ -170,13 +184,9 @@ class Display
                     'screens'           => ['dashboard'],
                     'type'              => $type,
                     'hide_title'        => $hideTitle,
-                    'alt_style'         => $altStyle,
                     'subscription_link' => $subscriptionLink,
                     'edit_link'         => $editLink,
-                    'all_day'           => $eventAllDay,
-                    'multiday'          => $eventMultiDay,
-                    'event_start_gmt'   => $eventStartUTC,
-                    'event_end_gmt'     => $eventEndUTC
+                    'event'             => $event
                 ]
             );
         }
@@ -199,9 +209,29 @@ class Display
         }
 
         foreach ($posts as $postId) {
-            if ($notice = get_post_meta($postId, 'notice_data', true)) {
-                $notice = (object) $notice;
-            } else {
+            $notice = get_post_meta($postId, 'notice_data', true);
+            if (empty($notice) || empty($notice['event'])) {
+                continue;
+            }
+
+            $notice = (object) $notice;
+            $event = (object) $notice->event;
+
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+
+            $expired = $tsEnd < $currentTimeGmt;
+
+            if ($expired || !$noticeStarted) {
                 continue;
             }
 
@@ -232,22 +262,20 @@ class Display
                 continue;
             }
 
+            $blogId = get_current_blog_id();
+            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
+
             $title = $notice->title;
 
-            $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
+            $type = $notice->type;
 
             $hideTitle = $notice->hide_title;
-
-            $altStyle = $notice->alt_style;
 
             $subscriptionLink = sprintf(
                 '<a href="%1$s">%2$s</a>',
                 $notice->subscription_link,
                 __('Add to calendar', 'rrze-notices')
             );
-
-            $blogId = get_current_blog_id();
-            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
 
             $editLink = '';
             $editText = __('Edit', 'rrze-notices');
@@ -268,8 +296,6 @@ class Display
                 );
             }
 
-            $readableDatetime = $notice->readable_datetime;
-
             $this->notices->add(
                 $noticeId,
                 $title,
@@ -278,10 +304,9 @@ class Display
                     'screens'           => ['dashboard'],
                     'type'              => $type,
                     'hide_title'        => $hideTitle,
-                    'alt_style'         => $altStyle,
                     'subscription_link' => $subscriptionLink,
                     'edit_link'         => $editLink,
-                    'readable_datetime' => $readableDatetime
+                    'event'             => $event
                 ]
             );
         }
@@ -305,17 +330,26 @@ class Display
         global $post;
         $postId = $post->ID;
 
-        if (!$content = $post->post_content) {
+        $notice = get_post_meta($postId, 'notice_data', true);
+        if (empty($notice) || empty($notice['event'])) {
             return;
         }
 
-        $title = $post->post_title;
+        $notice = (object) $notice;
+        $event = (object) $notice->event;
 
-        $hideTitle = Post::hideTitle($postId);
+        if (!$content = $notice->content) {
+            return;
+        }
 
-        $noticeType = Post::getType($postId);
-        $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
-        $altStyle = Post::altStyle($postId);
+        $blogId = get_current_blog_id();
+        $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
+
+        $title = $notice->title;
+
+        $type = $notice->type;
+
+        $hideTitle = $notice->hide_title;
 
         $subscriptionLink = sprintf(
             '<a href="%1$s">%2$s</a>',
@@ -328,28 +362,19 @@ class Display
             __('Preview', 'rrze-notices')
         );
 
-        $blogId = get_current_blog_id();
-        $noticeId = sprintf('%d-%d', $blogId, $postId);
-
-        if ($notice = get_post_meta($postId, 'notice_data', true)) {
-            $notice = (object) $notice;
-        }
-        $readableDatetime = $notice->readable_datetime;
-
         $this->notices->add(
             $noticeId,
             $title,
             $content,
             [
-                'screens'           => [CPTNotice::POST_TYPE],
-                'type'              => $type,
-                'hide_title'        => $hideTitle,
-                'alt_style'         => $altStyle,
+                'screens' => [CPTNotice::POST_TYPE],
+                'type' => $type,
+                'hide_title' => $hideTitle,
                 'subscription_link' => $subscriptionLink,
-                'edit_link'         => $editLink,
-                'preview'           => true,
-                'is_dismissible'    => false,
-                'readable_datetime' => $readableDatetime
+                'edit_link' => $editLink,
+                'event' => $event,
+                'preview' => true,
+                'is_dismissible' => false
             ]
         );
     }
