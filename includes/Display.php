@@ -93,7 +93,7 @@ class Display
                 continue;
             }
 
-            if (!isset($notice['event'])) {
+            if (empty($notice['event'])) {
                 continue;
             }
 
@@ -111,11 +111,12 @@ class Display
             if ($occurrences = $event->occurrences) {
                 $tsEnd = strtotime(end($occurrences));
             }
+
             $expired = $tsEnd < $currentTimeGmt;
 
             if ($expired || !$noticeStarted) {
                 continue;
-            }            
+            }
 
             $currentUser = wp_get_current_user();
 
@@ -146,7 +147,7 @@ class Display
 
             $title = $notice->title;
 
-            $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
+            $type = $notice->type;
 
             $hideTitle = $notice->hide_title;
 
@@ -209,12 +210,30 @@ class Display
 
         foreach ($posts as $postId) {
             $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || !isset($notice['event'])) {
+            if (empty($notice) || empty($notice['event'])) {
                 continue;
             }
 
             $notice = (object) $notice;
             $event = (object) $notice->event;
+
+            $currentTimeGmt = current_time('timestamp', true);
+
+            $noticeStart = $notice->notice_start;
+            $eventStart = $event->start_gmt;
+            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
+
+            $tsEnd = strtotime($event->end_gmt);
+            if ($occurrences = $event->occurrences) {
+                $tsEnd = strtotime(end($occurrences));
+            }
+
+            $expired = $tsEnd < $currentTimeGmt;
+
+            if ($expired || !$noticeStarted) {
+                continue;
+            }
 
             $currentUser = wp_get_current_user();
 
@@ -248,7 +267,7 @@ class Display
 
             $title = $notice->title;
 
-            $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
+            $type = $notice->type;
 
             $hideTitle = $notice->hide_title;
 
@@ -312,7 +331,7 @@ class Display
         $postId = $post->ID;
 
         $notice = get_post_meta($postId, 'notice_data', true);
-        if (empty($notice) || !isset($notice['event'])) {
+        if (empty($notice) || empty($notice['event'])) {
             return;
         }
 
@@ -328,7 +347,7 @@ class Display
 
         $title = $notice->title;
 
-        $type = array_key_exists($notice->type, Post::getNoticeTypes()) ? $notice->type : 'info';
+        $type = $notice->type;
 
         $hideTitle = $notice->hide_title;
 
