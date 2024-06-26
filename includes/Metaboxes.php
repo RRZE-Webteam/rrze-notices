@@ -160,7 +160,8 @@ class Metaboxes
                     [
                         'stepMinute' => 10,
                         'minDate' => 1,
-                        'yearRange' => 'c:c+10',
+                        'maxDate' => 730,
+                        'yearRange' => 'c:c+2',
                         'firstDay' => $startOfWeek,
                         'dayNames' => Utils::getDaysOfWeek('short'),
                         'dayNamesMin' => Utils::getDaysOfWeek('min'),
@@ -417,8 +418,13 @@ class Metaboxes
     public static function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
+        $minDate = strtotime('+1 day', current_time('timestamp'));
+        $maxDate = strtotime('+2 year', current_time('timestamp'));
         if ($timestamp = $field->value) {
-            $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+            $timestamp = max($minDate, min($maxDate, $timestamp));
+            $timestamp = strtotime(date('Y-m-d', $timestamp));
+            $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d', $timestamp)));
+            update_post_meta($postId, 'event_repeat_lastdate', $timestamp);
             update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
         }
     }
