@@ -186,7 +186,6 @@ class Event
             $rruleArgs['FREQ'] = 'MONTHLY';
 
             $months = (array) Utils::getMeta($meta, 'event_repeat_monthly_month');
-            error_log(print_r($months, true));
             if (!empty($months) && is_array($months)) {
                 $rruleArgs['BYMONTH'] = implode(',', $months);
             }
