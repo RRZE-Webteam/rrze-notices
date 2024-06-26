@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 class Metaboxes
 {
     /**
-     * Load hooks
+     * Setting up hooks
      *
      * @return void
      */
@@ -15,7 +15,6 @@ class Metaboxes
     {
         add_action('cmb2_admin_init', [__CLASS__, 'metabox']);
         add_action('cmb2_save_field_notice_visibility', [__CLASS__, 'saveNoticeVisibilityField'], 10, 3);
-        add_action('cmb2_save_field_notice_start', [__CLASS__, 'saveNoticeStartField'], 10, 3);
         add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
         add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
@@ -23,12 +22,13 @@ class Metaboxes
 
     public static function metabox()
     {
+        $objectTypes = [CPTNotice::POST_TYPE];
         $startOfWeek = get_option('start_of_week');
 
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
             'title' => __('Notice Settings', 'rrze-notices'),
-            'object_types' => ['notice'],
+            'object_types' => $objectTypes,
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true
@@ -371,22 +371,6 @@ class Metaboxes
         $postId = $field->object_id;
         if ($field->value === 'all') {
             delete_post_meta($postId, 'notice_visibility_roles');
-        }
-    }
-
-    /**
-     * Saves the event_uid field if it has not already been saved
-     *
-     * @param bool $updated
-     * @param string $action
-     * @param \CMB2_Field $field
-     * @return void
-     */
-    public static function saveNoticeStartField(bool $updated, string $action, \CMB2_Field $field)
-    {
-        $postId = $field->object_id;
-        if (!get_post_meta($postId, 'event_uid', true)) {
-            update_post_meta($postId, 'event_uid', Utils::createUid($postId));
         }
     }
 
