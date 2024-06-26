@@ -23,7 +23,6 @@ class Event
     public static function makeData(int $postId)
     {
         $meta = get_post_meta($postId);
-        $uid = Utils::getMeta($meta, 'event_uid');
         $allDay = Utils::getMeta($meta, 'event_all_day');
         $repeat = Utils::getMeta($meta, 'event_repeat');
 
@@ -123,7 +122,6 @@ class Event
             $data['readable_datetime'] = $data['readable_date'] . ' ' . $data['readable_time'];
         }
 
-        $data['uid'] = $uid;
         $data['repeat'] = $repeat;
         $data['occurrences'] = $occurrences;
 
