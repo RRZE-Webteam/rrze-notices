@@ -45,19 +45,14 @@ class Columns
     public function managePostsCustomColumn($column, $postId)
     {
         $notice = get_post_meta($postId, 'notice_data', true);
-        if (!empty($notice) && isset($notice['event'])) {
+        if (!empty($notice) && !empty($notice['event'])) {
             $notice = (object) $notice;
             $event = (object) $notice->event;
+            $noticeType = $notice->type;
             $noticeStart = $notice->notice_start;
             $eventStart = $event->start_gmt;
             $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
-            $eventReadableDate = !$event->repeat ? $event->readable_datetime : Post::getHumanReadableRecurrence($postId);
-            $readableDate = [
-                $eventReadableDate,
-                Post::getHumanReadableRecurrence($postId)
-            ];
-            $readableDate = implode('<br>', $readableDate);
-
+            $readableDate = $event->readable_datetime;
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
                 '&mdash;';
