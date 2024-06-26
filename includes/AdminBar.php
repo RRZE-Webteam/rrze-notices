@@ -111,9 +111,7 @@ class AdminBar
             }
 
             $title = $notice->title;
-
-            $noticeType = Post::getType($postId);
-            $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
+            $type = $notice->type;
 
             $this->addNotices($noticeId, $title, $type);
         }
@@ -138,7 +136,7 @@ class AdminBar
 
         foreach ($posts as $postId) {
             $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || !isset($notice['event'])) {
+            if (empty($notice) || empty($notice['event'])) {
                 continue;
             }
 
@@ -198,9 +196,7 @@ class AdminBar
             }
 
             $title = $notice->title;
-
-            $noticeType = Post::getType($postId);
-            $type = array_key_exists($noticeType, Post::getNoticeTypes()) ? $noticeType : 'info';
+            $type = $notice->type;
 
             $this->addNotices($postId, $title, $type);
         }
