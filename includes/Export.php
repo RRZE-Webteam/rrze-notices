@@ -71,11 +71,14 @@ class Export
      */
     private function getEvent(int $postId)
     {
-        $meta = get_post_meta($postId);
+        $data = [];
+        $notice = get_post_meta($postId, 'notice_data', true);
+        if (empty($notice) || empty($notice['event'])) {
+            return $data;
+        }
 
-        $notice = (object) Utils::getMeta($meta, 'notice_data');
-
-        $event = (object) self::getEventData($postId);
+        $notice = (object) $notice;
+        $event = (object) $notice->event;
 
         $repeat = $event->repeat ?? null;
         $occurrences = $event->occurrences ?? null;
