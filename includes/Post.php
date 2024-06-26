@@ -286,7 +286,7 @@ class Post
             // Legacy meta key
             $type = get_post_meta($postId, 'rrze_notices_type', true);
         }
-        return array_key_exists($type, self::getNoticeTypes()) ? $type : '&mdash;';
+        return array_key_exists($type, self::getNoticeTypes()) ? $type : 'info';
     }
 
     /**
@@ -386,7 +386,7 @@ class Post
 
         foreach ($posts as $postId) {
             $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || !isset($notice['event'])) {
+            if (empty($notice) || empty($notice['event'])) {
                 continue;
             }
 
