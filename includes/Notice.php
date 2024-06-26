@@ -220,7 +220,7 @@ class Notice
             $classes[] = 'is-dismissible';
         }
 
-        $this->options['type'] = in_array($this->options['type'], $this->allowedTypes) ? $this->options['type'] : 'info';
+        $this->options['type'] = $this->options['type'];
 
         $classes[] = 'notice-' . $this->options['type'];
 
