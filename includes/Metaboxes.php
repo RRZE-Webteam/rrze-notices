@@ -13,15 +13,12 @@ class Metaboxes
      */
     public static function loaded()
     {
-        $postType = CPTNotice::POST_TYPE;
-
         add_action('cmb2_admin_init', [__CLASS__, 'metabox']);
+        add_action('cmb2_save_field_notice_visibility', [__CLASS__, 'saveNoticeVisibilityField'], 10, 3);
         add_action('cmb2_save_field_notice_start', [__CLASS__, 'saveNoticeStartField'], 10, 3);
         add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
-        // add_action('cmb2_save_field_event_repeat', [__CLASS__, 'saveEventRepeatField'], 10, 3);
         add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
-        add_action("cmb2_save_{$postType}_fields", [__CLASS__, 'savePost']);
     }
 
     public static function metabox()
@@ -31,7 +28,7 @@ class Metaboxes
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
             'title' => __('Notice Settings', 'rrze-notices'),
-            'object_types' => [CPTNotice::POST_TYPE],
+            'object_types' => ['notice'],
             'context' => 'normal',
             'priority' => 'high',
             'show_names' => true
@@ -264,14 +261,6 @@ class Metaboxes
         ]);
     }
 
-    public static function savePost(int $postId)
-    {
-        $rruleArgs = Event::makeRRuleArgs($postId);
-        if ($rruleArgs = json_encode($rruleArgs)) {
-            update_post_meta($postId, 'event_rrule_args', $rruleArgs);
-        }
-    }
-
     /**
      * Get an array of display options
      * e.g. $options['hide_title'] = 'Hide Title'
@@ -377,6 +366,14 @@ class Metaboxes
         return $options;
     }
 
+    public static function saveNoticeVisibilityField(bool $updated, string $action, \CMB2_Field $field)
+    {
+        $postId = $field->object_id;
+        if ($field->value === 'all') {
+            delete_post_meta($postId, 'notice_visibility_roles');
+        }
+    }
+
     /**
      * Saves the event_uid field if it has not already been saved
      *
@@ -423,25 +420,6 @@ class Metaboxes
         $timestamp = $field->value;
         $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
         update_post_meta($postId, 'event_end_gmt', $timestampGmt);
-    }
-
-    /**
-     * Save event_repeat
-     *
-     * @param bool $updated
-     * @param string $action
-     * @param \CMB2_Field $field
-     * @return void
-     */
-    public static function saveEventRepeatField(bool $updated, string $action, \CMB2_Field $field)
-    {
-        $postId = $field->object_id;
-        if ($field->value === 'on') {
-            $rruleArgs = Event::makeRRuleArgs($postId);
-            if ($rruleArgs = json_encode($rruleArgs)) {
-                update_post_meta($postId, 'event_rrule_args', $rruleArgs);
-            }
-        }
     }
 
     /**
