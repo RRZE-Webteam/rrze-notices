@@ -16,6 +16,9 @@ class Columns
         $this->siteOptions = Options::getSiteOptions();
     }
 
+    /**
+     * Setting up hooks
+     */
     public function loaded()
     {
         add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageColumns']);
