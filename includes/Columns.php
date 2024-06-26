@@ -52,6 +52,7 @@ class Columns
             $noticeStart = $notice->notice_start;
             $eventStart = $event->start_gmt;
             $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
+            $noticeStartDate = get_date_from_gmt(date('Y-m-d H:i:s', $tsNoticeStart), get_option('date_format'));
             $readableDate = $event->readable_datetime;
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
@@ -68,7 +69,7 @@ class Columns
             $visibility = !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
         } else {
             $noticeType = '&mdash;';
-            $noticeStart = '&mdash;';
+            $noticeStartDate = '&mdash;';
             $readableDate = '&mdash;';
             $visibility = '&mdash;';
             $networkWide = '&mdash;';
@@ -79,7 +80,7 @@ class Columns
                 echo $noticeType;
                 break;
             case 'notice_start':
-                echo $tsNoticeStart > 0 ? date_i18n(get_option('date_format'), $tsNoticeStart) : '&mdash;';
+                echo $noticeStartDate;
                 echo !is_super_admin() && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
                 break;
             case 'event_date':
