@@ -4,7 +4,7 @@
 Plugin Name:     RRZE Notices
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
 Description:     Management and listing of admin notices.
-Version:         3.0.2
+Version:         3.0.3
 Author:          RRZE Webteam
 Author URI:      https://blogs.fau.de/webworking/
 License:         GNU General Public License v2
