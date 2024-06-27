@@ -6,6 +6,12 @@ defined('ABSPATH') || exit;
 
 class ICal
 {
+    // Carriage return and line feed
+    const CRLF = "\r\n";
+
+    // Length of line in bytes
+    const LINE_LENGTH = 70;
+
     /**
      * iCalendar data array.
      *
@@ -81,7 +87,7 @@ class ICal
             fn ($row) => $this->split($row),
             $this->render()
         );
-        return implode("\r\n", $rows);
+        return implode(self::CRLF, $rows);
     }
 
     /**
@@ -134,13 +140,12 @@ class ICal
             case 'dtstart':
                 $value = $this->formatTimestamp($value);
                 break;
-            case 'summary':
             case 'description':
             case 'location':
                 $value = ':' . $this->escStr($value, true);
                 break;
             default:
-                $value = ':' . $this->escStr($value);
+                $value = ':' . $value;
         }
 
         return $value;
@@ -164,61 +169,50 @@ class ICal
     }
 
     /**
-     * Escape special characters.
+     * Escapes , and ; characters in text type fields.
      *
-     * @param string $input
-     * @param boolean $specialChars
+     * @param string $value The string to escape
      * @return string
      */
-    private function escStr(string $input, $specialChars = false): string
+    private function escStr(string $value): string
     {
-        if ($specialChars) {
-            $input = wp_strip_all_tags($input);
-            $input = preg_replace('/([\,;])/', '\\\$1', $input);
-        }
-        $input = str_replace("\n", "\\n", $input);
-        $input = str_replace("\r", "\\r", $input);
-        return $input;
+        $value = preg_replace('/((?<!\\\),|(?<!\\\);)/', '\\\$1', $value);
+        $value = preg_replace('/((?<!\\\)\\\(?!,|;|n|N|\\\))/', '\\\\$1', $value);
+        return $value;
     }
 
     /**
-     * Split content lines.
+     * Splits a string into new lines if necessary.
      * RFC-5545 (3.1. Content Lines)
      *
-     * @param string $input
-     * @param integer $lineLimit
+     * @param string $value
      * @return string
      */
-    private function split(string $input, int $lineLimit = 70): string
+    private function split(string $value): string
     {
+        // Newlines need to be converted to literal \n
+        $value = str_replace("\n", "\\n", str_replace("\r\n", "\n", $value));
+
+        // Get number of bytes
+        $length = strlen($value);
+
         $output = '';
-        $line = '';
-        $pos = 0;
 
-        while ($pos < mb_strlen($input)) {
-            // Find newlines
-            $newLinepos = mb_strpos($input, "\n", $pos + 1);
-            if (!$newLinepos) {
-                $newLinepos = mb_strlen($input);
-            }
-            $line = mb_substr($input, $pos, $newLinepos - $pos);
+        if ($length > 75) {
+            $start = 0;
 
-            if (mb_strlen($line) <= $lineLimit) {
-                $output .= $line;
-            } else {
-                // The line break limit of the first line is $lineLimit
-                $output .= mb_substr($line, 0, $lineLimit);
-                $line = mb_substr($line, $lineLimit);
+            while ($start < $length) {
+                $cut = mb_strcut($value, $start, self::LINE_LENGTH, 'UTF-8');
+                $output .= $cut;
+                $start = $start + strlen($cut);
 
-                // Subsequent line break limit is $lineLimit - 1 due to leading whitespace
-                $output .= "\n " . mb_substr($line, 0, $lineLimit - 1);
-
-                while (mb_strlen($line) > $lineLimit - 1) {
-                    $line = mb_substr($line, $lineLimit - 1);
-                    $output .= "\n " . mb_substr($line, 0, $lineLimit - 1);
+                // Add space if not last line
+                if ($start < $length) {
+                    $output .= self::CRLF . ' ';
                 }
             }
-            $pos = $newLinepos;
+        } else {
+            $output = $value;
         }
 
         return $output;
@@ -226,9 +220,13 @@ class ICal
 
     private function vtimezone()
     {
-        $timezoneString = get_option('timezone_string', 'UTC'); // Default to 'UTC' if not set
+        // Default to 'UTC' if not set
+        $timezoneString = get_option('timezone_string', 'UTC');
+
         $timezone = new \DateTimeZone($timezoneString);
-        $transitions = $timezone->getTransitions(time(), time() + 365 * 86400); // Get transitions for the next year
+
+        // Get transitions for the next year
+        $transitions = $timezone->getTransitions(time(), time() + YEAR_IN_SECONDS);
 
         $props[] = "BEGIN:VTIMEZONE";
         $props[] = "TZID:" . $timezoneString;

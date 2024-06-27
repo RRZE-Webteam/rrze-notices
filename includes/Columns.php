@@ -37,7 +37,7 @@ class Columns
             'event_date' => __('Event Date', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
             'network_wide' => __('Network-Wide', 'rrze-notices'),
-            'date' => __('Date', 'rrze-notices')
+            // 'date' => __('Date', 'rrze-notices')
         ];
         if (!is_super_admin() || !Utils::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
@@ -51,11 +51,15 @@ class Columns
         if (!empty($notice) && !empty($notice['event'])) {
             $notice = (object) $notice;
             $event = (object) $notice->event;
-            $noticeType = $notice->type;
+            $types = [
+                'info' => __('Info', 'rrze-notices'),
+                'warning' => __('Warning', 'rrze-notices')
+            ];
+            $noticeType = in_array($notice->type, array_keys($types)) ? $types[$notice->type] : __('Info', 'rrze-notices');
             $noticeStart = $notice->notice_start;
-            $eventStart = $event->start_gmt;
+            $eventStart = $event->start;
             $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
-            $noticeStartDate = get_date_from_gmt(date('Y-m-d H:i:s', $tsNoticeStart), get_option('date_format'));
+            $noticeStartDate = date_i18n(get_option('date_format'), $tsNoticeStart);
             $readableDate = $event->readable_datetime;
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
