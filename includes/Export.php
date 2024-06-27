@@ -186,17 +186,6 @@ class Export
     }
 
     /**
-     * Get the event data for the notice
-     *
-     * @param int $postId
-     * @return array
-     */
-    public static function getEventData($postId)
-    {
-        return Event::makeData($postId);
-    }
-
-    /**
      * Build the iCal formatted calendar data
      *
      * @param array $data
