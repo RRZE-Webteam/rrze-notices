@@ -4,7 +4,6 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use RRule\RRule;
 use RRule\RSet;
 
 /**
@@ -17,17 +16,17 @@ use RRule\RSet;
 class Event
 {
     /**
-     * Make event data
+     * Build normalized event data for caching and display.
      *
      * @param int $postId
      * @return array<string, mixed> Normalized event data for caching and display.
      */
-    public static function makeData(int $postId)
+    public static function buildEventData(int $postId): array
     {
         $meta = get_post_meta($postId);
         $allDay = Utils::getMeta($meta, 'event_all_day');
         $repeat = Utils::getMeta($meta, 'event_repeat');
-        $occurrences = $repeat == 'on' ? self::getOccurrences($postId) : [];
+        $occurrences = $repeat === 'on' ? self::buildOccurrences($postId) : [];
         $timezone = wp_timezone();
 
         if (!empty($occurrences)) {
@@ -47,12 +46,14 @@ class Event
             }
 
             $end = $start->add($originalStart->diff($originalEnd));
-        } elseif ($tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt')) {
+        } else {
+            $tsStartUTC = (int) Utils::getMeta($meta, 'event_start_gmt');
+            if (!$tsStartUTC) {
+                return [];
+            }
             $start = (new \DateTimeImmutable('@' . $tsStartUTC))->setTimezone($timezone);
             $tsEndUTC = (int) Utils::getMeta($meta, 'event_end_gmt');
             $end = (new \DateTimeImmutable('@' . $tsEndUTC))->setTimezone($timezone);
-        } else {
-            return [];
         }
 
         if ($allDay === 'on') {
@@ -362,12 +363,12 @@ class Event
     }
 
     /**
-     * Make RRule arguments
+     * Build recurrence-rule arguments from notice metadata.
      *
      * @param int $postId Notice post ID.
      * @return array<string, mixed> Arguments accepted by rlanvin/php-rrule.
      */
-    public static function makeRRuleArgs($postId): array
+    public static function buildRecurrenceRuleArgs(int $postId): array
     {
         $meta = get_post_meta($postId);
 
@@ -376,13 +377,13 @@ class Event
         }
 
         $repeatInterval = Utils::getMeta($meta, 'event_repeat_interval');
-        $reapeatWeeklyInterval = Utils::getMeta($meta, 'event_repeat_weekly_interval');
-        if ($repeatInterval == 'week' && !$reapeatWeeklyInterval) {
+        $repeatWeeklyInterval = Utils::getMeta($meta, 'event_repeat_weekly_interval');
+        if ($repeatInterval === 'week' && !$repeatWeeklyInterval) {
             return [];
         }
 
         $repeatMonthlyType = Utils::getMeta($meta, 'event_repeat_monthly_type');
-        if ($repeatInterval == 'month' && !$repeatMonthlyType) {
+        if ($repeatInterval === 'month' && !$repeatMonthlyType) {
             return [];
         }
 
@@ -403,17 +404,18 @@ class Event
         $rruleArgs['UNTIL'] = $lastDate;
 
         $repeatInterval = Utils::getMeta($meta, 'event_repeat_interval');
-        if ($repeatInterval == 'week') {
+        if ($repeatInterval === 'week') {
             $rruleArgs['FREQ'] = 'WEEKLY';
             $rruleArgs['INTERVAL'] = Utils::getMeta($meta, 'event_repeat_weekly_interval');
-            if ($dows = Utils::getMeta($meta, 'event_repeat_weekly_day')) {
+            $weekdays = Utils::getMeta($meta, 'event_repeat_weekly_day');
+            if ($weekdays) {
                 $daysOfWeek = Utils::daysOfWeek('rrule');
-                foreach ($dows as $i => $dow) {
-                    $dows[$i] = $daysOfWeek[$dow];
+                foreach ($weekdays as $index => $weekday) {
+                    $weekdays[$index] = $daysOfWeek[$weekday];
                 }
-                $rruleArgs['BYDAY'] = $dows;
+                $rruleArgs['BYDAY'] = $weekdays;
             }
-        } elseif ($repeatInterval == 'month') {
+        } elseif ($repeatInterval === 'month') {
             $rruleArgs['FREQ'] = 'MONTHLY';
 
             $months = (array) Utils::getMeta($meta, 'event_repeat_monthly_month');
@@ -422,9 +424,9 @@ class Event
             }
 
             $monthlyType = Utils::getMeta($meta, 'event_repeat_monthly_type');
-            if ($monthlyType == 'date') {
+            if ($monthlyType === 'date') {
                 $rruleArgs['BYMONTHDAY'] = Utils::getMeta($meta, 'event_repeat_monthly_type_date');
-            } elseif ($monthlyType == 'dow') {
+            } elseif ($monthlyType === 'dow') {
                 $monthlyDow = Utils::getMeta($meta, 'event_repeat_monthly_type_dow');
                 $daysOfWeek = Utils::daysOfWeek('rrule');
                 $rruleArgs['BYDAY'] = $daysOfWeek[$monthlyDow['day']];
@@ -441,7 +443,7 @@ class Event
      * @param int $postId Notice post ID.
      * @return string[] Recurrence wall times that are ongoing or in the future.
      */
-    private static function getOccurrences(int $postId): array
+    private static function buildOccurrences(int $postId): array
     {
         $meta = get_post_meta($postId);
         $allDay = Utils::getMeta($meta, 'event_all_day');
@@ -455,15 +457,16 @@ class Event
         $tsEnd = (int) Utils::getMeta($meta, 'event_end');
         $duration = max(0, $tsEnd - $tsStart);
 
-        if ($allDay == 'on') {
+        if ($allDay === 'on') {
             $tsStart = strtotime(gmdate('Y-m-d', $tsStart) . ' UTC');
             $tsEnd = strtotime(gmdate('Y-m-d', $tsEnd) . ' UTC');
             // The end date selected in the editor is inclusive.
             $duration = max(0, $tsEnd - $tsStart) + DAY_IN_SECONDS;
         }
 
-        $rruleArgs = Utils::getMeta($meta, 'event_rrule_args');
-        if ($rruleArgs = json_decode($rruleArgs, true)) {
+        $storedRecurrenceRule = Utils::getMeta($meta, 'event_rrule_args');
+        $rruleArgs = json_decode((string) $storedRecurrenceRule, true);
+        if (is_array($rruleArgs)) {
             try {
                 $rset = new RSet();
                 $rset->addRRule($rruleArgs);
@@ -478,7 +481,7 @@ class Event
             if (!empty($exceptions) && is_array($exceptions)) {
                 foreach ($exceptions as $exception) {
                     $date = $exception . ' ' . $startTime;
-                    if (Utils::validateDate($date)) {
+                    if (Utils::isValidDate($date)) {
                         $rset->addExDate($date);
                     }
                 }
@@ -488,7 +491,7 @@ class Event
             if (!empty($additions) && is_array($additions)) {
                 foreach ($additions as $addition) {
                     $date = $addition . ' ' . $startTime;
-                    if (Utils::validateDate($date)) {
+                    if (Utils::isValidDate($date)) {
                         $rset->addDate($date);
                     }
                 }
@@ -507,52 +510,4 @@ class Event
         return $occurrences;
     }
 
-    /**
-     * Get human readable recurrence
-     *
-     * @param int $postId Notice post ID.
-     * @return string Localized recurrence description, or an empty string.
-     */
-    public static function getHumanReadableRecurrence(int $postId): string
-    {
-        $meta = get_post_meta($postId);
-        $readableRrule = '';
-
-        if (Utils::getMeta($meta, 'event_repeat') == 'on') {
-            $rruleArgs = Utils::getMeta($meta, 'event_rrule_args', true);
-            if ($rruleArgs = json_decode($rruleArgs, true)) {
-                $readableRrule = self::humanReadableRRule($rruleArgs);
-            }
-        }
-        return $readableRrule;
-    }
-
-    /**
-     * Get human readable rrule
-     *
-     * @param array<string, mixed> $args Arguments accepted by rlanvin/php-rrule.
-     * @return string Localized recurrence description, or an empty string.
-     */
-    private static function humanReadableRRule(array $args): string
-    {
-        $opt = [
-            'use_intl' => true,
-            'locale' => substr(get_locale(), 0, 2),
-            'date_formatter' => function ($date) {
-                return $date->format(__('Y-m-d', 'rrze-notices'));
-            },
-            'fallback' => 'en',
-            'explicit_infinite' => true,
-            'include_start' => false,
-            'include_until' => true,
-            'custom_path' => plugin()->getPath('languages/rrule'),
-        ];
-
-        try {
-            $rrule = new RRule($args);
-        } catch (\Exception $e) {
-            return '';
-        }
-        return $rrule->humanReadable($opt);
-    }
 }

@@ -49,11 +49,11 @@ class Plugin
     }
 
     /**
-     * loaded method
+     * Initialize derived plugin metadata.
      *
      * @return void
      */
-    public function loaded()
+    public function initialize(): void
     {
         $this->setBasename()
             ->setDirectory()
@@ -82,11 +82,10 @@ class Plugin
     }
 
     /**
-     * setBasename method
-     * Set the basename of the plugin.
-     * @return object This Plugin object.
+     * Set the plugin basename.
+     * @return self This plugin metadata object.
      */
-    public function setBasename(): object
+    private function setBasename(): self
     {
         $this->basename = plugin_basename($this->pluginFile);
         return $this;
@@ -103,11 +102,10 @@ class Plugin
     }
 
     /**
-     * setDirectory method
-     * Set the filesystem directory path (with trailing slash) for the plugin.
-     * @return object This Plugin object.
+     * Set the filesystem directory path with a trailing slash.
+     * @return self This plugin metadata object.
      */
-    public function setDirectory(): object
+    private function setDirectory(): self
     {
         $this->directory = rtrim(plugin_dir_path($this->pluginFile), '/') . '/';
         return $this;
@@ -136,11 +134,10 @@ class Plugin
     }
 
     /**
-     * setUrl method
-     * Set the URL directory path (with trailing slash) for the plugin.
-     * @return object This Plugin object.
+     * Set the URL directory path with a trailing slash.
+     * @return self This plugin metadata object.
      */
-    public function setUrl(): object
+    private function setUrl(): self
     {
         $this->url = rtrim(plugin_dir_url($this->pluginFile), '/') . '/';
         return $this;
@@ -170,11 +167,10 @@ class Plugin
     }
 
     /**
-     * getVersion method
-     * Set the version of the plugin.
-     * @return object This Plugin object.
+     * Read and store the plugin version header.
+     * @return self This plugin metadata object.
      */
-    public function setVersion(): object
+    private function setVersion(): self
     {
         $headers = ['Version' => 'Version'];
         $fileData = get_file_data($this->pluginFile, $headers, 'plugin');
@@ -184,30 +180,4 @@ class Plugin
         return $this;
     }
 
-    /**
-     * __call method
-     * Method overloading.
-     *
-     * @param string $name      Requested method name.
-     * @param array  $arguments Arguments supplied to the method call.
-     * @return void
-     */
-    public function __call(string $name, array $arguments)
-    {
-        if (!method_exists($this, $name)) {
-            $message = sprintf('Call to undefined method %1$s::%2$s', __CLASS__, $name);
-            do_action(
-                'rrze.log.error',
-                $message,
-                [
-                    'class' => __CLASS__,
-                    'method' => $name,
-                    'arguments' => $arguments
-                ]
-            );
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                throw new \Exception($message);
-            }
-        }
-    }
 }

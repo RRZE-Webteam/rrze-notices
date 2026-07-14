@@ -10,17 +10,17 @@ defined('ABSPATH') || exit;
 class Metaboxes
 {
     /**
-     * Setting up hooks
+     * Register metabox and field-normalization hooks.
      *
      * @return void
      */
-    public static function loaded()
+    public static function registerHooks(): void
     {
-        add_action('cmb2_admin_init', [__CLASS__, 'metabox']);
+        add_action('cmb2_admin_init', [__CLASS__, 'registerNoticeMetabox']);
         add_action('cmb2_save_field_notice_visibility', [__CLASS__, 'saveNoticeVisibilityField'], 10, 3);
         add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
         add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
-        add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
+        add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastDateField'], 10, 3);
     }
 
     /**
@@ -28,7 +28,7 @@ class Metaboxes
      *
      * @return void
      */
-    public static function metabox()
+    public static function registerNoticeMetabox(): void
     {
         $objectTypes = [CPTNotice::POST_TYPE];
         $startOfWeek = get_option('start_of_week');
@@ -41,6 +41,20 @@ class Metaboxes
             'priority' => 'high',
             'show_names' => true
         ]);
+
+        self::addNoticeFields($cmb);
+        self::addEventFields($cmb, (int) $startOfWeek);
+        self::addRecurrenceFields($cmb, (int) $startOfWeek);
+    }
+
+    /**
+     * Add notice presentation and audience fields.
+     *
+     * @param \CMB2 $cmb Notice settings metabox.
+     * @return void
+     */
+    private static function addNoticeFields(\CMB2 $cmb): void
+    {
         // Notice Type options
         $cmb->add_field([
             'id'   => 'notice_type',
@@ -51,7 +65,6 @@ class Metaboxes
                 'info' => __('Info', 'rrze-notices'),
                 'warning' => __('Warning', 'rrze-notices')
             ],
-            'default' => 'info'
         ]);
         // Notice Display options
         $cmb->add_field([
@@ -77,7 +90,7 @@ class Metaboxes
                 . __('(Visibility based on user role)', 'rrze-notices') . '</span>',
             'id' => 'notice_visibility_roles',
             'type' => 'multicheck',
-            'options' => self::getVisibilityByUserRoleOptions(),
+            'options' => self::getRoleVisibilityOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
         // Notice Start days->timestamp
@@ -92,9 +105,20 @@ class Metaboxes
                 'max' => '30',
                 'required' => 'required'
             ],
-            'sanitization_cb' => [__CLASS__, 'sanitizeNoticeStart'],
-            'escape_cb' => [__CLASS__, 'escapeNoticeStartValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeNoticeLeadTime'],
+            'escape_cb' => [__CLASS__, 'formatNoticeLeadTime'],
         ]);
+    }
+
+    /**
+     * Add event boundary fields.
+     *
+     * @param \CMB2 $cmb         Notice settings metabox.
+     * @param int   $startOfWeek WordPress weekday index.
+     * @return void
+     */
+    private static function addEventFields(\CMB2 $cmb, int $startOfWeek): void
+    {
         // Event Start date-time->timestamp
         $cmb->add_field([
             'name' => __('Event Start', 'rrze-notices'),
@@ -149,13 +173,24 @@ class Metaboxes
             'id' => 'event_all_day',
             'type' => 'checkbox',
         ]);
-        // Event reapeat
+    }
+
+    /**
+     * Add recurrence rule, exception, and addition fields.
+     *
+     * @param \CMB2 $cmb         Notice settings metabox.
+     * @param int   $startOfWeek WordPress weekday index.
+     * @return void
+     */
+    private static function addRecurrenceFields(\CMB2 $cmb, int $startOfWeek): void
+    {
+        // Event repeat
         $cmb->add_field([
             'name' => __('Event Repeat', 'rrze-notices'),
             'id' => 'event_repeat',
             'type' => 'checkbox',
         ]);
-        // Reapeat until
+        // Repeat until
         $cmb->add_field([
             'name' => __('Repeat Until', 'rrze-notices'),
             'desc' => __('(optional)', 'rrze-notices'),
@@ -179,7 +214,7 @@ class Metaboxes
             ],
             'classes' => ['event-repeat'],
         ]);
-        // Reapeat Interval
+        // Repeat interval
         $cmb->add_field([
             'name' => __('Repeat Interval', 'rrze-notices'),
             'id' => 'event_repeat_interval',
@@ -191,7 +226,7 @@ class Metaboxes
             ],
             'classes' => ['event-repeat'],
         ]);
-        // Reapeats weekly
+        // Repeats weekly
         $cmb->add_field([
             'name' => __('Repeats', 'rrze-notices'),
             'id' => 'event_repeat_weekly_interval',
@@ -209,7 +244,7 @@ class Metaboxes
             'name' => __('Repeats On', 'rrze-notices'),
             'id' => 'event_repeat_weekly_day',
             'type' => 'multicheck_inline',
-            'options' => self::getDowOptions(),
+            'options' => self::getWeekdayOptions(),
             'classes' => ['event-repeat', 'event-repeat-weekly'],
         ]);
         // Repeats monthly
@@ -254,8 +289,8 @@ class Metaboxes
             'desc' => __('Enter dates to be skipped (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_exceptions',
             'type' => 'textarea_small',
-            'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
-            'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeDateList'],
+            'escape_cb' => [__CLASS__, 'formatDateList'],
             'classes' => ['event-repeat'],
         ]);
         // Additions
@@ -264,8 +299,8 @@ class Metaboxes
             'desc' => __('Add additional dates (format YYYY-MM-DD, e.g. 2023-12-31). One date per line.', 'rrze-notices'),
             'id' => 'event_date_additions',
             'type' => 'textarea_small',
-            'sanitization_cb' => [__CLASS__, 'sanitizeTextarea'],
-            'escape_cb' => [__CLASS__, 'escapeTextareaValue'],
+            'sanitization_cb' => [__CLASS__, 'sanitizeDateList'],
+            'escape_cb' => [__CLASS__, 'formatDateList'],
             'classes' => ['event-repeat'],
         ]);
     }
@@ -276,7 +311,7 @@ class Metaboxes
      *
      * @return array
      */
-    public static function getDisplayOptions()
+    private static function getDisplayOptions(): array
     {
         $options = [
             'hide_title' => __('Hide Title', 'rrze-notices'),
@@ -296,17 +331,9 @@ class Metaboxes
      *
      * @return array
      */
-    public static function getVisibilityByUserRoleOptions()
+    private static function getRoleVisibilityOptions(): array
     {
         $availableRoles = Users::getRoles();
-        $roleVisibility = [];
-        $visibility = [];
-        foreach ($roleVisibility as $k) {
-            if (isset($availableRoles[$k])) {
-                $visibility[] = $k;
-            }
-        }
-
         $options = [];
         if (
             is_super_admin() &&
@@ -336,13 +363,13 @@ class Metaboxes
      *
      * @return array
      */
-    public static function getDowOptions()
+    private static function getWeekdayOptions(): array
     {
         global $wp_locale;
         $options = [];
         for ($i = 0; $i <= 6; $i++) {
-            $dow = strtolower(date('l', strtotime("Sunday +{$i} days")));
-            $options[$dow] = $wp_locale->get_weekday_abbrev($wp_locale->get_weekday($i));
+            $weekday = strtolower(date('l', strtotime("Sunday +{$i} days")));
+            $options[$weekday] = $wp_locale->get_weekday_abbrev($wp_locale->get_weekday($i));
         }
         return $options;
     }
@@ -353,7 +380,7 @@ class Metaboxes
      *
      * @return array
      */
-    public static function getMonthDaysOptions()
+    private static function getMonthDaysOptions(): array
     {
         return array_combine(range(1, 31), range(1, 31));
     }
@@ -364,12 +391,11 @@ class Metaboxes
      *
      * @return array
      */
-    public static function getMonthsOptions()
+    private static function getMonthsOptions(): array
     {
         global $wp_locale;
         $options = [];
         for ($i = 1; $i <= 12; $i++) {
-            $month = strtolower(substr(date('M', mktime(0, 0, 0, $i, 1)), 0, 3));
             $options[$i] = $wp_locale->get_month_abbrev($wp_locale->get_month(sprintf('%02d', $i)));
         }
         return $options;
@@ -402,8 +428,8 @@ class Metaboxes
     public static function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestampGmt = self::localTimestampToGmt((int) $field->value);
-        update_post_meta($postId, 'event_start_gmt', $timestampGmt);
+        $unixTimestamp = self::wallTimeTimestampToUnix((int) $field->value);
+        update_post_meta($postId, 'event_start_gmt', $unixTimestamp);
     }
 
     /**
@@ -417,8 +443,8 @@ class Metaboxes
     public static function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestampGmt = self::localTimestampToGmt((int) $field->value);
-        update_post_meta($postId, 'event_end_gmt', $timestampGmt);
+        $unixTimestamp = self::wallTimeTimestampToUnix((int) $field->value);
+        update_post_meta($postId, 'event_end_gmt', $unixTimestamp);
     }
 
     /**
@@ -429,10 +455,11 @@ class Metaboxes
      * @param \CMB2_Field $field   Saved recurrence-limit field.
      * @return void
      */
-    public static function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveEventRepeatLastDateField(bool $updated, string $action, \CMB2_Field $field): void
     {
         $postId = $field->object_id;
-        if ($timestamp = $field->value) {
+        $timestamp = $field->value;
+        if ($timestamp) {
             $timezone = wp_timezone();
             $selected = new \DateTimeImmutable(gmdate('Y-m-d H:i:s', (int) $timestamp), $timezone);
             $minDate = current_datetime()->modify('+1 day')->setTime(0, 0);
@@ -456,7 +483,7 @@ class Metaboxes
      * @param int $timestamp CMB2 timestamp representing local wall time.
      * @return int Unix timestamp, or zero for an empty value.
      */
-    private static function localTimestampToGmt(int $timestamp): int
+    private static function wallTimeTimestampToUnix(int $timestamp): int
     {
         if (!$timestamp) {
             return 0;
@@ -475,7 +502,7 @@ class Metaboxes
      * @param \CMB2_Field $field     CMB2 field instance.
      * @return int Lead time in seconds.
      */
-    public static function sanitizeNoticeStart($value, $fieldArgs, $field)
+    public static function sanitizeNoticeLeadTime($value, $fieldArgs, $field): int
     {
         $value = absint($value);
         return $value * DAY_IN_SECONDS;
@@ -489,40 +516,40 @@ class Metaboxes
      * @param \CMB2_Field $field     CMB2 field instance.
      * @return int Number of calendar days.
      */
-    public static function escapeNoticeStartValue($value, $fieldArgs, $field)
+    public static function formatNoticeLeadTime($value, $fieldArgs, $field): int
     {
         $value = absint($value);
         return ceil($value / DAY_IN_SECONDS);
     }
 
     /**
-     * Sanitize textarea field
+     * Sanitize a newline-separated list of ISO dates.
      *
      * @param string $value
      * @param array $fieldArgs
      * @param \CMB2_Field $field
      * @return mixed string|array
      */
-    public static function sanitizeTextarea($value, $fieldArgs, $field)
+    public static function sanitizeDateList($value, $fieldArgs, $field)
     {
         if (!empty($value)) {
             $value = explode(PHP_EOL, sanitize_textarea_field($value));
             $value = array_unique(array_filter(array_map('trim', $value)));
-            $value = array_filter(array_map([__CLASS__, 'validateDate'], $value));
+            $value = array_filter(array_map([__CLASS__, 'normalizeDateValue'], $value));
             sort($value);
         }
         return !empty($value) ? $value : '';
     }
 
     /**
-     * Escape textarea field value
+     * Format a stored date list for textarea display.
      *
      * @param mixed $value
      * @param array $fieldArgs
      * @param \CMB2_Field $field
      * @return string
      */
-    public static function escapeTextareaValue($value, $fieldArgs, $field)
+    public static function formatDateList($value, $fieldArgs, $field): string
     {
         if (!empty($value) && is_array($value)) {
             return implode(PHP_EOL, $value);
@@ -531,12 +558,12 @@ class Metaboxes
     }
 
     /**
-     * Validate date
+     * Normalize one ISO date value.
      *
      * @param string $date
      * @return string
      */
-    public static function validateDate($date)
+    public static function normalizeDateValue(string $date): string
     {
         $d = \DateTime::createFromFormat('Y-m-d', $date);
         return $d && $d->format('Y-m-d') === $date ? $d->format('Y-m-d') : '';

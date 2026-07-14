@@ -9,9 +9,9 @@
 jQuery(document).ready(function ($) {
     let visibilityTypeInput = $("input[name='notice_visibility']");
 
-    triggerVisibilityTypeField();
+    updateRoleFieldVisibility();
     visibilityTypeInput.on("change", function () {
-        triggerVisibilityTypeField();
+        updateRoleFieldVisibility();
     });
 
     /**
@@ -19,7 +19,7 @@ jQuery(document).ready(function ($) {
      *
      * @return {void}
      */
-    function triggerVisibilityTypeField() {
+    function updateRoleFieldVisibility() {
         var visibilityType = $("input[name='notice_visibility']:checked").val();
         if (typeof visibilityType == "undefined") {
             $("div.notice_visibility_roles").hide();
@@ -35,19 +35,19 @@ jQuery(document).ready(function ($) {
     let repeatMonthlyTypeInput = $("input[name='event_repeat_monthly_type']");
 
     if (repeatCheck.length > 0) {
-        triggerRepeatFields();
+        updateRecurrenceFieldVisibility();
     }
 
     repeatCheck.on("change", function () {
-        triggerRepeatFields();
+        updateRecurrenceFieldVisibility();
     });
 
     repeatIntervalSelect.on("change", function () {
-        triggerIntervalFields();
+        updateIntervalFieldVisibility();
     });
 
     repeatMonthlyTypeInput.on("change", function () {
-        triggerMonthlyTypeFields();
+        updateMonthlyFieldVisibility();
     });
 
     /**
@@ -55,10 +55,10 @@ jQuery(document).ready(function ($) {
      *
      * @return {void}
      */
-    function triggerRepeatFields() {
+    function updateRecurrenceFieldVisibility() {
         if (repeatCheck.is(":checked")) {
             $("div.event-repeat").slideDown();
-            triggerIntervalFields();
+            updateIntervalFieldVisibility();
         } else {
             $("div.event-repeat").slideUp();
         }
@@ -69,7 +69,7 @@ jQuery(document).ready(function ($) {
      *
      * @return {void}
      */
-    function triggerIntervalFields() {
+    function updateIntervalFieldVisibility() {
         var repeatInterval = $("option:selected", repeatIntervalSelect).val();
         if (repeatInterval === "week") {
             $("div.event-repeat-weekly").slideDown();
@@ -77,7 +77,7 @@ jQuery(document).ready(function ($) {
         } else if (repeatInterval === "month") {
             $("div.event-repeat-monthly").slideDown();
             $("div.event-repeat-weekly").slideUp();
-            triggerMonthlyTypeFields();
+            updateMonthlyFieldVisibility();
         }
     }
 
@@ -86,7 +86,7 @@ jQuery(document).ready(function ($) {
      *
      * @return {void}
      */
-    function triggerMonthlyTypeFields() {
+    function updateMonthlyFieldVisibility() {
         var repeatMonthlyType = $(
             "input[name='event_repeat_monthly_type']:checked"
         ).val();

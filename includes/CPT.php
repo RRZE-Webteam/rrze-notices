@@ -14,16 +14,16 @@ class CPT
      *
      * @return void
      */
-    public static function loaded()
+    public static function registerHooks(): void
     {
-        add_action('init', [__CLASS__, 'registerCPT']);
+        add_action('init', [__CLASS__, 'registerNoticePostType']);
 
-        Post::loaded();
+        Post::registerHooks();
 
-        Metaboxes::loaded();
+        Metaboxes::registerHooks();
 
         $columns = new Columns;
-        $columns->loaded();
+        $columns->registerHooks();
     }
 
     /**
@@ -31,7 +31,7 @@ class CPT
      *
      * @return void
      */
-    public static function registerCPT()
+    public static function registerNoticePostType(): void
     {
         register_post_type(
             CPTNotice::POST_TYPE,

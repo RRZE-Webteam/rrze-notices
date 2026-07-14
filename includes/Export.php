@@ -4,7 +4,7 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
-use function RRZE\notices\plugin;
+use function RRZE\Notices\plugin;
 
 /**
  * Handles public ICS download requests for published notices.
@@ -16,14 +16,16 @@ class Export
      *
      * @var string
      */
-    private $vcalendar = '';
+    private string $calendar = '';
 
     /**
      * Register the export request handler.
+     *
+     * @return void
      */
-    public function __construct()
+    public function registerHooks(): void
     {
-        add_action('init', [$this, 'request']);
+        add_action('init', [$this, 'handleExportRequest']);
     }
 
     /**
@@ -31,21 +33,20 @@ class Export
      *
      * @return void
      */
-    public function request()
+    public function handleExportRequest(): void
     {
-        $plugin = $_GET['ical-source'] ?? null;
-        $postId = $_GET['id'] ?? null;
-        $action = $_GET['action'] ?? null;
-        $post = get_post(absint($postId));
+        $pluginSlug = isset($_GET['ical-source'])
+            ? sanitize_key(wp_unslash($_GET['ical-source']))
+            : '';
+        $action = isset($_GET['action']) ? sanitize_key(wp_unslash($_GET['action'])) : '';
+        $postId = isset($_GET['id']) ? absint($_GET['id']) : 0;
+        if ($action !== 'export' || $pluginSlug !== plugin()->getSlug() || !$postId) {
+            return;
+        }
 
-        if (
-            $post &&
-            $action === 'export' &&
-            $plugin === plugin()->getSlug()
-
-        ) {
-            $this->set($post);
-            $this->stream();
+        $post = get_post($postId);
+        if ($post && $this->buildCalendarForPost($post)) {
+            $this->sendCalendarDownload();
         }
     }
 
@@ -53,9 +54,9 @@ class Export
      * Build calendar content for a published notice post.
      *
      * @param object $post Candidate WordPress post object.
-     * @return void
+     * @return bool Whether calendar content was created.
      */
-    private function set(object $post)
+    private function buildCalendarForPost(object $post): bool
     {
         if (
             is_a($post, 'WP_Post') &&
@@ -63,9 +64,14 @@ class Export
             $post->post_status === 'publish'
         ) {
             $postId = $post->ID;
-            $data = $this->getEvent($postId);
-            $this->build($data);
+            $events = $this->buildCalendarEvents($postId);
+            if ($events !== []) {
+                $this->serializeCalendar($events);
+                return true;
+            }
         }
+
+        return false;
     }
 
     /**
@@ -77,7 +83,7 @@ class Export
      * @param int $postId Notice post ID.
      * @return array<int, array<string, mixed>> Calendar event records.
      */
-    private function getEvent(int $postId)
+    private function buildCalendarEvents(int $postId): array
     {
         $data = [];
         $notice = get_post_meta($postId, 'notice_data', true);
@@ -144,13 +150,13 @@ class Export
      * @param array<int, array<string, mixed>> $data Calendar event records.
      * @return void
      */
-    private function build(array $data)
+    private function serializeCalendar(array $data): void
     {
         // Setup calendar
         $ics = new ICal($data);
 
         // Output .ics formatted text
-        $this->vcalendar = $ics->build();
+        $this->calendar = $ics->build();
     }
 
     /**
@@ -158,7 +164,7 @@ class Export
      *
      * @return never
      */
-    private function stream()
+    private function sendCalendarDownload(): never
     {
         $urlHost = parse_url(site_url(), PHP_URL_HOST);
         $urlPath = parse_url(site_url(), PHP_URL_PATH);
@@ -170,7 +176,7 @@ class Export
 
         header('Content-Type: text/calendar; charset=' . get_option('blog_charset'), true);
         header('Content-Disposition: attachment; filename=' . $filename);
-        echo $this->vcalendar;
+        echo $this->calendar;
         exit;
     }
 

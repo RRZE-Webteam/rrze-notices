@@ -12,16 +12,12 @@ class Columns
     /** @var string Notice custom post type slug. */
     protected $customPostType;
 
-    /** @var object Parsed network-wide plugin options. */
-    protected $siteOptions;
-
     /**
      * Initialize column dependencies.
      */
     public function __construct()
     {
         $this->customPostType = CPTNotice::POST_TYPE;
-        $this->siteOptions = Options::getSiteOptions();
     }
 
     /**
@@ -29,12 +25,12 @@ class Columns
      *
      * @return void
      */
-    public function loaded()
+    public function registerHooks(): void
     {
-        add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'manageColumns']);
-        add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'managePostsCustomColumn'], 10, 2);
-        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'manageSortableColumns']);
-        add_action('load-edit.php', [$this, 'loadEdit']);
+        add_action('manage_edit-' . $this->customPostType . '_columns', [$this, 'defineColumns']);
+        add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'renderColumn'], 10, 2);
+        add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'defineSortableColumns']);
+        add_action('load-edit.php', [$this, 'registerSortingHook']);
     }
 
     /**
@@ -43,7 +39,7 @@ class Columns
      * @param array<string, string> $columns Existing column labels.
      * @return array<string, string> Notice column labels.
      */
-    public function manageColumns($columns)
+    public function defineColumns(array $columns): array
     {
         $columns = [
             'cb' => '<input type="checkbox">',
@@ -68,7 +64,7 @@ class Columns
      * @param int    $postId Notice post ID.
      * @return void
      */
-    public function managePostsCustomColumn($column, $postId)
+    public function renderColumn(string $column, int $postId): void
     {
         $notice = get_post_meta($postId, 'notice_data', true);
         if (!empty($notice) && !empty($notice['event'])) {
@@ -95,9 +91,9 @@ class Columns
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roles = $notice->visibility;
             $visibility = [];
-            foreach ($roles as $k) {
-                if (isset($availableRoles[$k])) {
-                    $visibility[] = $availableRoles[$k];
+            foreach ($roles as $roleSlug) {
+                if (isset($availableRoles[$roleSlug])) {
+                    $visibility[] = $availableRoles[$roleSlug];
                 }
             }
             $visibility = !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
@@ -137,7 +133,7 @@ class Columns
      * @param array<string, string> $columns Existing sortable columns.
      * @return array<string, string> Updated sortable columns.
      */
-    public function manageSortableColumns($columns)
+    public function defineSortableColumns(array $columns): array
     {
         $columns['notice_type'] = 'notice_type';
         return $columns;
@@ -148,9 +144,9 @@ class Columns
      *
      * @return void
      */
-    public function loadEdit()
+    public function registerSortingHook(): void
     {
-        add_action('pre_get_posts', [$this, 'columnOrderby']);
+        add_action('pre_get_posts', [$this, 'applyColumnOrdering']);
     }
 
     /**
@@ -159,19 +155,17 @@ class Columns
      * @param \WP_Query $query Current admin list query.
      * @return void
      */
-    public function columnOrderby($query)
+    public function applyColumnOrdering($query): void
     {
-        if ($this->customPostType != $query->get('post_type')) {
+        if ($this->customPostType !== $query->get('post_type')) {
             return;
         }
         $orderBy = $query->get('orderby');
         switch ($orderBy) {
-            case 'type':
-                $query->set('meta_key', 'rrze_notices_type');
-                break;
-            default:
+            case 'notice_type':
+                $query->set('meta_key', 'notice_type');
+                $query->set('orderby', 'meta_value');
                 break;
         }
-        $query->set('orderby', 'meta_value');
     }
 }

@@ -12,19 +12,27 @@ class Notices
     /**
      * An array of notices.
      *
-     * @var array
+     * @var array<string, Notice>
      */
     private $notices = [];
+
+    /** @var bool Whether rendering hooks have already been registered. */
+    private bool $hooksRegistered = false;
 
     /**
      * Adds actions for the notices.
      *
      * @return void
      */
-    public function boot()
+    public function registerHooks(): void
     {
-        add_action('admin_notices', [$this, 'printNotices']);
-        add_action('admin_footer', [$this, 'printScripts']);
+        if ($this->hooksRegistered) {
+            return;
+        }
+
+        add_action('admin_notices', [$this, 'renderNotices']);
+        add_action('admin_footer', [$this, 'renderDismissalScripts']);
+        $this->hooksRegistered = true;
     }
 
     /**
@@ -34,7 +42,7 @@ class Notices
      * @param string $title   The title for our notice.
      * @param string $message The message for our notice.
      * @param array  $options An array of additional options to change the defaults for this notice.
-     *                        See Notice::__constructor() for details.
+     *                        See Notice::__construct() for details.
      * @return void
      */
     public function add($id, $title, $message, $options = [])
@@ -78,31 +86,31 @@ class Notices
     }
 
     /**
-     * Prints the notice.
+     * Render all registered notices.
      *
      * @return void
      */
-    public function printNotices()
+    public function renderNotices(): void
     {
         $notices = $this->getAll();
 
         foreach ($notices as $notice) {
-            $notice->printNotice();
+            $notice->render();
         }
     }
 
     /**
-     * Prints scripts for the notices.
+     * Render dismissal scripts for visible notices.
      *
      * @return void
      */
-    public function printScripts()
+    public function renderDismissalScripts(): void
     {
         $notices = $this->getAll();
 
         foreach ($notices as $notice) {
-            if ($notice->show()) {
-                $notice->dismiss->printScript();
+            if ($notice->shouldDisplay() && $notice->dismissal) {
+                $notice->dismissal->renderDismissalScript();
             }
         }
     }

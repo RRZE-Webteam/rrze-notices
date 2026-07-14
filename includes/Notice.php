@@ -31,16 +31,16 @@ class Notice
     private $message;
 
     /**
-     * An instance of the \RRZE\Notices\Dismiss object.
+     * Dismissal state for this notice.
      *
-     * @var \RRZE\Notices\Dismiss
+     * @var Dismiss|null
      */
-    public $dismiss;
+    public ?Dismiss $dismissal = null;
 
     /**
      * Default notice options.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     private $options = [
         'screens' => [],
@@ -49,14 +49,14 @@ class Notice
         'preview' => false,
         'subscription_link' => '',
         'edit_link' => '',
-        'event' => '',
+        'event' => [],
         'is_dismissible' => true
     ];
 
     /**
      * Allowed HTML in the message.
      *
-     * @var array
+     * @var array<string, array<string, array<mixed>>>
      */
     private $allowedHtml = [
         'p' => [
@@ -77,11 +77,11 @@ class Notice
     ];
 
     /**
-     * An array of allowed types.
+     * Allowed WordPress notice types.
      *
-     * @var array
+     * @var string[]
      */
-    private $allowedTypes = [
+    private const ALLOWED_TYPES = [
         'info',
         'success',
         'error',
@@ -109,17 +109,17 @@ class Notice
 
         $this->allowedHtml = apply_filters('rrze_notices_allowed_html', $this->allowedHtml);
 
-        $this->dismiss = new Dismiss($this->id, $this->options['is_dismissible']);
+        $this->dismissal = new Dismiss($this->id, $this->options['is_dismissible']);
     }
 
     /**
-     * Prints the notice.
+     * Render the notice markup.
      *
      * @return void
      */
-    public function printNotice()
+    public function render(): void
     {
-        if (!$this->show()) {
+        if (!$this->shouldDisplay()) {
             return;
         }
 
@@ -131,9 +131,9 @@ class Notice
             $eventReadableDatetime
         );
 
-        $html  = $this->getTitle();
+        $html  = $this->renderTitle();
         $html .= $eventDate;
-        $html .= $this->getMessage();
+        $html .= $this->renderMessage();
 
         $noticeActions[] = $this->options['subscription_link'] ? $this->options['subscription_link'] : '';
         $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
@@ -156,13 +156,13 @@ class Notice
      *
      * @return bool
      */
-    public function show()
+    public function shouldDisplay(): bool
     {
-        if (!$this->isScreen()) {
+        if (!$this->isAllowedScreen()) {
             return false;
         }
 
-        if ($this->dismiss->isDismissed()) {
+        if (!$this->dismissal || $this->dismissal->isDismissed()) {
             return false;
         }
 
@@ -189,9 +189,10 @@ class Notice
             $classes[] = 'is-dismissible';
         }
 
-        $this->options['type'] = $this->options['type'];
-
-        $classes[] = 'notice-' . $this->options['type'];
+        $type = in_array($this->options['type'], self::ALLOWED_TYPES, true)
+            ? $this->options['type']
+            : 'info';
+        $classes[] = 'notice-' . $type;
 
         $classes[] = 'notice-alt';
 
@@ -199,11 +200,11 @@ class Notice
     }
 
     /**
-     * Returns the title.
+     * Return the escaped title markup.
      *
      * @return string
      */
-    public function getTitle()
+    public function renderTitle(): string
     {
         if (!$this->title || $this->options['hide_title']) {
             return '';
@@ -216,11 +217,11 @@ class Notice
     }
 
     /**
-     * Returns the message.
+     * Return the sanitized message markup.
      *
      * @return string
      */
-    public function getMessage()
+    public function renderMessage(): string
     {
         return wpautop(wp_kses($this->message, $this->allowedHtml));
     }
@@ -230,7 +231,7 @@ class Notice
      *
      * @return bool
      */
-    private function isScreen()
+    private function isAllowedScreen(): bool
     {
         if (!$this->options['screens'] || empty($this->options['screens'])) {
             return true;

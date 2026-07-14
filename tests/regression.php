@@ -64,6 +64,23 @@ function add_action(string $hook, callable|array $callback): void
 {
 }
 
+function translate_user_role(string $role): string
+{
+    return $role;
+}
+
+class WP_Roles
+{
+    public function get_names(): array
+    {
+        return [
+            'subscriber' => 'Subscriber',
+            'editor' => 'Editor',
+            'administrator' => 'Administrator',
+        ];
+    }
+}
+
 function get_post_meta(int $postId, string $key = '', bool $single = false): mixed
 {
     global $testPostMeta;
@@ -71,13 +88,20 @@ function get_post_meta(int $postId, string $key = '', bool $single = false): mix
 }
 
 require_once dirname(__DIR__) . '/includes/Utils.php';
+require_once dirname(__DIR__) . '/includes/Users.php';
+require_once dirname(__DIR__) . '/includes/NoticeId.php';
+require_once dirname(__DIR__) . '/includes/NoticeVisibility.php';
 require_once dirname(__DIR__) . '/includes/Event.php';
 require_once dirname(__DIR__) . '/includes/ICal.php';
 require_once dirname(__DIR__) . '/includes/Export.php';
+require_once dirname(__DIR__) . '/includes/Post.php';
 
 use RRZE\Notices\Event;
 use RRZE\Notices\Export;
 use RRZE\Notices\ICal;
+use RRZE\Notices\NoticeId;
+use RRZE\Notices\NoticeVisibility;
+use RRZE\Notices\Post;
 use RRZE\Notices\Utils;
 
 function assertSameValue(mixed $expected, mixed $actual, string $message): void
@@ -139,6 +163,37 @@ $uid = Utils::createUid(42, '2026-07-14 10:00:00');
 assertSameValue($uid, Utils::createUid(42, '2026-07-14 10:00:00'), 'UIDs must remain stable across exports.');
 assertSameValue(false, $uid === Utils::createUid(42, '2026-07-21 10:00:00'), 'Occurrence UIDs must be distinct.');
 
+$networkNoticeId = NoticeId::fromString('2-42');
+assertSameValue('2-42', (string) $networkNoticeId, 'Network notice IDs must survive URL parsing unchanged.');
+assertSameValue(2, $networkNoticeId?->blogId(), 'Network notice IDs must retain the originating site.');
+assertSameValue(42, $networkNoticeId?->postId(), 'Network notice IDs must retain the post ID.');
+assertSameValue(null, NoticeId::fromString('42'), 'Unqualified post IDs must not pass as network notice IDs.');
+
+assertSameValue(
+    true,
+    NoticeVisibility::allowsRoles(['visibility' => ['editor']], ['editor']),
+    'A notice must be visible when one configured role matches.'
+);
+assertSameValue(
+    false,
+    NoticeVisibility::allowsRoles(['visibility' => ['editor']], ['subscriber']),
+    'A notice must remain hidden when configured roles do not match.'
+);
+assertSameValue(
+    true,
+    NoticeVisibility::allowsRoles(['visibility' => ['all']], []),
+    'The all-users visibility option must not require a role.'
+);
+
+$testPostMeta = [
+    99 => [
+        'notice_display' => '',
+        'rrze_notices_display' => ['hide_title', 'network_wide'],
+    ],
+];
+assertSameValue(true, Post::shouldHideTitle(99), 'Legacy display metadata must remain readable.');
+assertSameValue(true, Post::isNetworkWide(99), 'Legacy network-wide metadata must remain readable.');
+
 $testPostMeta = [
     42 => [
         'notice_data' => [
@@ -156,8 +211,8 @@ $testPostMeta = [
     ],
 ];
 $export = new Export();
-$getEvent = new ReflectionMethod(Export::class, 'getEvent');
-$exportData = $getEvent->invoke($export, 42);
+$buildCalendarEvents = new ReflectionMethod(Export::class, 'buildCalendarEvents');
+$exportData = $buildCalendarEvents->invoke($export, 42);
 
 assertSameValue('Non-recurring event', $exportData[0]['summary'] ?? null, 'Non-recurring export data must not have an extra array level.');
 assertSameValue('2026-07-14 10:00:00', $exportData[0]['dtstart'] ?? null, 'Non-recurring export must retain local wall time until serialization.');

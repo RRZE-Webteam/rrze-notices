@@ -10,18 +10,18 @@ defined('ABSPATH') || exit;
 class Settings
 {
     /** @var string Network option key used by the plugin. */
-    protected $siteOptionsName;
+    protected string $networkOptionName;
 
     /** @var object Parsed network-wide plugin options. */
-    protected $siteOptions;
+    protected object $networkOptions;
 
     /**
      * Load the current network settings.
      */
     public function __construct()
     {
-        $this->siteOptionsName = Options::getSiteOptionName();
-        $this->siteOptions = Options::getSiteOptions();
+        $this->networkOptionName = Options::getNetworkOptionName();
+        $this->networkOptions = Options::getNetworkOptions();
     }
 
     /**
@@ -29,11 +29,12 @@ class Settings
      *
      * @return void
      */
-    public function loaded()
+    public function registerHooks(): void
     {
-        add_action('network_admin_menu', [$this, 'networkAdminMenu']);
-        add_action('admin_init', [$this, 'networkAdminSettings']);
-        add_filter('network_admin_plugin_action_links_' . plugin()->getBasename(), [$this, 'networkAdminPluginActionLink']);
+        add_action('network_admin_menu', [$this, 'registerNetworkAdminMenu']);
+        add_action('admin_init', [$this, 'handleSettingsSubmission']);
+        add_action('admin_init', [$this, 'registerNetworkSettings']);
+        add_filter('network_admin_plugin_action_links_' . plugin()->getBasename(), [$this, 'addNetworkSettingsLink']);
     }
 
     /**
@@ -42,7 +43,7 @@ class Settings
      * @param string[] $links Existing plugin action links.
      * @return string[] Updated plugin action links.
      */
-    public function networkAdminPluginActionLink($links)
+    public function addNetworkSettingsLink(array $links): array
     {
         if (!is_super_admin()) {
             return $links;
@@ -63,38 +64,52 @@ class Settings
     }
 
     /**
-     * Save submitted settings and register the network submenu page.
+     * Register the network settings submenu page.
      *
      * @return void
      */
-    public function networkAdminMenu()
+    public function registerNetworkAdminMenu(): void
     {
-        if (isset($_POST['_wpnonce']) &&  wp_verify_nonce($_POST['_wpnonce'], 'rrze_notices_network-options') && is_super_admin()) {
-            if (isset($_POST['rrze_notices_settings_submit'])) {
-                $settings = isset($_POST['rrze_notices_settings']) ? $_POST['rrze_notices_settings'] : [];
-
-                $this->siteOptions->enabled = !empty($settings['enabled']) ? 1 : 0;
-                $this->siteOptions->access = isset($settings['access']) && $settings['access'] == 'manage_options' ? $settings['access'] : 'manage_site_options';
-                update_site_option($this->siteOptionsName, $this->siteOptions);
-            }
-
-            wp_redirect(
-                add_query_arg(
-                    ['page' => 'rrze-notices', 'update' => 'updated'],
-                    network_admin_url('settings.php')
-                )
-            );
-            exit;
-        }
-
         add_submenu_page(
             'settings.php',
             __('Notices', 'rrze-notices'),
             __('Notices', 'rrze-notices'),
             'manage_network_options',
             'rrze-notices',
-            [$this, 'networkPageSettings']
+            [$this, 'renderNetworkSettingsPage']
         );
+    }
+
+    /**
+     * Validate and persist a submitted network-settings form.
+     *
+     * @return void
+     */
+    public function handleSettingsSubmission(): void
+    {
+        if (!isset($_POST['rrze_notices_settings_submit']) || !is_super_admin()) {
+            return;
+        }
+
+        $nonce = isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'rrze_notices_network-options')) {
+            return;
+        }
+
+        $settings = isset($_POST['rrze_notices_settings']) && is_array($_POST['rrze_notices_settings'])
+            ? wp_unslash($_POST['rrze_notices_settings'])
+            : [];
+        $this->networkOptions->enabled = !empty($settings['enabled']) ? 1 : 0;
+        $this->networkOptions->access = ($settings['access'] ?? '') === 'manage_options'
+            ? 'manage_options'
+            : 'manage_network_options';
+        update_site_option($this->networkOptionName, $this->networkOptions);
+
+        wp_safe_redirect(add_query_arg(
+            ['page' => 'rrze-notices', 'update' => 'updated'],
+            network_admin_url('settings.php')
+        ));
+        exit;
     }
 
     /**
@@ -102,12 +117,12 @@ class Settings
      *
      * @return void
      */
-    public function networkAdminSettings()
+    public function registerNetworkSettings(): void
     {
         add_settings_section('rrze_notices_section', __('General', 'rrze-notices'), '__return_false', 'rrze_notices_network');
 
-        add_settings_field('rrze_notices_enable', __('Enable Notices', 'rrze-notices'), array($this, 'enabledField'), 'rrze_notices_network', 'rrze_notices_section');
-        add_settings_field('rrze_notices_access', __('Access', 'rrze-notices'), array($this, 'accessField'), 'rrze_notices_network', 'rrze_notices_section');
+        add_settings_field('rrze_notices_enable', __('Enable Notices', 'rrze-notices'), [$this, 'renderEnabledField'], 'rrze_notices_network', 'rrze_notices_section');
+        add_settings_field('rrze_notices_access', __('Access', 'rrze-notices'), [$this, 'renderAccessField'], 'rrze_notices_network', 'rrze_notices_section');
     }
 
     /**
@@ -115,14 +130,14 @@ class Settings
      *
      * @return void
      */
-    public function enabledField()
+    public function renderEnabledField(): void
     {
         echo '<fieldset>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->siteOptions->enabled), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions->enabled), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
         echo '</label><br>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->siteOptions->enabled), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->networkOptions->enabled), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
         echo '</label>';
         echo '</fieldset>';
     }
@@ -132,15 +147,15 @@ class Settings
      *
      * @return void
      */
-    public function accessField()
+    public function renderAccessField(): void
     {
         echo '<fieldset>';
         echo '<label>';
-        echo '<input name="readonly" type="checkbox" value="manage_site_options" disabled checked="checked">';
+        echo '<input name="readonly" type="checkbox" value="manage_network_options" disabled checked="checked">';
         echo __('Superadmins', 'rrze-notices');
         echo '</label><br>';
         echo '<label>';
-        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ', checked($this->siteOptions->access, 'manage_options', false), '>';
+        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ', checked($this->networkOptions->access, 'manage_options', false), '>';
         echo __('Administrators', 'rrze-notices');
         echo '</label>';
         echo '</fieldset>';
@@ -151,7 +166,7 @@ class Settings
      *
      * @return void
      */
-    public function networkPageSettings()
+    public function renderNetworkSettingsPage(): void
     {
         echo '<div class="wrap">';
         echo '<h2>', esc_html(__('Notices Network Settings', 'rrze-notices')), '</h2>';

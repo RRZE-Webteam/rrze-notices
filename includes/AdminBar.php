@@ -9,30 +9,22 @@ defined('ABSPATH') || exit;
  */
 class AdminBar
 {
-    /** @var string Network option key used by the plugin. */
-    protected $siteOptionsName;
-
-    /** @var object Parsed network-wide plugin options. */
-    protected $siteOptions;
-
-    /** @var string Prefix used for per-user dismissal metadata. */
-    protected $userMeta = 'rrze_notices_dismissed';
-
     /**
      * Notices available to the current user.
      *
-     * @var array<int, object{id:int|string, title:string, type:string}>
+     * @var array<int, object{id:string, title:string, type:string}>
      */
-    protected $notices;
+    protected array $notices = [];
+
+    /** @var NoticeQuery Active-notice query service. */
+    private NoticeQuery $noticeQuery;
 
     /**
-     * Load network options and initialize the notice collection.
+     * Initialize the active-notice query.
      */
     public function __construct()
     {
-        $this->siteOptionsName = Options::getSiteOptionName();
-        $this->siteOptions = Options::getSiteOptions();
-        $this->notices = [];
+        $this->noticeQuery = new NoticeQuery(Options::getNetworkOptions());
     }
 
     /**
@@ -40,175 +32,30 @@ class AdminBar
      *
      * @return void
      */
-    public function loaded()
+    public function registerHooks(): void
     {
-        add_action('admin_init', [$this, 'redirectRequest']);
-        add_action('admin_head', [$this, 'adminHead']);
+        add_action('admin_init', [$this, 'redirectNoticeRequest']);
+        add_action('admin_head', [$this, 'collectNotices']);
     }
 
     /**
-     * Collect visible notices before WordPress renders the admin bar.
+     * Collect active, visible, non-dismissed notices.
      *
      * @return void
      */
-    public function adminHead()
+    public function collectNotices(): void
     {
-        $this->setNetworkWideNotices();
-        $this->setNotices();
-    }
-
-    /**
-     * Add active notices originating on other sites in the network.
-     *
-     * @return void
-     */
-    protected function setNetworkWideNotices()
-    {
-        if (!Utils::isPluginActiveForNetwork()) {
-            return;
-        }
-
-        $notices = $this->siteOptions->network_wide;
-        if (empty($notices)) {
-            return;
-        }
-
-        foreach ($notices as $noticeId => $notice) {
-            $idArray = explode('-', $noticeId);
-            $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
-            $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
-            if (!$blogId || !$postId) {
-                continue;
-            }
-
-            // Avoid duplicate notices by not displaying 
-            // a network-wide notice on the current blog.
-            if (get_current_blog_id() == $blogId) {
-                continue;
-            }
-
+        foreach ($this->noticeQuery->findActiveForCurrentUser() as $match) {
+            $noticeId = (string) $match['id'];
             if ($this->isDismissed($noticeId)) {
                 continue;
             }
 
-            $notice = (object) $notice;
-            $event = (object) $notice->event;
-
-            if (!Event::isNoticeActive($notice)) {
-                continue;
-            }
-
-            $currentUser = wp_get_current_user();
-
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $notice->visibility;
-            if (!empty($roleVisibility)) {
-                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            } else {
-                $roleVisibility = [];
-            }
-            $visibility = [];
-            foreach ($roleVisibility as $k) {
-                if (isset($availableRoles[$k])) {
-                    $visibility[] = $k;
-                }
-            }
-            if (!empty($visibility)) {
-                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
-            } else {
-                $visibility = [];
-            }
-            if (
-                !is_super_admin() &&
-                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
-                !in_array('all', $visibility)
-            ) {
-                continue;
-            }
-
-            $title = $notice->title;
-            $type = $notice->type;
-
-            $this->addNotices($noticeId, $title, $type);
+            $notice = $match['notice'];
+            $this->addNotice($noticeId, (string) $notice->title, (string) $notice->type);
         }
 
-        if (!empty($this->notices)) {
-            add_action('admin_bar_menu', [$this, 'addItems'], 99);
-        }
-    }
-
-    /**
-     * Add active notices originating on the current site.
-     *
-     * @return void
-     */
-    protected function setNotices()
-    {
-        $posts = get_posts([
-            'fields' => 'ids',
-            'post_type' => CPTNotice::POST_TYPE,
-            'post_status' => 'publish',
-            'numberposts' => -1
-        ]);
-
-        if (!$posts) {
-            return;
-        }
-
-        foreach ($posts as $postId) {
-            $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || empty($notice['event'])) {
-                continue;
-            }
-
-            $notice = (object) $notice;
-            $event = (object) $notice->event;
-
-            if (!Event::isNoticeActive($notice)) {
-                continue;
-            }
-
-            $blogId = get_current_blog_id();
-            $noticeId = sprintf('%d-%d', $blogId, $postId);
-
-            if ($this->isDismissed($noticeId)) {
-                continue;
-            }
-
-            $currentUser = wp_get_current_user();
-
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $notice->visibility;
-            if (!empty($roleVisibility)) {
-                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            } else {
-                $roleVisibility = [];
-            }
-            $visibility = [];
-            foreach ($roleVisibility as $k) {
-                if (isset($availableRoles[$k])) {
-                    $visibility[] = $k;
-                }
-            }
-            if (!empty($visibility)) {
-                $visibility = !is_array($visibility) ? [$visibility] : $visibility;
-            } else {
-                $visibility = [];
-            }
-            if (
-                !is_super_admin() &&
-                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
-                !in_array('all', $visibility)
-            ) {
-                continue;
-            }
-
-            $title = $notice->title;
-            $type = $notice->type;
-
-            $this->addNotices($postId, $title, $type);
-        }
-        if (!empty($this->notices)) {
+        if ($this->notices !== []) {
             add_action('admin_bar_menu', [$this, 'addItems'], 99);
         }
     }
@@ -216,17 +63,17 @@ class AdminBar
     /**
      * Append one notice to the admin-bar collection.
      *
-     * @param int|string $id    Site-qualified notice ID or local post ID.
-     * @param string     $title Notice title.
-     * @param string     $type  Notice severity/type slug.
+     * @param string $noticeId Canonical site-qualified notice ID.
+     * @param string $title    Notice title.
+     * @param string $type     Notice severity/type slug.
      * @return void
      */
-    protected function addNotices($id, $title, $type)
+    protected function addNotice(string $noticeId, string $title, string $type): void
     {
-        $this->notices[] = (object)[
-            'id' => $id,
+        $this->notices[] = (object) [
+            'id' => $noticeId,
             'title' => $title,
-            'type' => $type
+            'type' => $type,
         ];
     }
 
@@ -236,7 +83,7 @@ class AdminBar
      * @param \WP_Admin_Bar $wpAdminBar Admin-bar instance supplied by WordPress.
      * @return void
      */
-    public function addItems(&$wpAdminBar)
+    public function addItems($wpAdminBar): void
     {
         $title = sprintf(
             '<span class="ab-icon dashicons"></span><span class="ab-label">%s</span> <span class="notices-count">%s</span>',
@@ -244,33 +91,25 @@ class AdminBar
             count($this->notices)
         );
 
-        $wpAdminBar->add_menu(
-            [
-                'id'     => 'rrze-notices',
-                'parent' => 'top-secondary',
-                'title'  => $title,
-                'href'   => false
-            ]
-        );
+        $wpAdminBar->add_menu([
+            'id' => 'rrze-notices',
+            'parent' => 'top-secondary',
+            'title' => $title,
+            'href' => false,
+        ]);
 
-        $i = 0;
-        foreach ($this->notices as $notice) {
-            $href = wp_nonce_url(add_query_arg('rrze-notices-id', $notice->id), 'rrze_notices_redirect_nonce');
-            $metaClass = 'notices-' . $notice->type;
-
-            $wpAdminBar->add_menu(
-                [
-                    'id'     => 'rrze-notices-item-' . $i,
-                    'parent' => 'rrze-notices',
-                    'title'  => esc_html($notice->title),
-                    'href'   => $href,
-                    'meta'   => [
-                        'class' => $metaClass
-                    ]
-                ]
+        foreach ($this->notices as $index => $notice) {
+            $href = wp_nonce_url(
+                add_query_arg('rrze-notices-id', $notice->id),
+                'rrze_notices_redirect_nonce'
             );
-
-            $i++;
+            $wpAdminBar->add_menu([
+                'id' => 'rrze-notices-item-' . $index,
+                'parent' => 'rrze-notices',
+                'title' => esc_html($notice->title),
+                'href' => $href,
+                'meta' => ['class' => 'notices-' . $notice->type],
+            ]);
         }
     }
 
@@ -279,30 +118,34 @@ class AdminBar
      *
      * @return void
      */
-    public function redirectRequest()
+    public function redirectNoticeRequest(): void
     {
         if (empty($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'rrze_notices_redirect_nonce')) {
             return;
         }
-        if (empty($_GET['rrze-notices-id'])) {
+
+        $noticeId = NoticeId::fromString($_GET['rrze-notices-id'] ?? null);
+        if (!$noticeId) {
             return;
         }
 
-        $noticeId = absint($_GET['rrze-notices-id']);
-        $href = add_query_arg('rrze-notices-id', $noticeId, get_dashboard_url());
-
+        $href = add_query_arg('rrze-notices-id', (string) $noticeId, get_dashboard_url());
         wp_safe_redirect($href);
-        exit();
+        exit;
     }
 
     /**
      * Determine whether the current user dismissed a notice.
      *
-     * @param int|string $noticeId Site-qualified notice identifier.
+     * @param string $noticeId Canonical site-qualified notice identifier.
      * @return bool
      */
-    protected function isDismissed($noticeId)
+    protected function isDismissed(string $noticeId): bool
     {
-        return (get_user_meta(get_current_user_id(), "{$this->userMeta}_{$noticeId}", true));
+        return (bool) get_user_meta(
+            get_current_user_id(),
+            Dismiss::PREFIX . '_' . $noticeId,
+            true
+        );
     }
 }

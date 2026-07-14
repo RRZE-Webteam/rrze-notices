@@ -16,19 +16,15 @@ class Dismiss
      */
     public const PREFIX = 'rrze_notices_dismissed';
 
+    /** @var bool Whether the shared AJAX callback has been registered. */
+    private static bool $hooksRegistered = false;
+
     /**
      * The notice-ID.
      *
      * @var string
      */
     private $id;
-
-    /**
-     * The prefix to be using for the option/user-meta.
-     *
-     * @var string
-     */
-    private $prefix;
 
     /**
      * Should the script be printed.
@@ -38,7 +34,7 @@ class Dismiss
     private $isDismissible;
 
     /**
-     * Initialize dismissal state and register the AJAX callback.
+     * Initialize dismissal state.
      * 
      * @param string $id            Site-qualified notice identifier.
      * @param bool   $isDismissible Whether the notice can be dismissed.
@@ -46,10 +42,23 @@ class Dismiss
     public function __construct(string $id, bool $isDismissible = true)
     {
         $this->id = sanitize_key($id);
-        $this->prefix = self::PREFIX;
         $this->isDismissible = $isDismissible;
 
-        add_action('wp_ajax_rrze_notices_dismiss', [$this, 'ajaxDismissNotice']);
+    }
+
+    /**
+     * Register the shared AJAX dismissal callback once per request.
+     *
+     * @return void
+     */
+    public static function registerHooks(): void
+    {
+        if (self::$hooksRegistered) {
+            return;
+        }
+
+        add_action('wp_ajax_rrze_notices_dismiss', [self::class, 'handleAjaxDismissal']);
+        self::$hooksRegistered = true;
     }
 
     /**
@@ -57,26 +66,29 @@ class Dismiss
      *
      * @return void
      */
-    public function printScript()
+    public function renderDismissalScript(): void
     {
         if (!$this->isDismissible) return;
 
         $nonce = wp_create_nonce('rrze_notices_dismiss_' . $this->id); ?>
         <script>
             window.addEventListener('load', function() {
-                var dismissBtn = document.querySelector('div#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
-                dismissBtn.addEventListener('click', function(event) {
+                var dismissalButton = document.querySelector('div#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
+                if (!dismissalButton) {
+                    return;
+                }
+                dismissalButton.addEventListener('click', function(event) {
                     if (event.target.tagName.toLowerCase() === 'a') {
                         return;
                     }
-                    var httpRequest = new XMLHttpRequest(),
-                        postData = '';
-                    postData += 'id=<?php echo esc_attr(rawurlencode($this->id)); ?>';
-                    postData += '&action=rrze_notices_dismiss';
-                    postData += '&nonce=<?php echo esc_html($nonce); ?>';
-                    httpRequest.open('POST', '<?php echo esc_url(admin_url('admin-ajax.php')); ?>');
-                    httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    httpRequest.send(postData);
+                    var request = new XMLHttpRequest(),
+                        requestBody = '';
+                    requestBody += 'id=<?php echo esc_attr(rawurlencode($this->id)); ?>';
+                    requestBody += '&action=rrze_notices_dismiss';
+                    requestBody += '&nonce=<?php echo esc_html($nonce); ?>';
+                    request.open('POST', '<?php echo esc_url(admin_url('admin-ajax.php')); ?>');
+                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    request.send(requestBody);
                 });
             });
         </script>
@@ -92,7 +104,7 @@ class Dismiss
     {
         if (!$this->isDismissible) return false;
 
-        return (get_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true));
+        return (bool) get_user_meta(get_current_user_id(), self::PREFIX . "_{$this->id}", true);
     }
 
     /**
@@ -100,29 +112,16 @@ class Dismiss
      *
      * @return void
      */
-    public function ajaxDismissNotice()
+    public static function handleAjaxDismissal(): void
     {
-        if (!isset($_POST['action']) || 'rrze_notices_dismiss' !== $_POST['action']) {
+        $action = isset($_POST['action']) ? sanitize_key(wp_unslash($_POST['action'])) : '';
+        $noticeId = isset($_POST['id']) ? sanitize_key(wp_unslash($_POST['id'])) : '';
+        if ($action !== 'rrze_notices_dismiss' || !NoticeId::fromString($noticeId)) {
             return;
         }
 
-        if (!isset($_POST['id']) || $this->id !== $_POST['id']) {
-            return;
-        }
-
-        check_ajax_referer('rrze_notices_dismiss_' . $this->id, 'nonce', true);
-
-        $this->dismissNotice();
-    }
-
-    /**
-     * Dismisses the notice.
-     *
-     * @return void
-     */
-    private function dismissNotice()
-    {
-        update_user_meta(get_current_user_id(), "{$this->prefix}_{$this->id}", true);
+        check_ajax_referer('rrze_notices_dismiss_' . $noticeId, 'nonce', true);
+        update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId, true);
     }
 
     /**
@@ -132,10 +131,10 @@ class Dismiss
      *
      * @return void
      */
-    public function deleteDismissedNotice()
+    public function clearForAllUsers(): void
     {
         global $wpdb;
-        $metaKey = "{$this->prefix}_{$this->id}";
+        $metaKey = self::PREFIX . "_{$this->id}";
         $sql = $wpdb->prepare(
             "DELETE FROM $wpdb->usermeta WHERE meta_key = %s",
             $metaKey

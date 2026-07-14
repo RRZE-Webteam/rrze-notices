@@ -137,13 +137,13 @@ function plugin()
 function loaded()
 {
     loadTextdomain();
-    plugin()->loaded();
+    plugin()->initialize();
     if ($error = systemRequirements()) {
         add_action('admin_init', function () use ($error) {
             if (current_user_can('activate_plugins')) {
                 $pluginData = get_plugin_data(plugin()->getFile());
                 $pluginName = $pluginData['Name'];
-                $tag = is_plugin_active_for_network(plugin()->getBaseName()) ? 'network_admin_notices' : 'admin_notices';
+                $tag = is_plugin_active_for_network(plugin()->getBasename()) ? 'network_admin_notices' : 'admin_notices';
                 add_action($tag, function () use ($pluginName, $error) {
                     printf(
                         '<div class="notice notice-error"><p>' .
@@ -158,5 +158,5 @@ function loaded()
         });
         return;
     }
-    Main::instance();
+    Main::bootstrap();
 }

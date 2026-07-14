@@ -5,357 +5,150 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 /**
- * Class Display
- *
- * A class for managing the display of notices.
+ * Registers active notices for display in the WordPress dashboard.
  */
 class Display
 {
-    /**
-     * @var object
-     */
-    protected $siteOptions;
+    private Notices $notices;
+
+    private NoticeQuery $noticeQuery;
 
     /**
-     * @var string
-     */
-    protected $siteOptionsName;
-
-    /**
-     * @var string
-     */
-    protected $userMeta = 'rrze_notices_dismissed';
-
-    /**
-     * @var object
-     */
-    protected $notices;
-
-    /**
-     * Constructor
+     * Initialize the notice collection and query service.
      */
     public function __construct()
     {
-        $this->siteOptionsName = Options::getSiteOptionName();
-        $this->siteOptions = Options::getSiteOptions();
-        $this->notices = new Notices;
+        $this->notices = new Notices();
+        $this->noticeQuery = new NoticeQuery(Options::getNetworkOptions());
     }
 
     /**
-     * Setting up action hooks
+     * Register dashboard-notice and preview hooks.
      *
      * @return void
      */
-    public function loaded()
+    public function registerHooks(): void
     {
-        add_action('admin_init', function () {
-            $this->setNetworkWideNotices();
-            $this->setNotices();
-            $this->notices->boot();
-        });
-
-        add_action('admin_head', function () {
-            $this->previewNotice();
-            $this->notices->boot();
-        }, 99);
+        add_action('admin_init', [$this, 'registerDashboardNotices']);
+        add_action('admin_head', [$this, 'registerPreviewNotice'], 99);
     }
 
     /**
-     * Set network-wide notices
+     * Add active notices that target the current user.
      *
      * @return void
      */
-    protected function setNetworkWideNotices()
+    public function registerDashboardNotices(): void
     {
-        if (!Utils::isPluginActiveForNetwork()) {
+        foreach ($this->noticeQuery->findActiveForCurrentUser() as $match) {
+            $this->addDashboardNotice($match['id'], $match['notice']);
+        }
+
+        $this->notices->registerHooks();
+    }
+
+    /**
+     * Add one cached notice to the dashboard collection.
+     *
+     * @param NoticeId $noticeId Canonical network notice identifier.
+     * @param object   $notice   Cached notice data.
+     * @return void
+     */
+    private function addDashboardNotice(NoticeId $noticeId, object $notice): void
+    {
+        if (empty($notice->content)) {
             return;
         }
 
-        $notices = $this->siteOptions->network_wide;
-        if (empty($notices)) {
-            return;
-        }
+        $subscriptionLink = sprintf(
+            '<a href="%1$s">%2$s</a>',
+            esc_url($notice->subscription_link),
+            esc_html__('Add to calendar', 'rrze-notices')
+        );
 
-        foreach ($notices as $noticeId => $notice) {
-            $idArray = explode('-', $noticeId);
-            $blogId = isset($idArray[0]) ? absint($idArray[0]) : 0;
-            $postId = isset($idArray[1]) ? absint($idArray[1]) : 0;
-
-            if (!$blogId || !$postId) {
-                continue;
-            }
-
-            if (get_current_blog_id() == $blogId) {
-                continue;
-            }
-
-            if (!get_blog_status($blogId, 'public')) {
-                continue;
-            }
-
-            if (!isset($this->siteOptions->network_wide[$noticeId])) {
-                continue;
-            }
-
-            if (empty($notice['event'])) {
-                continue;
-            }
-
-            $notice = (object) $notice;
-            $event = (object) $notice->event;
-
-            if (!Event::isNoticeActive($notice)) {
-                continue;
-            }
-
-            $currentUser = wp_get_current_user();
-
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $notice->visibility;
-            if (!empty($roleVisibility)) {
-                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            } else {
-                $roleVisibility = [];
-            }
-            $visibility = [];
-            foreach ($roleVisibility as $k) {
-                if (isset($availableRoles[$k])) {
-                    $visibility[] = $k;
-                }
-            }         
-            if (
-                !is_super_admin() &&
-                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
-                !in_array('all', $visibility)
-            ) {
-                continue;
-            }
-
-            if (!$content = $notice->content) {
-                continue;
-            }
-
-            $title = $notice->title;
-
-            $type = $notice->type;
-
-            $hideTitle = $notice->hide_title;
-
-            $subscriptionLink = sprintf(
-                '<a href="%1$s">%2$s</a>',
-                $notice->subscription_link,
-                __('Add to calendar', 'rrze-notices')
-            );
-
-            $editLink = '';
-            $editText = __('Edit', 'rrze-notices');
-
-            if (
-                is_super_admin()
+        $editLink = '';
+        if (current_user_can('manage_options')) {
+            $editText = is_super_admin()
                 && Utils::isPluginActiveForNetwork()
-                && isset($this->siteOptions->network_wide[$noticeId])
-            ) {
-                $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
-            }
-
-            if (current_user_can('manage_options')) {
-                $editLink = sprintf(
-                    '<a href="%1$s">%2$s</a>',
-                    $notice->admin_link,
-                    $editText
-                );
-            }
-
-            $this->notices->add(
-                $noticeId,
-                $title,
-                $content,
-                [
-                    'screens'           => ['dashboard'],
-                    'type'              => $type,
-                    'hide_title'        => $hideTitle,
-                    'subscription_link' => $subscriptionLink,
-                    'edit_link'         => $editLink,
-                    'event'             => $event
-                ]
-            );
-        }
-    }
-
-    /**
-     * Set notices
-     *
-     * @return void
-     */
-    protected function setNotices()
-    {
-        $posts = get_posts([
-            'fields' => 'ids',
-            'post_type' => CPTNotice::POST_TYPE,
-            'post_status' => 'publish',
-            'numberposts' => -1
-        ]);
-
-        if (!$posts) {
-            return;
-        }
-
-        foreach ($posts as $postId) {
-            $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || empty($notice['event'])) {
-                continue;
-            }
-
-            $notice = (object) $notice;
-            $event = (object) $notice->event;
-
-            if (!Event::isNoticeActive($notice)) {
-                continue;
-            }
-
-            $currentUser = wp_get_current_user();
-
-            $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
-            $roleVisibility = $notice->visibility;
-            if (!empty($roleVisibility)) {
-                $roleVisibility = !is_array($roleVisibility) ? [$roleVisibility] : $roleVisibility;
-            } else {
-                $roleVisibility = [];
-            }
-            $visibility = [];
-            foreach ($roleVisibility as $k) {
-                if (isset($availableRoles[$k])) {
-                    $visibility[] = $k;
-                }
-            }
-            if (
-                !is_super_admin() &&
-                !Utils::arrayValInArray($currentUser->roles, $visibility) &&
-                !in_array('all', $visibility)
-            ) {
-                continue;
-            }
-
-            if (!$content = $notice->content) {
-                continue;
-            }
-
-            $blogId = get_current_blog_id();
-            $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
-
-            $title = $notice->title;
-
-            $type = $notice->type;
-
-            $hideTitle = $notice->hide_title;
-
-            $subscriptionLink = sprintf(
+                && !empty($notice->network_wide)
+                    ? __('Edit (Network-Wide)', 'rrze-notices')
+                    : __('Edit', 'rrze-notices');
+            $editLink = sprintf(
                 '<a href="%1$s">%2$s</a>',
-                $notice->subscription_link,
-                __('Add to calendar', 'rrze-notices')
-            );
-
-            $editLink = '';
-            $editText = __('Edit', 'rrze-notices');
-
-            if (
-                is_super_admin()
-                && Utils::isPluginActiveForNetwork()
-                && isset($this->siteOptions->network_wide[$noticeId])
-            ) {
-                $editText = isset($this->siteOptions->network_wide[$noticeId]) ? __('Edit (Network-Wide)', 'rrze-notices') : '';
-            }
-
-            if (current_user_can('manage_options')) {
-                $editLink = sprintf(
-                    '<a href="%1$s">%2$s</a>',
-                    $notice->admin_link,
-                    $editText
-                );
-            }
-
-            $this->notices->add(
-                $noticeId,
-                $title,
-                $content,
-                [
-                    'screens'           => ['dashboard'],
-                    'type'              => $type,
-                    'hide_title'        => $hideTitle,
-                    'subscription_link' => $subscriptionLink,
-                    'edit_link'         => $editLink,
-                    'event'             => $event
-                ]
+                esc_url($notice->admin_link),
+                esc_html($editText)
             );
         }
+
+        $this->notices->add(
+            (string) $noticeId,
+            (string) $notice->title,
+            (string) $notice->content,
+            [
+                'screens' => ['dashboard'],
+                'type' => (string) $notice->type,
+                'hide_title' => (bool) $notice->hide_title,
+                'subscription_link' => $subscriptionLink,
+                'edit_link' => $editLink,
+                'event' => (object) $notice->event,
+            ]
+        );
     }
 
     /**
-     * Set the preview notice
+     * Register the notice preview shown on the notice editing screen.
      *
      * @return void
      */
-    protected function previewNotice()
+    public function registerPreviewNotice(): void
     {
         $screen = get_current_screen();
-        if ($screen->id != CPTNotice::POST_TYPE) {
+        if (!$screen || $screen->id !== CPTNotice::POST_TYPE) {
             return;
         }
 
         global $pagenow;
-        if ($pagenow == 'post-new.php') {
+        if ($pagenow === 'post-new.php') {
             return;
         }
 
         global $post;
-        $postId = $post->ID;
-
-        $notice = get_post_meta($postId, 'notice_data', true);
-        if (empty($notice) || empty($notice['event'])) {
+        if (!$post instanceof \WP_Post) {
             return;
         }
 
-        $notice = (object) $notice;
-        $event = (object) $notice->event;
-
-        if (!$content = $notice->content) {
+        $noticeData = get_post_meta($post->ID, 'notice_data', true);
+        if (!is_array($noticeData) || empty($noticeData['event']) || empty($noticeData['content'])) {
             return;
         }
 
-        $blogId = get_current_blog_id();
-        $noticeId = sprintf('%1$d-%2$d', $blogId, $postId);
-
-        $title = $notice->title;
-
-        $type = $notice->type;
-
-        $hideTitle = $notice->hide_title;
-
+        $notice = (object) $noticeData;
         $subscriptionLink = sprintf(
             '<a href="%1$s">%2$s</a>',
-            Export::makeIcsLink($postId),
-            __('Add to calendar', 'rrze-notices')
+            esc_url(Export::makeIcsLink((int) $post->ID)),
+            esc_html__('Add to calendar', 'rrze-notices')
         );
-
         $editLink = sprintf(
             '<span class="notice-preview">%s</span>',
-            __('Preview', 'rrze-notices')
+            esc_html__('Preview', 'rrze-notices')
         );
 
         $this->notices->add(
-            $noticeId,
-            $title,
-            $content,
+            (string) NoticeId::forPost((int) $post->ID),
+            (string) $notice->title,
+            (string) $notice->content,
             [
                 'screens' => [CPTNotice::POST_TYPE],
-                'type' => $type,
-                'hide_title' => $hideTitle,
+                'type' => (string) $notice->type,
+                'hide_title' => (bool) $notice->hide_title,
                 'subscription_link' => $subscriptionLink,
                 'edit_link' => $editLink,
-                'event' => $event,
+                'event' => (object) $notice->event,
                 'preview' => true,
-                'is_dismissible' => false
+                'is_dismissible' => false,
             ]
         );
+
+        $this->notices->registerHooks();
     }
 }

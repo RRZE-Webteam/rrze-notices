@@ -85,9 +85,9 @@ class CPTNotice
      */
     private static function capabilityType(): array
     {
-        $siteOptions = Options::getSiteOptions();
-        $capability = Utils::isPluginActiveForNetwork() ? $siteOptions->access : 'manage_options';
-        $capabilityType =  $capability == 'manage_options' ? 'page' : self::POST_TYPE;
+        $networkOptions = Options::getNetworkOptions();
+        $capability = Utils::isPluginActiveForNetwork() ? $networkOptions->access : 'manage_options';
+        $capabilityType = $capability === 'manage_options' ? 'page' : self::POST_TYPE;
         return [$capabilityType, $capabilityType . 's'];
     }
 

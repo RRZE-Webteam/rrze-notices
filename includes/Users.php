@@ -22,22 +22,18 @@ class Users
      * Get roles that may be targeted by a notice.
      *
      * @param bool $translated Return translated role labels when true.
-     * @param bool $buildIn    Restrict results to WordPress built-in roles.
+     * @param bool $builtInOnly Restrict results to WordPress built-in roles.
      * @return array<string, string> Role slug to display-label map.
      */
-    public static function getRoles($translated = true, $buildIn = true)
+    public static function getRoles(bool $translated = true, bool $builtInOnly = true): array
     {
         $wpRoles = new WP_Roles();
         $roles = $wpRoles->get_names();
         if (true === $translated) {
             $roles = array_map('translate_user_role', $roles);
         }
-        if (true === $buildIn) {
-            foreach (array_flip($roles) as $k) {
-                if (!in_array($k, static::BUILT_IN_ROLES)) {
-                    unset($roles[$k]);
-                }
-            }
+        if ($builtInOnly) {
+            $roles = array_intersect_key($roles, array_flip(static::BUILT_IN_ROLES));
         }
         return $roles;
     }

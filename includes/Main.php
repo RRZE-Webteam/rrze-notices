@@ -10,77 +10,57 @@ defined('ABSPATH') || exit;
 class Main
 {
     /**
-     * @var Main|null Singleton instance.
+     * Prevent direct construction; use bootstrap().
      */
-    private static $instance;
-
-    /**
-     * @var object Parsed network-wide plugin options.
-     */
-    private $siteOptions;
-
-    /**
-     * Return the singleton plugin bootstrap instance.
-     *
-     * @return Main
-     */
-    public static function instance()
+    private function __construct()
     {
-        if (self::$instance === null) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
     }
 
     /**
-     * Initialize all enabled plugin components and hooks.
+     * Initialize enabled plugin components and register their hooks.
+     *
+     * @return self Bootstrapped plugin coordinator.
      */
-    public function __construct()
+    public static function bootstrap(): self
     {
-        $this->siteOptions = Options::getSiteOptions();
+        $instance = new self();
+        $instance->registerComponents();
+
+        return $instance;
+    }
+
+    /**
+     * Register all enabled plugin components.
+     *
+     * @return void
+     */
+    private function registerComponents(): void
+    {
+        $networkOptions = Options::getNetworkOptions();
 
         if (Utils::isPluginActiveForNetwork()) {
             $settings = new Settings;
-            $settings->loaded();
-            if (!$this->siteOptions->enabled) {
+            $settings->registerHooks();
+            if (!$networkOptions->enabled) {
                 return;
             }
         }
 
-        CPT::loaded();
+        CPT::registerHooks();
 
         $adminBar = new AdminBar;
-        $adminBar->loaded();
+        $adminBar->registerHooks();
 
         $display = new Display;
-        $display->loaded();
+        $display->registerHooks();
 
-        new Export();
+        $export = new Export();
+        $export->registerHooks();
 
-        Cron::init();
+        Cron::registerHooks();
+        Dismiss::registerHooks();
 
-        add_action('admin_enqueue_scripts', [$this, 'adminEnqueueScripts']);
-    }
-
-    /**
-     * Prevent cloning
-     *
-     * @return void
-     */
-    public function __clone()
-    {
-        trigger_error('Cloning is not allowed.', E_USER_ERROR);
-    }
-
-    /**
-     * Prevent unserializing
-     *
-     * @return void
-     */
-    public function __wakeup()
-    {
-        trigger_error('Unserialize is forbidden.', E_USER_ERROR);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
     }
 
     /**
@@ -89,7 +69,7 @@ class Main
      * @param string $hook Current admin page hook suffix.
      * @return void
      */
-    public function adminEnqueueScripts($hook)
+    public function enqueueAdminAssets(string $hook): void
     {
         global $post;
 
@@ -101,7 +81,7 @@ class Main
             $assetFile['version'] ?? plugin()->getVersion()
         );
 
-        if ('post.php' == $hook && $post && 'notice' == $post->post_type) {
+        if ($hook === 'post.php' && $post && $post->post_type === CPTNotice::POST_TYPE) {
             $assetFile = include(plugin()->getPath('build') . 'cmb2.asset.php');
             wp_enqueue_script(
                 'rrze-notices-cmb2',

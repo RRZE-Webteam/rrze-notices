@@ -17,17 +17,17 @@ class Cron
     public const UPDATE_STATUS = 'rrze_notices_update_status';
 
     /**
-     * Setting up action hooks
+     * Register scheduled notice-lifecycle hooks.
      * 
      * @return void
      */
-    public static function init()
+    public static function registerHooks(): void
     {
-        // Add an action hook to run the 'updateStatus' method when scheduled.
-        add_action(self::UPDATE_STATUS, [__CLASS__, 'updateStatus']);
+        // Refresh notice state whenever the scheduled hook runs.
+        add_action(self::UPDATE_STATUS, [__CLASS__, 'refreshNoticeLifecycle']);
 
         // Add an action hook to activate scheduled events during WP initialization.
-        add_action('init', [__CLASS__, 'activateScheduledEvents']);
+        add_action('init', [__CLASS__, 'ensureStatusUpdateScheduled']);
     }
 
     /**
@@ -35,7 +35,7 @@ class Cron
      * 
      * @return void
      */
-    public static function activateScheduledEvents()
+    public static function ensureStatusUpdateScheduled(): void
     {
         // Check if the scheduled event is not already in the queue.
         if (!wp_next_scheduled(self::UPDATE_STATUS)) {
@@ -49,9 +49,9 @@ class Cron
      * 
      * @return void
      */
-    public static function updateStatus()
+    public static function refreshNoticeLifecycle(): void
     {
-        Post::updateStatus();
+        Post::refreshNoticeLifecycle();
     }
 
     /**
