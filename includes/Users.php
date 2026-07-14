@@ -6,19 +6,24 @@ defined('ABSPATH') || exit;
 
 use WP_Roles;
 
+/**
+ * Provides user-role choices used by notice visibility controls.
+ */
 class Users
 {
     /**
-     * Built-in roles
+     * WordPress roles supported by the visibility UI.
+     *
+     * @var string[]
      */
     public const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
 
     /**
-     * Get translated user roles names
+     * Get roles that may be targeted by a notice.
      *
-     * @param boolean $translated
-     * @param boolean $buildIn
-     * @return array
+     * @param bool $translated Return translated role labels when true.
+     * @param bool $buildIn    Restrict results to WordPress built-in roles.
+     * @return array<string, string> Role slug to display-label map.
      */
     public static function getRoles($translated = true, $buildIn = true)
     {

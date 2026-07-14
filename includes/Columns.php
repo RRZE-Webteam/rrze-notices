@@ -4,12 +4,20 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Configures and renders columns on the notice post list screen.
+ */
 class Columns
 {
+    /** @var string Notice custom post type slug. */
     protected $customPostType;
 
+    /** @var object Parsed network-wide plugin options. */
     protected $siteOptions;
 
+    /**
+     * Initialize column dependencies.
+     */
     public function __construct()
     {
         $this->customPostType = CPTNotice::POST_TYPE;
@@ -17,7 +25,9 @@ class Columns
     }
 
     /**
-     * Setting up hooks
+     * Register notice-list column hooks.
+     *
+     * @return void
      */
     public function loaded()
     {
@@ -27,6 +37,12 @@ class Columns
         add_action('load-edit.php', [$this, 'loadEdit']);
     }
 
+    /**
+     * Replace the default notice-list columns.
+     *
+     * @param array<string, string> $columns Existing column labels.
+     * @return array<string, string> Notice column labels.
+     */
     public function manageColumns($columns)
     {
         $columns = [
@@ -45,6 +61,13 @@ class Columns
         return $columns;
     }
 
+    /**
+     * Render the value for a custom notice-list column.
+     *
+     * @param string $column Column identifier.
+     * @param int    $postId Notice post ID.
+     * @return void
+     */
     public function managePostsCustomColumn($column, $postId)
     {
         $notice = get_post_meta($postId, 'notice_data', true);
@@ -108,17 +131,34 @@ class Columns
         }
     }
 
+    /**
+     * Register sortable notice-list columns.
+     *
+     * @param array<string, string> $columns Existing sortable columns.
+     * @return array<string, string> Updated sortable columns.
+     */
     public function manageSortableColumns($columns)
     {
         $columns['notice_type'] = 'notice_type';
         return $columns;
     }
 
+    /**
+     * Register query customization on the notice list screen.
+     *
+     * @return void
+     */
     public function loadEdit()
     {
         add_action('pre_get_posts', [$this, 'columnOrderby']);
     }
 
+    /**
+     * Apply metadata ordering requested by a sortable notice column.
+     *
+     * @param \WP_Query $query Current admin list query.
+     * @return void
+     */
     public function columnOrderby($query)
     {
         if ($this->customPostType != $query->get('post_type')) {

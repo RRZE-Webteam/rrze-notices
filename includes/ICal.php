@@ -4,8 +4,15 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Serializes normalized notice events as RFC 5545 iCalendar content.
+ *
+ * Timed values are emitted in UTC. All-day values use VALUE=DATE, which avoids
+ * custom VTIMEZONE definitions and remains portable across calendar clients.
+ */
 class ICal
 {
+    /** @var string RFC 5545 content-line separator. */
     private const CRLF = "\r\n";
 
     /**
@@ -19,7 +26,9 @@ class ICal
     private array $data = [];
 
     /**
-     * @param array<int, array<string, mixed>> $data
+     * Initialize the calendar with normalized event properties.
+     *
+     * @param array<int, array<string, mixed>> $data Calendar event records.
      */
     public function __construct(array $data)
     {
@@ -27,7 +36,12 @@ class ICal
     }
 
     /**
-     * @param array<int, array<string, mixed>> $data
+     * Replace the calendar event collection, discarding invalid records.
+     *
+     * A valid record requires both a stable UID and a start value.
+     *
+     * @param array<int, array<string, mixed>> $data Calendar event records.
+     * @return void
      */
     public function setData(array $data): void
     {
@@ -58,6 +72,11 @@ class ICal
         }
     }
 
+    /**
+     * Build a complete UTF-8 iCalendar document.
+     *
+     * @return string CRLF-terminated iCalendar content.
+     */
     public function build(): string
     {
         $rows = array_map([$this, 'split'], $this->render());
@@ -66,7 +85,9 @@ class ICal
     }
 
     /**
-     * @return string[]
+     * Render logical, unfolded iCalendar content lines.
+     *
+     * @return string[] Calendar content lines.
      */
     private function render(): array
     {
@@ -114,6 +135,15 @@ class ICal
         return $rows;
     }
 
+    /**
+     * Serialize a DTSTART or DTEND property.
+     *
+     * @param string        $name     Property name.
+     * @param string        $value    Local wall time or all-day date.
+     * @param bool          $allDay   Whether to emit a VALUE=DATE property.
+     * @param \DateTimeZone $timezone Timezone used to interpret wall time.
+     * @return string Serialized content line.
+     */
     private function dateProperty(
         string $name,
         string $value,
@@ -131,6 +161,12 @@ class ICal
         return sprintf('%s:%s', $name, $date->format('Ymd\THis\Z'));
     }
 
+    /**
+     * Resolve a supplied timezone with a WordPress-site fallback.
+     *
+     * @param string $timezone IANA timezone name or numeric offset.
+     * @return \DateTimeZone
+     */
     private function timezone(string $timezone): \DateTimeZone
     {
         try {
@@ -140,6 +176,13 @@ class ICal
         }
     }
 
+    /**
+     * Escape an iCalendar TEXT value.
+     *
+     * @param string $value     Raw property value.
+     * @param bool   $stripTags Remove HTML before escaping when true.
+     * @return string RFC 5545-escaped text.
+     */
     private function escapeText(string $value, bool $stripTags = false): string
     {
         if ($stripTags) {
@@ -155,6 +198,9 @@ class ICal
 
     /**
      * Fold a content line without splitting a UTF-8 sequence.
+     *
+     * @param string $value Unfolded content line.
+     * @return string Folded content line.
      */
     private function split(string $value): string
     {

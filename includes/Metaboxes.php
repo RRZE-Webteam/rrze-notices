@@ -4,6 +4,9 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Defines CMB2 notice fields and normalizes their saved values.
+ */
 class Metaboxes
 {
     /**
@@ -20,6 +23,11 @@ class Metaboxes
         add_action('cmb2_save_field_event_repeat_lastdate', [__CLASS__, 'saveEventRepeatLastdateField'], 10, 3);
     }
 
+    /**
+     * Register the complete notice-settings metabox and its fields.
+     *
+     * @return void
+     */
     public static function metabox()
     {
         $objectTypes = [CPTNotice::POST_TYPE];
@@ -367,6 +375,14 @@ class Metaboxes
         return $options;
     }
 
+    /**
+     * Remove stale role selections when visibility changes to all users.
+     *
+     * @param bool        $updated Whether CMB2 changed the stored value.
+     * @param string      $action  CMB2 save action.
+     * @param \CMB2_Field $field   Saved visibility field.
+     * @return void
+     */
     public static function saveNoticeVisibilityField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
@@ -376,11 +392,11 @@ class Metaboxes
     }
 
     /**
-     * Save event_start date as GMT timestamp
+     * Save the event start as an absolute GMT timestamp.
      *
-     * @param bool $updated
-     * @param string $action
-     * @param \CMB2_Field $field
+     * @param bool        $updated Whether CMB2 changed the stored value.
+     * @param string      $action  CMB2 save action.
+     * @param \CMB2_Field $field   Saved event-start field.
      * @return void
      */
     public static function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
@@ -391,11 +407,11 @@ class Metaboxes
     }
 
     /**
-     * Save event_start date as GMT timestamp
+     * Save the event end as an absolute GMT timestamp.
      *
-     * @param bool $updated
-     * @param string $action
-     * @param \CMB2_Field $field
+     * @param bool        $updated Whether CMB2 changed the stored value.
+     * @param string      $action  CMB2 save action.
+     * @param \CMB2_Field $field   Saved event-end field.
      * @return void
      */
     public static function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
@@ -406,11 +422,11 @@ class Metaboxes
     }
 
     /**
-     * Save event_repeat_lastdate date as GMT timestamp
+     * Clamp and save the recurrence limit in local and GMT forms.
      *
-     * @param bool $updated
-     * @param string $action
-     * @param \CMB2_Field $field
+     * @param bool        $updated Whether CMB2 changed the stored value.
+     * @param string      $action  CMB2 save action.
+     * @param \CMB2_Field $field   Saved recurrence-limit field.
      * @return void
      */
     public static function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
@@ -434,6 +450,12 @@ class Metaboxes
         }
     }
 
+    /**
+     * Convert CMB2's wall-time timestamp into an absolute GMT timestamp.
+     *
+     * @param int $timestamp CMB2 timestamp representing local wall time.
+     * @return int Unix timestamp, or zero for an empty value.
+     */
     private static function localTimestampToGmt(int $timestamp): int
     {
         if (!$timestamp) {
@@ -445,12 +467,28 @@ class Metaboxes
         return $local->getTimestamp();
     }
 
+    /**
+     * Convert a lead-time day count into stored seconds.
+     *
+     * @param mixed       $value     Submitted field value.
+     * @param array       $fieldArgs CMB2 field arguments.
+     * @param \CMB2_Field $field     CMB2 field instance.
+     * @return int Lead time in seconds.
+     */
     public static function sanitizeNoticeStart($value, $fieldArgs, $field)
     {
         $value = absint($value);
         return $value * DAY_IN_SECONDS;
     }
 
+    /**
+     * Convert stored lead-time seconds into the displayed day count.
+     *
+     * @param mixed       $value     Stored field value.
+     * @param array       $fieldArgs CMB2 field arguments.
+     * @param \CMB2_Field $field     CMB2 field instance.
+     * @return int Number of calendar days.
+     */
     public static function escapeNoticeStartValue($value, $fieldArgs, $field)
     {
         $value = absint($value);

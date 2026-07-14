@@ -4,6 +4,9 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Stores plugin file metadata and resolves plugin-relative paths and URLs.
+ */
 class Plugin
 {
     /**
@@ -47,6 +50,8 @@ class Plugin
 
     /**
      * loaded method
+     *
+     * @return void
      */
     public function loaded()
     {
@@ -182,6 +187,10 @@ class Plugin
     /**
      * __call method
      * Method overloading.
+     *
+     * @param string $name      Requested method name.
+     * @param array  $arguments Arguments supplied to the method call.
+     * @return void
      */
     public function __call(string $name, array $arguments)
     {

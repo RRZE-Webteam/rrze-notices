@@ -4,10 +4,15 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Coordinates registration and administration of the notice post type.
+ */
 class CPT
 {
     /**
-     * Setting up action hooks
+     * Register post-type, metadata, and list-table hooks.
+     *
+     * @return void
      */
     public static function loaded()
     {
@@ -23,6 +28,8 @@ class CPT
 
     /**
      * Register custom post type.
+     *
+     * @return void
      */
     public static function registerCPT()
     {

@@ -4,6 +4,9 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Fluent argument builder for the notice custom post type.
+ */
 class CPTNotice
 {
     /**

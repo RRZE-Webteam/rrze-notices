@@ -4,10 +4,15 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Persists per-user notice dismissals and handles the AJAX dismissal request.
+ */
 class Dismiss
 {
     /**
-     * The prefix to be using for the user-meta key.
+     * Prefix used for per-user dismissal metadata.
+     *
+     * @var string
      */
     public const PREFIX = 'rrze_notices_dismissed';
 
@@ -33,10 +38,10 @@ class Dismiss
     private $isDismissible;
 
     /**
-     * Constructor.
+     * Initialize dismissal state and register the AJAX callback.
      * 
-     * @param string $id A unique ID for this notice. Can contain lowercase characters and underscores.
-     * @param boolean $isDismissible Should be the notice dismissible?
+     * @param string $id            Site-qualified notice identifier.
+     * @param bool   $isDismissible Whether the notice can be dismissed.
      */
     public function __construct(string $id, bool $isDismissible = true)
     {
@@ -49,6 +54,8 @@ class Dismiss
 
     /**
      * Print the script for dismissing the notice.
+     *
+     * @return void
      */
     public function printScript()
     {
@@ -77,7 +84,7 @@ class Dismiss
     }
 
     /**
-     * Check if the notice has been dismissed or not.
+     * Determine whether the current user dismissed this notice.
      *
      * @return bool
      */
@@ -89,7 +96,9 @@ class Dismiss
     }
 
     /**
-     * Check to see if the notice needs to be dismissed.
+     * Validate and process the AJAX dismissal request.
+     *
+     * @return void
      */
     public function ajaxDismissNotice()
     {
@@ -108,6 +117,8 @@ class Dismiss
 
     /**
      * Dismisses the notice.
+     *
+     * @return void
      */
     private function dismissNotice()
     {
@@ -115,7 +126,11 @@ class Dismiss
     }
 
     /**
-     * Delete the dismissed notice.
+     * Delete this dismissal key for all users.
+     *
+     * Used when a notice is republished or its lifecycle restarts.
+     *
+     * @return void
      */
     public function deleteDismissedNotice()
     {

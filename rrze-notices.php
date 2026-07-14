@@ -17,11 +17,14 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/** @var string Minimum supported PHP version. */
 const RRZE_PHP_VERSION = '8.2';
+
+/** @var string Minimum supported WordPress version. */
 const RRZE_WP_VERSION = '6.5';
 
 /**
- * Composer autoload
+ * Load Composer dependencies and the plugin PSR-4 autoloader.
  */
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -32,7 +35,9 @@ register_deactivation_hook(__FILE__, __NAMESPACE__ . '\deactivation');
 add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
 
 /**
- * Loads a plugin’s translated strings.
+ * Load translated plugin strings.
+ *
+ * @return void
  */
 function loadTextdomain()
 {
@@ -40,8 +45,9 @@ function loadTextdomain()
 }
 
 /**
- * System requirements verification.
- * @return string Return an error message.
+ * Verify the active PHP and WordPress versions.
+ *
+ * @return string Localized error message, or an empty string when compatible.
  */
 function systemRequirements(): string
 {
@@ -69,7 +75,9 @@ function systemRequirements(): string
 }
 
 /**
- * Activation callback function.
+ * Verify requirements during plugin activation.
+ *
+ * @return void
  */
 function activation()
 {
@@ -88,7 +96,10 @@ function activation()
 }
 
 /**
- * Deactivation callback function.
+ * Clear scheduled status jobs when the plugin is deactivated.
+ *
+ * @param bool $networkWide Whether WordPress is deactivating the plugin network-wide.
+ * @return void
  */
 function deactivation(bool $networkWide = false)
 {
@@ -105,8 +116,9 @@ function deactivation(bool $networkWide = false)
 }
 
 /**
- * Instantiate Plugin class.
- * @return object Plugin
+ * Return the request-scoped plugin metadata instance.
+ *
+ * @return Plugin
  */
 function plugin()
 {
@@ -118,7 +130,8 @@ function plugin()
 }
 
 /**
- * Execute on 'plugins_loaded' API/action.
+ * Initialize the plugin after WordPress loads all active plugins.
+ *
  * @return void
  */
 function loaded()

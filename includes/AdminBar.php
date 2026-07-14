@@ -4,16 +4,30 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Collects active notices and exposes them through the WordPress admin bar.
+ */
 class AdminBar
 {
+    /** @var string Network option key used by the plugin. */
     protected $siteOptionsName;
 
+    /** @var object Parsed network-wide plugin options. */
     protected $siteOptions;
 
+    /** @var string Prefix used for per-user dismissal metadata. */
     protected $userMeta = 'rrze_notices_dismissed';
 
+    /**
+     * Notices available to the current user.
+     *
+     * @var array<int, object{id:int|string, title:string, type:string}>
+     */
     protected $notices;
 
+    /**
+     * Load network options and initialize the notice collection.
+     */
     public function __construct()
     {
         $this->siteOptionsName = Options::getSiteOptionName();
@@ -21,18 +35,33 @@ class AdminBar
         $this->notices = [];
     }
 
+    /**
+     * Register admin-bar request and rendering hooks.
+     *
+     * @return void
+     */
     public function loaded()
     {
         add_action('admin_init', [$this, 'redirectRequest']);
         add_action('admin_head', [$this, 'adminHead']);
     }
 
+    /**
+     * Collect visible notices before WordPress renders the admin bar.
+     *
+     * @return void
+     */
     public function adminHead()
     {
         $this->setNetworkWideNotices();
         $this->setNotices();
     }
 
+    /**
+     * Add active notices originating on other sites in the network.
+     *
+     * @return void
+     */
     protected function setNetworkWideNotices()
     {
         if (!Utils::isPluginActiveForNetwork()) {
@@ -108,6 +137,11 @@ class AdminBar
         }
     }
 
+    /**
+     * Add active notices originating on the current site.
+     *
+     * @return void
+     */
     protected function setNotices()
     {
         $posts = get_posts([
@@ -179,6 +213,14 @@ class AdminBar
         }
     }
 
+    /**
+     * Append one notice to the admin-bar collection.
+     *
+     * @param int|string $id    Site-qualified notice ID or local post ID.
+     * @param string     $title Notice title.
+     * @param string     $type  Notice severity/type slug.
+     * @return void
+     */
     protected function addNotices($id, $title, $type)
     {
         $this->notices[] = (object)[
@@ -189,8 +231,10 @@ class AdminBar
     }
 
     /**
-     *  Add items to the admin bar.
-     * @param \WP_Admin_Bar $wpAdminBar
+     * Add collected notices to the WordPress admin bar.
+     *
+     * @param \WP_Admin_Bar $wpAdminBar Admin-bar instance supplied by WordPress.
+     * @return void
      */
     public function addItems(&$wpAdminBar)
     {
@@ -230,6 +274,11 @@ class AdminBar
         }
     }
 
+    /**
+     * Redirect a nonce-protected admin-bar notice link to the dashboard.
+     *
+     * @return void
+     */
     public function redirectRequest()
     {
         if (empty($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'rrze_notices_redirect_nonce')) {
@@ -246,6 +295,12 @@ class AdminBar
         exit();
     }
 
+    /**
+     * Determine whether the current user dismissed a notice.
+     *
+     * @param int|string $noticeId Site-qualified notice identifier.
+     * @return bool
+     */
     protected function isDismissed($noticeId)
     {
         return (get_user_meta(get_current_user_id(), "{$this->userMeta}_{$noticeId}", true));

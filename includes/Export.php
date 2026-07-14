@@ -6,18 +6,20 @@ defined('ABSPATH') || exit;
 
 use function RRZE\notices\plugin;
 
-
+/**
+ * Handles public ICS download requests for published notices.
+ */
 class Export
 {
     /**
-     * The iCal formatted calendar data
+     * Serialized iCalendar document.
      *
      * @var string
      */
     private $vcalendar = '';
 
     /**
-     * Constructor
+     * Register the export request handler.
      */
     public function __construct()
     {
@@ -25,7 +27,9 @@ class Export
     }
 
     /**
-     * Handle the request
+     * Detect and serve a valid notice export request during WordPress init.
+     *
+     * @return void
      */
     public function request()
     {
@@ -46,9 +50,10 @@ class Export
     }
 
     /**
-     * Set the notice data
+     * Build calendar content for a published notice post.
      *
-     * @param object $post
+     * @param object $post Candidate WordPress post object.
+     * @return void
      */
     private function set(object $post)
     {
@@ -64,10 +69,13 @@ class Export
     }
 
     /**
-     * Get the event data for the notice
+     * Convert cached notice data into one or more calendar events.
      *
-     * @param int $postId
-     * @return array
+     * Recurrences are expanded into independent events with stable per-date
+     * UIDs because the stored recurrence set may contain exceptions/additions.
+     *
+     * @param int $postId Notice post ID.
+     * @return array<int, array<string, mixed>> Calendar event records.
      */
     private function getEvent(int $postId)
     {
@@ -100,14 +108,14 @@ class Export
     }
 
     /**
-     * Make the iCal data for the notice
+     * Create one normalized calendar event record.
      *
-     * @param string $eventUid
-     * @param \DateTimeImmutable $start
-     * @param \DateTimeImmutable $end
-     * @param object $notice
-     * @param object $event
-     * @return array
+     * @param string             $eventUid Stable event UID.
+     * @param \DateTimeImmutable $start    Start in the event timezone.
+     * @param \DateTimeImmutable $end      Exclusive event end.
+     * @param object             $notice   Cached notice data.
+     * @param object             $event    Cached event data.
+     * @return array<string, mixed> Calendar event properties.
      */
     private static function makeIcalData(
         string $eventUid,
@@ -131,9 +139,10 @@ class Export
     }
 
     /**
-     * Build the iCal formatted calendar data
+     * Serialize normalized calendar records.
      *
-     * @param array $data
+     * @param array<int, array<string, mixed>> $data Calendar event records.
+     * @return void
      */
     private function build(array $data)
     {
@@ -144,6 +153,11 @@ class Export
         $this->vcalendar = $ics->build();
     }
 
+    /**
+     * Send calendar download headers and terminate the request.
+     *
+     * @return never
+     */
     private function stream()
     {
         $urlHost = parse_url(site_url(), PHP_URL_HOST);
@@ -160,6 +174,12 @@ class Export
         exit;
     }
 
+    /**
+     * Build the public ICS download URL for a notice.
+     *
+     * @param int $postId Notice post ID.
+     * @return string Export URL on the current site.
+     */
     public static function makeIcsLink(int $postId)
     {
         $args = [

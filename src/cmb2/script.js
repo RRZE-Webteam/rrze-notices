@@ -1,5 +1,11 @@
 "use strict";
 
+/**
+ * Initialize conditional visibility for notice and recurrence CMB2 fields.
+ *
+ * @param {JQueryStatic} $ Scoped jQuery instance supplied by WordPress.
+ * @return {void}
+ */
 jQuery(document).ready(function ($) {
     let visibilityTypeInput = $("input[name='notice_visibility']");
 
@@ -8,6 +14,11 @@ jQuery(document).ready(function ($) {
         triggerVisibilityTypeField();
     });
 
+    /**
+     * Show role choices only when visibility is restricted by user role.
+     *
+     * @return {void}
+     */
     function triggerVisibilityTypeField() {
         var visibilityType = $("input[name='notice_visibility']:checked").val();
         if (typeof visibilityType == "undefined") {
@@ -39,6 +50,11 @@ jQuery(document).ready(function ($) {
         triggerMonthlyTypeFields();
     });
 
+    /**
+     * Toggle the complete recurrence settings group.
+     *
+     * @return {void}
+     */
     function triggerRepeatFields() {
         if (repeatCheck.is(":checked")) {
             $("div.event-repeat").slideDown();
@@ -48,6 +64,11 @@ jQuery(document).ready(function ($) {
         }
     }
 
+    /**
+     * Show weekly or monthly controls for the selected recurrence interval.
+     *
+     * @return {void}
+     */
     function triggerIntervalFields() {
         var repeatInterval = $("option:selected", repeatIntervalSelect).val();
         if (repeatInterval === "week") {
@@ -60,6 +81,11 @@ jQuery(document).ready(function ($) {
         }
     }
 
+    /**
+     * Show either date-based or weekday-based monthly recurrence controls.
+     *
+     * @return {void}
+     */
     function triggerMonthlyTypeFields() {
         var repeatMonthlyType = $(
             "input[name='event_repeat_monthly_type']:checked"

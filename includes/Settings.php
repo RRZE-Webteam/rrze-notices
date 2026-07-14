@@ -4,18 +4,31 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Registers and renders the multisite network settings page.
+ */
 class Settings
 {
+    /** @var string Network option key used by the plugin. */
     protected $siteOptionsName;
 
+    /** @var object Parsed network-wide plugin options. */
     protected $siteOptions;
 
+    /**
+     * Load the current network settings.
+     */
     public function __construct()
     {
         $this->siteOptionsName = Options::getSiteOptionName();
         $this->siteOptions = Options::getSiteOptions();
     }
 
+    /**
+     * Register network settings hooks and plugin action links.
+     *
+     * @return void
+     */
     public function loaded()
     {
         add_action('network_admin_menu', [$this, 'networkAdminMenu']);
@@ -23,6 +36,12 @@ class Settings
         add_filter('network_admin_plugin_action_links_' . plugin()->getBasename(), [$this, 'networkAdminPluginActionLink']);
     }
 
+    /**
+     * Add a settings link to the network plugins screen.
+     *
+     * @param string[] $links Existing plugin action links.
+     * @return string[] Updated plugin action links.
+     */
     public function networkAdminPluginActionLink($links)
     {
         if (!is_super_admin()) {
@@ -43,6 +62,11 @@ class Settings
         );
     }
 
+    /**
+     * Save submitted settings and register the network submenu page.
+     *
+     * @return void
+     */
     public function networkAdminMenu()
     {
         if (isset($_POST['_wpnonce']) &&  wp_verify_nonce($_POST['_wpnonce'], 'rrze_notices_network-options') && is_super_admin()) {
@@ -73,6 +97,11 @@ class Settings
         );
     }
 
+    /**
+     * Register fields used by the network settings page.
+     *
+     * @return void
+     */
     public function networkAdminSettings()
     {
         add_settings_section('rrze_notices_section', __('General', 'rrze-notices'), '__return_false', 'rrze_notices_network');
@@ -81,6 +110,11 @@ class Settings
         add_settings_field('rrze_notices_access', __('Access', 'rrze-notices'), array($this, 'accessField'), 'rrze_notices_network', 'rrze_notices_section');
     }
 
+    /**
+     * Render the checkbox that enables notices network-wide.
+     *
+     * @return void
+     */
     public function enabledField()
     {
         echo '<fieldset>';
@@ -93,6 +127,11 @@ class Settings
         echo '</fieldset>';
     }
 
+    /**
+     * Render the capability selection for notice management.
+     *
+     * @return void
+     */
     public function accessField()
     {
         echo '<fieldset>';
@@ -107,6 +146,11 @@ class Settings
         echo '</fieldset>';
     }
 
+    /**
+     * Render the complete network settings page.
+     *
+     * @return void
+     */
     public function networkPageSettings()
     {
         echo '<div class="wrap">';

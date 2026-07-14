@@ -4,6 +4,9 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Request-scoped collection of notices to render in the WordPress admin.
+ */
 class Notices
 {
     /**
@@ -15,6 +18,8 @@ class Notices
 
     /**
      * Adds actions for the notices.
+     *
+     * @return void
      */
     public function boot()
     {
@@ -88,6 +93,8 @@ class Notices
 
     /**
      * Prints scripts for the notices.
+     *
+     * @return void
      */
     public function printScripts()
     {

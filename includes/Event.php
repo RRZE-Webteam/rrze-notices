@@ -8,9 +8,11 @@ use RRule\RRule;
 use RRule\RSet;
 
 /**
- * Class Event
+ * Builds normalized event data and evaluates timezone-aware event boundaries.
  *
- * A class for managing events.
+ * Event wall times are interpreted in the timezone stored with the event. Timed
+ * boundaries are converted to absolute timestamps only for comparison/export;
+ * all-day end dates remain inclusive in the editor and exclusive at boundaries.
  */
 class Event
 {
@@ -18,7 +20,7 @@ class Event
      * Make event data
      *
      * @param int $postId
-     * @return array
+     * @return array<string, mixed> Normalized event data for caching and display.
      */
     public static function makeData(int $postId)
     {
@@ -119,6 +121,13 @@ class Event
         return $data;
     }
 
+    /**
+     * Reinterpret CMB2's UTC-based timestamp as wall time in the site timezone.
+     *
+     * @param int           $timestamp CMB2 timestamp representing selected wall time.
+     * @param \DateTimeZone $timezone  Timezone in which the value was selected.
+     * @return \DateTimeImmutable|null Local date-time, or null for an empty timestamp.
+     */
     private static function metaTimestampToDateTime(
         int $timestamp,
         \DateTimeZone $timezone
@@ -134,6 +143,9 @@ class Event
 
     /**
      * Return the timezone in which an event's wall-time values were created.
+     *
+     * @param array<string, mixed>|object $event Normalized event data.
+     * @return \DateTimeZone Stored event timezone or the current site timezone.
      */
     public static function timezone(array|object $event): \DateTimeZone
     {
@@ -149,6 +161,10 @@ class Event
 
     /**
      * Get the local start of an event or recurrence instance.
+     *
+     * @param array<string, mixed>|object $event      Normalized event data.
+     * @param string|null                $occurrence Optional recurrence wall time.
+     * @return \DateTimeImmutable Start in the event timezone.
      */
     public static function occurrenceStart(
         array|object $event,
@@ -165,6 +181,10 @@ class Event
      *
      * The editor treats an all-day end date as inclusive, while iCalendar and
      * activity checks need an exclusive boundary.
+     *
+     * @param array<string, mixed>|object $event      Normalized event data.
+     * @param string|null                $occurrence Optional recurrence wall time.
+     * @return \DateTimeImmutable Exclusive end in the event timezone.
      */
     public static function occurrenceEnd(
         array|object $event,
@@ -186,6 +206,10 @@ class Event
 
     /**
      * Return whether the notice lead time has begun.
+     *
+     * @param array<string, mixed>|object $notice Normalized notice data.
+     * @param int|null                    $now    Unix timestamp; defaults to now.
+     * @return bool
      */
     public static function hasNoticeStarted(array|object $notice, ?int $now = null): bool
     {
@@ -194,6 +218,15 @@ class Event
         return $starts && ($now ?? time()) >= $starts->getTimestamp();
     }
 
+    /**
+     * Calculate when a notice becomes visible.
+     *
+     * Lead time is applied as calendar days in the event timezone so the local
+     * clock time remains stable across daylight-saving transitions.
+     *
+     * @param array<string, mixed>|object $notice Normalized notice data.
+     * @return \DateTimeImmutable|null Notice start, or null without event data.
+     */
     public static function noticeStartsAt(array|object $notice): ?\DateTimeImmutable
     {
         $notice = (object) $notice;
@@ -209,6 +242,9 @@ class Event
 
     /**
      * Return the exclusive end of the final recurrence instance.
+     *
+     * @param array<string, mixed>|object $notice Normalized notice data.
+     * @return \DateTimeImmutable|null Final exclusive end, or null without event data.
      */
     public static function noticeEnd(array|object $notice): ?\DateTimeImmutable
     {
@@ -226,6 +262,13 @@ class Event
         return self::occurrenceEnd($event, $lastOccurrence);
     }
 
+    /**
+     * Determine whether all event occurrences have ended.
+     *
+     * @param array<string, mixed>|object $notice Normalized notice data.
+     * @param int|null                    $now    Unix timestamp; defaults to now.
+     * @return bool
+     */
     public static function isNoticeExpired(array|object $notice, ?int $now = null): bool
     {
         $end = self::noticeEnd($notice);
@@ -233,6 +276,13 @@ class Event
         return !$end || ($now ?? time()) >= $end->getTimestamp();
     }
 
+    /**
+     * Determine whether a notice is within its complete visibility window.
+     *
+     * @param array<string, mixed>|object $notice Normalized notice data.
+     * @param int|null                    $now    Unix timestamp; defaults to now.
+     * @return bool
+     */
     public static function isNoticeActive(array|object $notice, ?int $now = null): bool
     {
         $now = $now ?? time();
@@ -243,6 +293,10 @@ class Event
 
     /**
      * Return the ongoing occurrence, or the next one when none is in progress.
+     *
+     * @param array<string, mixed>|object $event Normalized event data.
+     * @param int|null                    $now   Unix timestamp; defaults to now.
+     * @return string|null Recurrence wall time, or null for non-recurring events.
      */
     public static function currentOrNextOccurrence(
         array|object $event,
@@ -265,6 +319,9 @@ class Event
 
     /**
      * Format an event for the current user's locale without changing its zone.
+     *
+     * @param array<string, mixed>|object $event Normalized event data.
+     * @return string Localized date/time range containing an HTML en dash entity.
      */
     public static function readableDatetime(array|object $event): string
     {
@@ -307,8 +364,8 @@ class Event
     /**
      * Make RRule arguments
      *
-     * @param int $postId
-     * @return array
+     * @param int $postId Notice post ID.
+     * @return array<string, mixed> Arguments accepted by rlanvin/php-rrule.
      */
     public static function makeRRuleArgs($postId): array
     {
@@ -381,8 +438,8 @@ class Event
     /**
      * Get event occurrences
      *
-     * @param int $postId
-     * @return array
+     * @param int $postId Notice post ID.
+     * @return string[] Recurrence wall times that are ongoing or in the future.
      */
     private static function getOccurrences(int $postId): array
     {
@@ -453,8 +510,8 @@ class Event
     /**
      * Get human readable recurrence
      *
-     * @param int $postId
-     * @return string
+     * @param int $postId Notice post ID.
+     * @return string Localized recurrence description, or an empty string.
      */
     public static function getHumanReadableRecurrence(int $postId): string
     {
@@ -473,8 +530,8 @@ class Event
     /**
      * Get human readable rrule
      *
-     * @param array $args
-     * @return string
+     * @param array<string, mixed> $args Arguments accepted by rlanvin/php-rrule.
+     * @return string Localized recurrence description, or an empty string.
      */
     private static function humanReadableRRule(array $args): string
     {

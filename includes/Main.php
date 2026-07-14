@@ -4,19 +4,24 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Bootstraps plugin components after requirements and network settings pass.
+ */
 class Main
 {
     /**
-     * @var object Main
+     * @var Main|null Singleton instance.
      */
     private static $instance;
 
     /**
-     * @var object
+     * @var object Parsed network-wide plugin options.
      */
     private $siteOptions;
 
     /**
+     * Return the singleton plugin bootstrap instance.
+     *
      * @return Main
      */
     public static function instance()
@@ -29,7 +34,7 @@ class Main
     }
 
     /**
-     * Main constructor
+     * Initialize all enabled plugin components and hooks.
      */
     public function __construct()
     {
@@ -60,6 +65,8 @@ class Main
 
     /**
      * Prevent cloning
+     *
+     * @return void
      */
     public function __clone()
     {
@@ -68,6 +75,8 @@ class Main
 
     /**
      * Prevent unserializing
+     *
+     * @return void
      */
     public function __wakeup()
     {
@@ -77,7 +86,7 @@ class Main
     /**
      * Enqueue scripts and styles for the admin area
      *
-     * @param string $hook The current admin page
+     * @param string $hook Current admin page hook suffix.
      * @return void
      */
     public function adminEnqueueScripts($hook)

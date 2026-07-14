@@ -18,6 +18,8 @@ class Post
 
     /**
      * Setting up hooks
+     *
+     * @return void
      */
     public static function loaded()
     {
@@ -32,6 +34,8 @@ class Post
 
     /**
      * Register custom post status.
+     *
+     * @return void
      */
     public static function registerPostStatus()
     {
@@ -56,6 +60,8 @@ class Post
 
     /**
      * Append custom post status to the postbox.
+     *
+     * @return void
      */
     public static function appendPostStatusPostbox()
     {
@@ -84,6 +90,8 @@ class Post
 
     /**
      * Append custom post status to the quick edit.
+     *
+     * @return void
      */
     public static function appendPostStatusQuickEdit()
     {
@@ -101,6 +109,14 @@ class Post
         echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
     }
 
+    /**
+     * Reset user dismissals when a notice is newly published.
+     *
+     * @param string   $newStatus New post status.
+     * @param string   $oldStatus Previous post status.
+     * @param \WP_Post $post      Transitioned post.
+     * @return void
+     */
     public static function transitionPostStatus($newStatus, $oldStatus, $post)
     {
         if ($post->post_type !== CPTNotice::POST_TYPE) {
@@ -119,6 +135,7 @@ class Post
      * Update local & network post meta (if applicable) for the notice
      *
      * @param int $postId
+     * @return void
      */
     public static function updatePostmeta(int $postId)
     {
@@ -153,6 +170,7 @@ class Post
      *
      * @param int $postId
      * @param object $post
+     * @return void
      */
     public static function deletePost($postId, $post)
     {
@@ -188,6 +206,7 @@ class Post
      * Update the local notice
      *
      * @param int $postId
+     * @return void
      */
     public static function updateLocalNotice($postId)
     {
@@ -205,6 +224,7 @@ class Post
      * Update the network-wide notice
      *
      * @param int $postId
+     * @return void
      */
     public static function updateNetworkWideNotice(int $postId)
     {
@@ -224,6 +244,13 @@ class Post
         update_site_option($siteOptionsName, $siteOptions);
     }
 
+    /**
+     * Build the denormalized notice payload used for display and export.
+     *
+     * @param int      $postId Notice post ID.
+     * @param \WP_Post $post   Notice post object.
+     * @return array<string, mixed> Cached notice data.
+     */
     private static function makeNoticeData(int $postId, object $post)
     {
         $event = self::getEventData($postId);
@@ -257,6 +284,7 @@ class Post
      * Delete the network-wide site option for the notice
      *
      * @param int $postId
+     * @return void
      */
     public static function deleteNetworkWideNotice(int $postId)
     {
@@ -379,6 +407,8 @@ class Post
 
     /**
      * Update the status of the notice
+     *
+     * @return void
      */
     public static function updateStatus()
     {

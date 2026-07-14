@@ -4,8 +4,18 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Collection of shared WordPress, date, and identifier helpers.
+ */
 class Utils
 {
+    /**
+     * Read a value from the array returned by get_post_meta().
+     *
+     * @param array<string, array<int, mixed>> $meta Post metadata array.
+     * @param string                           $key  Metadata key.
+     * @return mixed Unserialized metadata value, or an empty string when absent.
+     */
     public static function getMeta($meta, $key)
     {
         if (!isset($meta[$key][0])) {
@@ -17,6 +27,13 @@ class Utils
         }
     }
 
+    /**
+     * Determine whether any needle value occurs in the haystack.
+     *
+     * @param array<int, mixed> $needle   Values to find.
+     * @param array<int, mixed> $haystack Values to search.
+     * @return bool
+     */
     public static function arrayValInArray($needle, $haystack)
     {
         foreach ($needle as $stack) {
@@ -27,6 +44,11 @@ class Utils
         return false;
     }
 
+    /**
+     * Determine whether this plugin is network-activated.
+     *
+     * @return bool
+     */
     public static function isPluginActiveForNetwork()
     {
         if (!is_multisite()) {
@@ -39,6 +61,12 @@ class Utils
         return false;
     }
 
+    /**
+     * Return localized weekday labels ordered by the site's week start.
+     *
+     * @param string|null $format Label format: full, short, min, or rrule.
+     * @return array<int|string, string> Ordered weekday labels.
+     */
     public static function getDaysOfWeek($format = null)
     {
         $days = [];
@@ -51,6 +79,12 @@ class Utils
         return $days;
     }
 
+    /**
+     * Return localized weekday labels in their canonical order.
+     *
+     * @param string|null $format Label format: full, short, min, or rrule.
+     * @return array<int|string, string> Weekday labels keyed by day index or name.
+     */
     public static function daysOfWeek($format = null)
     {
         global $wp_locale;
@@ -105,6 +139,12 @@ class Utils
         return $daysOfWeek;
     }
 
+    /**
+     * Return localized month labels or recurrence month numbers.
+     *
+     * @param string|null $format Label format: full, short, or rrule.
+     * @return array<int|string, int|string> Month values keyed by index or abbreviation.
+     */
     public static function getMonthNames($format = null)
     {
         global $wp_locale;
@@ -167,9 +207,9 @@ class Utils
 
 
     /**
-     * Generates a random id.
+     * Generate a cryptographically random hexadecimal identifier.
      *
-     * @param integer $length
+     * @param int $length Number of random bytes; output is twice this length.
      * @return string
      */
     public static function createId(int $length = 8): string
@@ -182,6 +222,10 @@ class Utils
      *
      * Calendar clients use the UID to update an imported event. A random value
      * would create a duplicate whenever the same notice is exported again.
+     *
+     * @param int    $postId    Notice post ID.
+     * @param string $occurrence Stable occurrence discriminator, usually a date.
+     * @return string RFC 5545-compatible globally unique identifier.
      */
     public static function createUid(int $postId = 0, string $occurrence = ''): string
     {
@@ -199,11 +243,10 @@ class Utils
     }
 
     /**
-     * This function will now return true if $date is a valid date 
-     * (a \DateTime object, a string representation of a date, or a timestamp), 
-     * and false otherwise.
-     * @param mixed $date (\DateTime|string|int)
-     * @return boolean
+     * Determine whether a value can represent a valid date and time.
+     *
+     * @param \DateTime|string|int $date Date object, parseable string, or timestamp.
+     * @return bool
      */
     public static function validateDate($date)
     {
@@ -232,6 +275,16 @@ class Utils
         }
     }
 
+    /**
+     * Render or return a human-readable difference from the current site time.
+     *
+     * When HTML output is enabled, this method echoes the formatted value and
+     * returns null. Otherwise it returns only the relative-time text.
+     *
+     * @param int|string $timestamp MySQL date string or timestamp understood by WordPress.
+     * @param bool       $html      Whether to echo annotated HTML.
+     * @return string|null Relative-time text when HTML is disabled.
+     */
     public static function humanTimeDiff($timestamp, $html = true)
     {
         $datetime = date(__('Y/m/d g:i:s a', 'rrze-notices'), mysql2date('U', $timestamp));

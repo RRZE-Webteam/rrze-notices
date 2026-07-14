@@ -43,6 +43,8 @@ class Display
 
     /**
      * Setting up action hooks
+     *
+     * @return void
      */
     public function loaded()
     {
@@ -60,6 +62,8 @@ class Display
 
     /**
      * Set network-wide notices
+     *
+     * @return void
      */
     protected function setNetworkWideNotices()
     {
@@ -180,6 +184,8 @@ class Display
 
     /**
      * Set notices
+     *
+     * @return void
      */
     protected function setNotices()
     {
@@ -286,6 +292,8 @@ class Display
 
     /**
      * Set the preview notice
+     *
+     * @return void
      */
     protected function previewNotice()
     {

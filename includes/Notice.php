@@ -4,6 +4,9 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Represents and renders one dashboard notice for the current request.
+ */
 class Notice
 {
     /**
@@ -111,6 +114,8 @@ class Notice
 
     /**
      * Prints the notice.
+     *
+     * @return void
      */
     public function printNotice()
     {
