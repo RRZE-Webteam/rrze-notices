@@ -178,16 +178,24 @@ class Utils
     }
 
     /**
-     * Generates a random UUID based on the post ID and website host.
+     * Generate a stable iCalendar UID for a notice or one of its occurrences.
      *
-     * @param integer $postId
-     * @return string
+     * Calendar clients use the UID to update an imported event. A random value
+     * would create a duplicate whenever the same notice is exported again.
      */
-    public static function createUid(int $postId = 0)
+    public static function createUid(int $postId = 0, string $occurrence = ''): string
     {
-        $host = parse_url(site_url(), PHP_URL_HOST);
-        $uid = vsprintf('%s-%s-%s', str_split(self::createId(), 4));
-        return sprintf('%s-%s@%s', $uid, $postId, $host);
+        $host = (string) parse_url(site_url(), PHP_URL_HOST);
+        $blogId = function_exists('get_current_blog_id') ? get_current_blog_id() : 0;
+        $instance = $occurrence !== '' ? '-' . substr(hash('sha256', $occurrence), 0, 16) : '';
+
+        return sprintf(
+            'rrze-notices-%d-%d%s@%s',
+            $blogId,
+            $postId,
+            $instance,
+            $host ?: 'localhost'
+        );
     }
 
     /**

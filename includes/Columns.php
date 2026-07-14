@@ -56,10 +56,14 @@ class Columns
                 'warning' => __('Warning', 'rrze-notices')
             ];
             $noticeType = in_array($notice->type, array_keys($types)) ? $types[$notice->type] : __('Info', 'rrze-notices');
-            $noticeStart = $notice->notice_start;
-            $eventStart = $event->start;
-            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
-            $noticeStartDate = date_i18n(get_option('date_format'), $tsNoticeStart);
+            $noticeStartsAt = Event::noticeStartsAt($notice);
+            $noticeStartDate = $noticeStartsAt
+                ? wp_date(
+                    get_option('date_format'),
+                    $noticeStartsAt->getTimestamp(),
+                    Event::timezone($event)
+                )
+                : '&mdash;';
             $readableDate = $event->readable_datetime;
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :

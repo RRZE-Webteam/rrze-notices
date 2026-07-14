@@ -6,37 +6,20 @@ defined('ABSPATH') || exit;
 
 class ICal
 {
-    // Carriage return and line feed
-    const CRLF = "\r\n";
-
-    // Length of line in bytes
-    const LINE_LENGTH = 70;
+    private const CRLF = "\r\n";
 
     /**
-     * iCalendar data array.
-     *
-     * @var array
+     * Keep folded content lines comfortably below RFC 5545's 75-octet limit.
      */
-    private $data = [];
+    private const LINE_LENGTH = 70;
 
     /**
-     * Available iCalendar properties.
-     *
-     * @var array
+     * @var array<int, array<string, mixed>>
      */
-    private $availableProperties = [
-        'uid',
-        'description',
-        'dtend',
-        'dtstart',
-        'location',
-        'summary'
-    ];
+    private array $data = [];
 
     /**
-     * Construct method.
-     *
-     * @param array $data
+     * @param array<int, array<string, mixed>> $data
      */
     public function __construct(array $data)
     {
@@ -44,222 +27,155 @@ class ICal
     }
 
     /**
-     * Create an array with iCalendar data.
-     *
-     * @param array $data
-     * @return void
+     * @param array<int, array<string, mixed>> $data
      */
-    public function setData(array $data)
+    public function setData(array $data): void
     {
-        foreach ($data as $key => $value) {
-            $this->data[$key] = $this->setProperties($value);
-        }
-    }
+        $this->data = [];
 
-    /**
-     * Set the iCalendar properties.
-     *
-     * @param array $props
-     * @return array
-     */
-    private function setProperties(array $props): array
-    {
-        $properties = [];
-        foreach ($props as $key => $value) {
-            if (in_array($key, $this->availableProperties)) {
-                if (empty($value)) {
-                    continue;
-                }
-                $properties[$key] = $this->sanitizeValue($value, $key);
+        foreach ($data as $event) {
+            if (!is_array($event)) {
+                continue;
+            }
+
+            $properties = array_intersect_key(
+                $event,
+                array_flip([
+                    'uid',
+                    'description',
+                    'dtend',
+                    'dtstart',
+                    'location',
+                    'summary',
+                    'all_day',
+                    'timezone',
+                ])
+            );
+
+            if (!empty($properties['uid']) && !empty($properties['dtstart'])) {
+                $this->data[] = $properties;
             }
         }
-        return $properties;
     }
 
-    /**
-     * Build the ICS file content.
-     *
-     * @return string
-     */
     public function build(): string
     {
-        $rows = array_map(
-            fn ($row) => $this->split($row),
-            $this->render()
-        );
-        return implode(self::CRLF, $rows);
+        $rows = array_map([$this, 'split'], $this->render());
+
+        return implode(self::CRLF, $rows) . self::CRLF;
     }
 
     /**
-     * Create an array with iCalendar properties.
-     *
-     * @return array
+     * @return string[]
      */
     private function render(): array
     {
-        $locale = strtoupper(mb_substr(get_locale(), 0, 2));
-        $prodid = str_replace('.', '-', parse_url(site_url(), PHP_URL_HOST)) . '//Events//' . $locale;
-        $icalProps = [
+        $locale = strtoupper(substr(get_locale(), 0, 2));
+        $host = (string) parse_url(site_url(), PHP_URL_HOST);
+        $product = sprintf('-//%s//RRZE Notices//%s', $host ?: 'WordPress', $locale ?: 'EN');
+
+        $rows = [
             'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:' . $product,
+            'CALSCALE:GREGORIAN',
             'METHOD:PUBLISH',
-            'PRODID:' . $this->split($prodid),
-            'VERSION:2.0'
         ];
-        $icalProps = array_merge($icalProps, $this->vtimezone());
-        if (!empty($this->data)) {
-            foreach ($this->data as $properties) {
-                $icalProps[] = 'BEGIN:VEVENT';
-                $props = [];
-                foreach ($properties as $key => $value) {
-                    $props[strtoupper($key)] = $value;
-                }
-                $props['DTSTAMP'] = $this->formatTimestamp('now');
-                foreach ($props as $key => $value) {
-                    $icalProps[] = "$key$value";
-                }
-                $icalProps[] = 'END:VEVENT';
+
+        foreach ($this->data as $event) {
+            $allDay = !empty($event['all_day']);
+            $timezone = $this->timezone($event['timezone'] ?? '');
+
+            $rows[] = 'BEGIN:VEVENT';
+            $rows[] = 'UID:' . $this->escapeText((string) $event['uid']);
+            $rows[] = 'DTSTAMP:' . gmdate('Ymd\THis\Z');
+
+            if (!empty($event['summary'])) {
+                $rows[] = 'SUMMARY:' . $this->escapeText((string) $event['summary']);
             }
+            if (!empty($event['description'])) {
+                $rows[] = 'DESCRIPTION:' . $this->escapeText((string) $event['description'], true);
+            }
+            if (!empty($event['location'])) {
+                $rows[] = 'LOCATION:' . $this->escapeText((string) $event['location'], true);
+            }
+
+            $rows[] = $this->dateProperty('DTSTART', (string) $event['dtstart'], $allDay, $timezone);
+
+            if (!empty($event['dtend'])) {
+                $rows[] = $this->dateProperty('DTEND', (string) $event['dtend'], $allDay, $timezone);
+            }
+
+            $rows[] = 'END:VEVENT';
         }
 
-        $icalProps[] = 'END:VCALENDAR';
-        return $icalProps;
+        $rows[] = 'END:VCALENDAR';
+
+        return $rows;
     }
 
-    /**
-     * Sanitize a string value.
-     *
-     * @param string $value
-     * @param string $key
-     * @return string
-     */
-    private function sanitizeValue(string $value, string $key = ''): string
-    {
-        switch ($key) {
-            case 'dtend':
-            case 'dtstamp':
-            case 'dtstart':
-                $value = $this->formatTimestamp($value);
-                break;
-            case 'description':
-            case 'location':
-                $value = ':' . $this->escStr($value, true);
-                break;
-            default:
-                $value = ':' . $value;
+    private function dateProperty(
+        string $name,
+        string $value,
+        bool $allDay,
+        \DateTimeZone $timezone
+    ): string {
+        if ($allDay) {
+            $date = new \DateTimeImmutable($value, $timezone);
+            return sprintf('%s;VALUE=DATE:%s', $name, $date->format('Ymd'));
         }
 
-        return $value;
+        $date = new \DateTimeImmutable($value, $timezone);
+        $date = $date->setTimezone(new \DateTimeZone('UTC'));
+
+        return sprintf('%s:%s', $name, $date->format('Ymd\THis\Z'));
     }
 
-    /**
-     * Formats a timestamp for iCalendar.
-     *
-     * @param string $value The date/time to format, or 'now' for the current time.
-     * @return string The formatted timestamp.
-     */
-    private function formatTimestamp($value): string
+    private function timezone(string $timezone): \DateTimeZone
     {
-        $timezoneString = wp_timezone_string() ?: 'UTC';
-        $date = new \DateTime($value, new \DateTimeZone($timezoneString));
-        return sprintf(
-            ';TZID=%1$s:%2$s',
-            $timezoneString,
-            $date->format('Ymd\THis')
-        );
+        try {
+            return new \DateTimeZone($timezone ?: wp_timezone_string());
+        } catch (\Exception $exception) {
+            return wp_timezone();
+        }
     }
 
-    /**
-     * Escapes , and ; characters in text type fields.
-     *
-     * @param string $value The string to escape
-     * @return string
-     */
-    private function escStr(string $value): string
+    private function escapeText(string $value, bool $stripTags = false): string
     {
-        $value = preg_replace('/((?<!\\\),|(?<!\\\);)/', '\\\$1', $value);
-        $value = preg_replace('/((?<!\\\)\\\(?!,|;|n|N|\\\))/', '\\\\$1', $value);
-        return $value;
+        if ($stripTags) {
+            $value = wp_strip_all_tags($value, true);
+            $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, get_option('blog_charset') ?: 'UTF-8');
+        }
+
+        $value = str_replace('\\', '\\\\', $value);
+        $value = str_replace(["\r\n", "\r", "\n"], '\\n', $value);
+
+        return str_replace([',', ';'], ['\\,', '\\;'], $value);
     }
 
     /**
-     * Splits a string into new lines if necessary.
-     * RFC-5545 (3.1. Content Lines)
-     *
-     * @param string $value
-     * @return string
+     * Fold a content line without splitting a UTF-8 sequence.
      */
     private function split(string $value): string
     {
-        // Newlines need to be converted to literal \n
-        $value = str_replace("\n", "\\n", str_replace("\r\n", "\n", $value));
-
-        // Get number of bytes
         $length = strlen($value);
+        if ($length <= 75) {
+            return $value;
+        }
 
         $output = '';
+        $start = 0;
 
-        if ($length > 75) {
-            $start = 0;
+        while ($start < $length) {
+            $cut = mb_strcut($value, $start, self::LINE_LENGTH, 'UTF-8');
+            $output .= $cut;
+            $start += strlen($cut);
 
-            while ($start < $length) {
-                $cut = mb_strcut($value, $start, self::LINE_LENGTH, 'UTF-8');
-                $output .= $cut;
-                $start = $start + strlen($cut);
-
-                // Add space if not last line
-                if ($start < $length) {
-                    $output .= self::CRLF . ' ';
-                }
+            if ($start < $length) {
+                $output .= self::CRLF . ' ';
             }
-        } else {
-            $output = $value;
         }
 
         return $output;
-    }
-
-    private function vtimezone()
-    {
-        // Default to 'UTC' if not set
-        $timezoneString = get_option('timezone_string', 'UTC');
-
-        $timezone = new \DateTimeZone($timezoneString);
-
-        // Get transitions for the next year
-        $transitions = $timezone->getTransitions(time(), time() + YEAR_IN_SECONDS);
-
-        $props[] = "BEGIN:VTIMEZONE";
-        $props[] = "TZID:" . $timezoneString;
-
-        foreach ($transitions as $transition) {
-            if ($transition['isdst']) {
-                $start = new \DateTime($transition['time']);
-                $props[] = "BEGIN:DAYLIGHT";
-                $props[] = "DTSTART:" . $start->format('Ymd\THis');
-                $props[] = "TZOFFSETFROM:" . $this->formatOffset($transition['offset'] - 3600);
-                $props[] = "TZOFFSETTO:" . $this->formatOffset($transition['offset']);
-                $props[] = "RRULE:FREQ=YEARLY;BYMONTH=" . $start->format('n') . ";BYDAY=-1SU";
-                $props[] = "END:DAYLIGHT";
-            } else {
-                $start = new \DateTime($transition['time']);
-                $props[] = "BEGIN:STANDARD";
-                $props[] = "DTSTART:" . $start->format('Ymd\THis');
-                $props[] = "TZOFFSETFROM:" . $this->formatOffset($transition['offset'] + 3600);
-                $props[] = "TZOFFSETTO:" . $this->formatOffset($transition['offset']);
-                $props[] = "RRULE:FREQ=YEARLY;BYMONTH=" . $start->format('n') . ";BYDAY=-1SU";
-                $props[] = "END:STANDARD";
-            }
-        }
-
-        $props[] = "END:VTIMEZONE";
-
-        return $props;
-    }
-
-    private function formatOffset($offset)
-    {
-        $hours = intval($offset / 3600);
-        $minutes = abs(intval(($offset % 3600) / 60));
-        return sprintf("%+03d:%02d", $hours, $minutes);
     }
 }

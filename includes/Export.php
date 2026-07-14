@@ -59,7 +59,7 @@ class Export
         ) {
             $postId = $post->ID;
             $data = $this->getEvent($postId);
-            self::build(@$data);
+            $this->build($data);
         }
     }
 
@@ -84,104 +84,49 @@ class Export
         $occurrences = $event->occurrences ?? null;
         if ($repeat && $occurrences) {
             foreach ($occurrences as $occurrence) {
-                $uid = Utils::createUid($postId);
-                $tsOccurrence = strtotime($occurrence);
-                $startDate = date('Y-m-d H:i:s', $tsOccurrence);
-                $tsStart = strtotime($event->start);
-                $tsEnd = strtotime($event->end);
-                $endDate = date('Y-m-d H:i:s', $tsOccurrence + ($tsEnd - $tsStart));
-                $data[] = self::getIcalData($uid, $startDate, $endDate, $notice, $event);
+                $start = Event::occurrenceStart($event, (string) $occurrence);
+                $end = Event::occurrenceEnd($event, (string) $occurrence);
+                $uid = Utils::createUid($postId, $start->format('Y-m-d'));
+                $data[] = self::makeIcalData($uid, $start, $end, $notice, $event);
             }
         } else {
             $uid = Utils::createUid($postId);
-            $startDate = $event->start;
-            $endDate = $event->end;
-            $data[] = [self::getIcalData($uid, $startDate, $endDate, $notice, $event)];
+            $start = Event::occurrenceStart($event);
+            $end = Event::occurrenceEnd($event);
+            $data[] = self::makeIcalData($uid, $start, $end, $notice, $event);
         }
 
         return $data;
     }
 
     /**
-     * Get the iCal data for the notice
-     *
-     * @param string $eventUid
-     * @param string $startDate
-     * @param string $endDate
-     * @param object $notice
-     * @param object $event
-     * @return array
-     */
-    private static function getIcalData(
-        string $eventUid,
-        string $startDate,
-        string $endDate,
-        object $notice,
-        object $event
-    ): array {
-        return self::makeIcalData(
-            $eventUid,
-            $startDate,
-            $endDate,
-            $notice,
-            $event
-        );
-    }
-
-    /**
      * Make the iCal data for the notice
      *
      * @param string $eventUid
-     * @param string $startDate
-     * @param string $endDate
+     * @param \DateTimeImmutable $start
+     * @param \DateTimeImmutable $end
      * @param object $notice
      * @param object $event
      * @return array
      */
     private static function makeIcalData(
         string $eventUid,
-        string $startDate,
-        string $endDate,
+        \DateTimeImmutable $start,
+        \DateTimeImmutable $end,
         object $notice,
         object $event
     ): array {
-        $allDay = $event->all_day;
-        $multiDay = $event->multiday;
-        $tsStart = strtotime($startDate);
-        $tsEnd = strtotime($endDate);
-        $startDay = date('Y-m-d', $tsStart);
-        $endDay = date('Y-m-d', $tsEnd);
-        // Multiday event
-        if ($multiDay == 'on' && $startDay != $endDay) {
-            // All day event
-            if ($allDay == 'on') {
-                $startDate = date('Y-m-d', $tsStart);
-                $endDate = date('Y-m-d', $tsEnd);
-                // Timed event
-            } else {
-                $startDate = date('Y-m-d H:i:s', $tsStart);
-                $endDate = date('Y-m-d H:i:s', $tsEnd);
-            }
-            // Single day event
-        } else {
-            // All day event
-            if ($allDay == 'on') {
-                $startDate = date('Y-m-d', $tsStart);
-                $endDate = $endDay == $startDay ? date('Y-m-d', $tsStart) : date('Y-m-d', $tsEnd);
-                // Timed event
-            } else {
-                $startDate = date('Y-m-d H:i:s', $tsStart);
-                $endDate = date('Y-m-d H:i:s', $tsEnd);
-            }
-        }
+        $allDay = ($event->all_day ?? '') === 'on';
 
         return [
             'summary' => $notice->title,
             'uid' => $eventUid ?: '',
             'description' => $notice->content ?: '',
-            'dtstart' => $startDate,
-            'dtend' => $endDate,
-            'location' => ''
+            'dtstart' => $start->format($allDay ? 'Y-m-d' : 'Y-m-d H:i:s'),
+            'dtend' => $end->format($allDay ? 'Y-m-d' : 'Y-m-d H:i:s'),
+            'location' => '',
+            'all_day' => $allDay,
+            'timezone' => Event::timezone($event)->getName(),
         ];
     }
 

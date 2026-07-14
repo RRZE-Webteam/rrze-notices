@@ -100,21 +100,7 @@ class Display
             $notice = (object) $notice;
             $event = (object) $notice->event;
 
-            $currentTimeGmt = current_time('timestamp', true);
-
-            $noticeStart = $notice->notice_start;
-            $eventStart = $event->start_gmt;
-            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
-            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
-
-            $tsEnd = strtotime($event->end_gmt);
-            if ($occurrences = $event->occurrences) {
-                $tsEnd = strtotime(end($occurrences));
-            }
-
-            $expired = $tsEnd < $currentTimeGmt;
-
-            if ($expired || !$noticeStarted) {
+            if (!Event::isNoticeActive($notice)) {
                 continue;
             }
 
@@ -217,21 +203,7 @@ class Display
             $notice = (object) $notice;
             $event = (object) $notice->event;
 
-            $currentTimeGmt = current_time('timestamp', true);
-
-            $noticeStart = $notice->notice_start;
-            $eventStart = $event->start_gmt;
-            $tsNoticeStart = strtotime($eventStart) - absint($noticeStart);
-            $noticeStarted = $tsNoticeStart < $currentTimeGmt;
-
-            $tsEnd = strtotime($event->end_gmt);
-            if ($occurrences = $event->occurrences) {
-                $tsEnd = strtotime(end($occurrences));
-            }
-
-            $expired = $tsEnd < $currentTimeGmt;
-
-            if ($expired || !$noticeStarted) {
+            if (!Event::isNoticeActive($notice)) {
                 continue;
             }
 

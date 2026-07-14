@@ -13,6 +13,9 @@
             "vendor/cmb2/cmb2/init.php"
         ]
     },
+    "scripts": {
+        "test": "php tests/regression.php"
+    },
     "extra": {
         "installer-paths": {
             "vendor/cmb2/cmb2": [

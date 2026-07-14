@@ -386,8 +386,7 @@ class Metaboxes
     public static function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestamp = $field->value;
-        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        $timestampGmt = self::localTimestampToGmt((int) $field->value);
         update_post_meta($postId, 'event_start_gmt', $timestampGmt);
     }
 
@@ -402,8 +401,7 @@ class Metaboxes
     public static function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $timestamp = $field->value;
-        $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d H:i:s', $timestamp)));
+        $timestampGmt = self::localTimestampToGmt((int) $field->value);
         update_post_meta($postId, 'event_end_gmt', $timestampGmt);
     }
 
@@ -418,15 +416,33 @@ class Metaboxes
     public static function saveEventRepeatLastdateField(bool $updated, string $action, \CMB2_Field $field)
     {
         $postId = $field->object_id;
-        $minDate = strtotime('+1 day', current_time('timestamp'));
-        $maxDate = strtotime('+2 year', current_time('timestamp'));
         if ($timestamp = $field->value) {
-            $timestamp = max($minDate, min($maxDate, $timestamp));
-            $timestamp = strtotime(date('Y-m-d', $timestamp));
-            $timestampGmt = strtotime(get_gmt_from_date(date('Y-m-d', $timestamp)));
-            update_post_meta($postId, 'event_repeat_lastdate', $timestamp);
-            update_post_meta($postId, 'event_repeat_lastdate_gmt', $timestampGmt);
+            $timezone = wp_timezone();
+            $selected = new \DateTimeImmutable(gmdate('Y-m-d H:i:s', (int) $timestamp), $timezone);
+            $minDate = current_datetime()->modify('+1 day')->setTime(0, 0);
+            $maxDate = current_datetime()->modify('+2 years')->setTime(23, 59, 59);
+            if ($selected < $minDate) {
+                $selected = $minDate;
+            } elseif ($selected > $maxDate) {
+                $selected = $maxDate;
+            }
+            $selected = $selected->setTime(0, 0);
+            $localTimestamp = strtotime($selected->format('Y-m-d') . ' UTC');
+
+            update_post_meta($postId, 'event_repeat_lastdate', $localTimestamp);
+            update_post_meta($postId, 'event_repeat_lastdate_gmt', $selected->getTimestamp());
         }
+    }
+
+    private static function localTimestampToGmt(int $timestamp): int
+    {
+        if (!$timestamp) {
+            return 0;
+        }
+
+        $local = new \DateTimeImmutable(gmdate('Y-m-d H:i:s', $timestamp), wp_timezone());
+
+        return $local->getTimestamp();
     }
 
     public static function sanitizeNoticeStart($value, $fieldArgs, $field)

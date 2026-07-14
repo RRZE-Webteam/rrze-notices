@@ -119,43 +119,7 @@ class Notice
         }
 
         $event = (object) $this->options['event'];
-        $allDay = $event->all_day;
-        $multiDay = $event->multiday;
-        $tsStartUTC = strtotime($event->start_gmt);
-        $tsStart = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsStartUTC)));
-        $tsEndUTC = strtotime($event->end_gmt);
-        $tsEnd = strtotime(get_date_from_gmt(date('Y-m-d H:i:s', $tsEndUTC)));
-        $startDay = date('Y-m-d', $tsStart);
-        $endDay = date('Y-m-d', $tsEnd);
-        // Multiday event
-        if ($multiDay == 'on' && $startDay != $endDay) {
-            // All day event
-            if ($allDay == 'on') {
-                $eventReadableDatetime = date_i18n(get_option('date_format'), $tsStart)
-                    . ' &ndash; '
-                    . date_i18n(get_option('date_format'), $tsEnd);
-                // Timed event
-            } else {
-                $eventReadableDatetime = date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsStart)
-                    . ' &ndash; '
-                    . date_i18n(get_option('date_format') . ', ' . get_option('time_format'), $tsEnd);
-            }
-            // Single day event
-        } else {
-            // All day event
-            if ($allDay == 'on') {
-                $eventReadableDatetime = ($endDay == $startDay ? date_i18n(get_option('date_format'), $tsStart) : date_i18n(get_option('date_format'), $tsStart)
-                    . ' &ndash; '
-                    . date_i18n(get_option('date_format'), $tsEnd));
-                // Timed event
-            } else {
-                $eventReadableDatetime = date_i18n(get_option('date_format'), $tsStart)
-                    . ' '
-                    . date_i18n(get_option('time_format'), $tsStart)
-                    . ' &ndash; '
-                    . date_i18n(get_option('time_format'), $tsEnd);
-            }
-        }
+        $eventReadableDatetime = Event::readableDatetime($event);
 
         $eventDate = sprintf(
             '<p class="notice-event-date">%s</p>',
