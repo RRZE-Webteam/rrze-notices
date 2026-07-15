@@ -11,7 +11,7 @@ class ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e
     );
 
     public static $prefixLengthsPsr4 = array (
-        'R' => 
+        'R' =>
         array (
             'RRule\\' => 6,
             'RRZE\\Notices\\' => 13,
@@ -19,12 +19,12 @@ class ComposerStaticInitb04862c1995c932c6284e1fc50bf5e8e
     );
 
     public static $prefixDirsPsr4 = array (
-        'RRule\\' => 
+        'RRule\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
             1 => __DIR__ . '/..' . '/rlanvin/php-rrule/src',
         ),
-        'RRZE\\Notices\\' => 
+        'RRZE\\Notices\\' =>
         array (
             0 => __DIR__ . '/../..' . '/includes',
         ),
