@@ -81,7 +81,11 @@ class Main
             $assetFile['version'] ?? plugin()->getVersion()
         );
 
-        if ($hook === 'post.php' && $post && $post->post_type === CPTNotice::POST_TYPE) {
+        $isNoticeEditor = in_array($hook, ['post.php', 'post-new.php'], true)
+            && $post
+            && $post->post_type === CPTNotice::POST_TYPE;
+
+        if ($isNoticeEditor) {
             $assetFile = include(plugin()->getPath('build') . 'cmb2.asset.php');
             wp_enqueue_script(
                 'rrze-notices-cmb2',

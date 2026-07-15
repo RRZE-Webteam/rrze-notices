@@ -1,1 +1,114 @@
-(()=>{"use strict";var e={514:(e,t,n)=>{n(428)(document).ready((function(e){let t=e("input[name='notice_visibility']");function n(){var t=e("input[name='notice_visibility']:checked").val();void 0===t?e("div.notice_visibility_roles").hide():"all"===t?e("div.notice_visibility_roles").slideUp():"roles"===t&&e("div.notice_visibility_roles").slideDown()}n(),t.on("change",(function(){n()}));let i=e("input#event_repeat"),o=e("select#event_repeat_interval"),d=e("input[name='event_repeat_monthly_type']");function v(){i.is(":checked")?(e("div.event-repeat").slideDown(),r()):e("div.event-repeat").slideUp()}function r(){var t=e("option:selected",o).val();"week"===t?(e("div.event-repeat-weekly").slideDown(),e("div.event-repeat-monthly").slideUp()):"month"===t&&(e("div.event-repeat-monthly").slideDown(),e("div.event-repeat-weekly").slideUp(),l())}function l(){var t=e("input[name='event_repeat_monthly_type']:checked").val();void 0===t?(e("div.event-repeat-monthly-date").hide(),e("div.event-repeat-monthly-dow").hide()):"dow"===t?(e("div.event-repeat-monthly-dow").slideDown(),e("div.event-repeat-monthly-date").slideUp()):"date"===t&&(e("div.event-repeat-monthly-date").slideDown(),e("div.event-repeat-monthly-dow").slideUp())}i.length>0&&v(),i.on("change",(function(){v()})),o.on("change",(function(){r()})),d.on("change",(function(){l()}))}))},428:e=>{e.exports=window.jQuery}},t={};function n(i){var o=t[i];if(void 0!==o)return o.exports;var d=t[i]={exports:{}};return e[i](d,d.exports,n),d.exports}n.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return n.d(t,{a:t}),t},n.d=(e,t)=>{for(var i in t)n.o(t,i)&&!n.o(e,i)&&Object.defineProperty(e,i,{enumerable:!0,get:t[i]})},n.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),n(514)})();
+"use strict";
+
+jQuery(document).ready(function ($) {
+    const noticeMetabox = $("#rrze_notices_metabox");
+    const visibilityTypeInput = noticeMetabox.find(
+        "input[name='notice_visibility']"
+    );
+    const roleFields = noticeMetabox.find("div.notice_visibility_roles");
+    const repeatCheckbox = noticeMetabox.find("input#event_repeat");
+    const repeatIntervalSelect = noticeMetabox.find(
+        "select#event_repeat_interval"
+    );
+    const repeatMonthlyTypeInput = noticeMetabox.find(
+        "input[name='event_repeat_monthly_type']"
+    );
+    const allRecurrenceFields = noticeMetabox.find("div.event-repeat");
+    const baseRecurrenceFields = allRecurrenceFields.not(
+        ".event-repeat-weekly, .event-repeat-monthly"
+    );
+    const weeklyFields = noticeMetabox.find("div.event-repeat-weekly");
+    const allMonthlyFields = noticeMetabox.find("div.event-repeat-monthly");
+    const baseMonthlyFields = allMonthlyFields.not(
+        ".event-repeat-monthly-date, .event-repeat-monthly-dow"
+    );
+    const monthlyDateFields = noticeMetabox.find(
+        "div.event-repeat-monthly-date"
+    );
+    const monthlyWeekdayFields = noticeMetabox.find(
+        "div.event-repeat-monthly-dow"
+    );
+
+    updateRoleFieldVisibility(false);
+    updateRecurrenceFieldVisibility(false);
+
+    visibilityTypeInput.on("change", function () {
+        updateRoleFieldVisibility(true);
+    });
+    repeatCheckbox.on("change", function () {
+        updateRecurrenceFieldVisibility(true);
+    });
+    repeatIntervalSelect.on("change", function () {
+        updateIntervalFieldVisibility(true);
+    });
+    repeatMonthlyTypeInput.on("change", function () {
+        updateMonthlyFieldVisibility(true);
+    });
+
+    function setFieldVisibility(fields, visible, animate) {
+        fields.stop(true, true);
+        if (!animate) {
+            fields.toggle(visible);
+            return;
+        }
+        if (visible) {
+            fields.slideDown(150);
+        } else {
+            fields.slideUp(150);
+        }
+    }
+
+    function updateRoleFieldVisibility(animate) {
+        const visibilityType = visibilityTypeInput.filter(":checked").val();
+        setFieldVisibility(roleFields, visibilityType === "roles", animate);
+    }
+
+    function updateRecurrenceFieldVisibility(animate) {
+        if (!repeatCheckbox.is(":checked")) {
+            setFieldVisibility(allRecurrenceFields, false, animate);
+            return;
+        }
+        setFieldVisibility(baseRecurrenceFields, true, animate);
+        updateIntervalFieldVisibility(animate);
+    }
+
+    function updateIntervalFieldVisibility(animate) {
+        if (!repeatCheckbox.is(":checked")) {
+            setFieldVisibility(weeklyFields, false, animate);
+            setFieldVisibility(allMonthlyFields, false, animate);
+            return;
+        }
+
+        const repeatInterval = repeatIntervalSelect.val();
+        const repeatsWeekly = repeatInterval === "week";
+        const repeatsMonthly = repeatInterval === "month";
+        setFieldVisibility(weeklyFields, repeatsWeekly, animate);
+        setFieldVisibility(baseMonthlyFields, repeatsMonthly, animate);
+
+        if (repeatsMonthly) {
+            updateMonthlyFieldVisibility(animate);
+        } else {
+            setFieldVisibility(monthlyDateFields, false, animate);
+            setFieldVisibility(monthlyWeekdayFields, false, animate);
+        }
+    }
+
+    function updateMonthlyFieldVisibility(animate) {
+        const repeatsMonthly =
+            repeatCheckbox.is(":checked") &&
+            repeatIntervalSelect.val() === "month";
+        const repeatMonthlyType = repeatMonthlyTypeInput
+            .filter(":checked")
+            .val();
+        setFieldVisibility(
+            monthlyDateFields,
+            repeatsMonthly && repeatMonthlyType === "date",
+            animate
+        );
+        setFieldVisibility(
+            monthlyWeekdayFields,
+            repeatsMonthly && repeatMonthlyType === "dow",
+            animate
+        );
+    }
+});
