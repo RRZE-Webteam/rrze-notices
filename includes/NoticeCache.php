@@ -80,7 +80,6 @@ final class NoticeCache
             'visibility' => Post::getVisibilityRoles($postId),
             'network_wide' => Post::isNetworkWide($postId),
             'notice_start' => get_post_meta($postId, 'notice_start', true),
-            'subscription_link' => Export::makeIcsLink($postId),
             'admin_link' => admin_url('post.php?post=' . esc_attr($postId) . '&action=edit'),
             'event' => Event::buildEventData($postId),
         ];

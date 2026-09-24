@@ -135,7 +135,6 @@ class Notice
         $html .= $eventDate;
         $html .= $this->renderMessage();
 
-        $noticeActions[] = $this->options['subscription_link'] ? $this->options['subscription_link'] : '';
         $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
         $noticeActions = array_filter($noticeActions);
         $html .= sprintf(

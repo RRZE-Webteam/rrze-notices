@@ -60,12 +60,6 @@ class Display
             return;
         }
 
-        $subscriptionLink = sprintf(
-            '<a href="%1$s">%2$s</a>',
-            esc_url($notice->subscription_link),
-            esc_html__('Add to calendar', 'rrze-notices')
-        );
-
         $editLink = '';
         if (current_user_can('manage_options')) {
             $editText = is_super_admin()
@@ -88,7 +82,6 @@ class Display
                 'screens' => ['dashboard'],
                 'type' => (string) $notice->type,
                 'hide_title' => (bool) $notice->hide_title,
-                'subscription_link' => $subscriptionLink,
                 'edit_link' => $editLink,
                 'event' => (object) $notice->event,
             ]
@@ -123,11 +116,7 @@ class Display
         }
 
         $notice = (object) $noticeData;
-        $subscriptionLink = sprintf(
-            '<a href="%1$s">%2$s</a>',
-            esc_url(Export::makeIcsLink((int) $post->ID)),
-            esc_html__('Add to calendar', 'rrze-notices')
-        );
+
         $editLink = sprintf(
             '<span class="notice-preview">%s</span>',
             esc_html__('Preview', 'rrze-notices')
@@ -141,7 +130,6 @@ class Display
                 'screens' => [CPTNotice::POST_TYPE],
                 'type' => (string) $notice->type,
                 'hide_title' => (bool) $notice->hide_title,
-                'subscription_link' => $subscriptionLink,
                 'edit_link' => $editLink,
                 'event' => (object) $notice->event,
                 'preview' => true,

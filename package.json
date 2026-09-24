@@ -1,7 +1,25 @@
 {
+    "name": "rrze-notices",
+    "version": "4.0.0",
+    "description": "Dashboard notices for WordPress Multisite with role-based visibility.",
+    "license": "GPL-2.0-or-later",
+    "private": true,
     "engines": {
-        "node": ">=21.5.0",
-        "npm": ">=10.2.4"
+        "node": ">=20",
+        "npm": ">=10"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/RRZE-Webteam/rrze-notices"
+    },
+    "author": {
+        "name": "RRZE-Webteam <webmaster@fau.de> (https://www.rrze.fau.de)",
+        "url": "https://www.wordpress.rrze.fau.de"
+    },
+    "compatibility": {
+        "wprequires": "6.5",
+        "wptestedup": "6.8",
+        "phprequires": "8.2"
     },
     "devDependencies": {
         "@wordpress/components": "latest",

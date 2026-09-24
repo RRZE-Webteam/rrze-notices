@@ -54,9 +54,6 @@ class Main
         $display = new Display;
         $display->registerHooks();
 
-        $export = new Export();
-        $export->registerHooks();
-
         Cron::registerHooks();
         Dismiss::registerHooks();
 
