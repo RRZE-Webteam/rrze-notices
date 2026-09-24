@@ -107,8 +107,6 @@ final class NoticeQuery
      */
     private function isActiveAndVisible(object $notice): bool
     {
-        return !empty($notice->event)
-            && Event::isNoticeActive($notice)
-            && NoticeVisibility::isVisibleToCurrentUser($notice);
+        return NoticeVisibility::isVisibleToCurrentUser($notice);
     }
 }

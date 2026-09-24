@@ -6,6 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'RRule\\' => array($baseDir . '/src', $vendorDir . '/rlanvin/php-rrule/src'),
     'RRZE\\Notices\\' => array($baseDir . '/includes'),
 );

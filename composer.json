@@ -1,13 +1,11 @@
 {
     "require": {
         "php": "^8.2.0",
-        "rlanvin/php-rrule": "^2.5.0",
         "cmb2/cmb2": "^2.11.0"
     },
     "autoload": {
         "psr-4": {
-            "RRZE\\Notices\\": "includes/",
-            "RRule\\": "src/"
+            "RRZE\\Notices\\": "includes/"
         },
         "files": [
             "vendor/cmb2/cmb2/init.php"

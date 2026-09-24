@@ -45,8 +45,6 @@ class Columns
             'cb' => '<input type="checkbox">',
             'title' => __('Notice', 'rrze-notices'),
             'notice_type' => __('Type', 'rrze-notices'),
-            'notice_start' => __('Start', 'rrze-notices'),
-            'event_date' => __('Event Date', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
             'network_wide' => __('Network-Wide', 'rrze-notices'),
             // 'date' => __('Date', 'rrze-notices')
@@ -67,23 +65,13 @@ class Columns
     public function renderColumn(string $column, int $postId): void
     {
         $notice = get_post_meta($postId, 'notice_data', true);
-        if (!empty($notice) && !empty($notice['event'])) {
+        if (!empty($notice)) {
             $notice = (object) $notice;
-            $event = (object) $notice->event;
             $types = [
                 'info' => __('Info', 'rrze-notices'),
                 'warning' => __('Warning', 'rrze-notices')
             ];
             $noticeType = in_array($notice->type, array_keys($types)) ? $types[$notice->type] : __('Info', 'rrze-notices');
-            $noticeStartsAt = Event::noticeStartsAt($notice);
-            $noticeStartDate = $noticeStartsAt
-                ? wp_date(
-                    get_option('date_format'),
-                    $noticeStartsAt->getTimestamp(),
-                    Event::timezone($event)
-                )
-                : '&mdash;';
-            $readableDate = $event->readable_datetime;
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
                 '&mdash;';
@@ -99,8 +87,6 @@ class Columns
             $visibility = !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
         } else {
             $noticeType = '&mdash;';
-            $noticeStartDate = '&mdash;';
-            $readableDate = '&mdash;';
             $visibility = '&mdash;';
             $networkWide = '&mdash;';
         }
@@ -108,13 +94,6 @@ class Columns
         switch ($column) {
             case 'notice_type':
                 echo $noticeType;
-                break;
-            case 'notice_start':
-                echo $noticeStartDate;
-                echo !is_super_admin() && Post::isNetworkWide($postId) ? '<br>' . __('(Network-Wide)', 'rrze-notices') : '';
-                break;
-            case 'event_date':
-                echo $readableDate;
                 break;
             case 'network_wide':
                 echo $networkWide;

@@ -141,11 +141,6 @@ class Post
             return;
         }
 
-        $encodedRecurrenceRule = wp_json_encode(Event::buildRecurrenceRuleArgs($postId));
-        if ($encodedRecurrenceRule !== false) {
-            update_post_meta($postId, 'event_rrule_args', $encodedRecurrenceRule);
-        }
-
         NoticeCache::rebuildLocal($postId);
 
         if (
@@ -222,10 +217,7 @@ class Post
      */
     public static function getNoticeType(int $postId): string
     {
-        if (!$type = get_post_meta($postId, 'notice_type', true)) {
-            // Legacy meta key
-            $type = get_post_meta($postId, 'rrze_notices_type', true);
-        }
+        $type = get_post_meta($postId, 'notice_type', true);
         return array_key_exists($type, self::getNoticeTypes()) ? $type : 'info';
     }
 
@@ -242,14 +234,7 @@ class Post
             return in_array('hide_title', (array) $display, true);
         }
 
-        $legacyDisplay = get_post_meta($postId, 'rrze_notices_display', true);
-        if (!empty($legacyDisplay)) {
-            // Legacy meta key
-            return in_array('hide_title', (array) $legacyDisplay, true);
-        }
-
-        // Legacy meta key
-        return (bool) get_post_meta($postId, 'rrze_notices_hide_title', true);
+        return false;
     }
 
     /**
@@ -265,14 +250,7 @@ class Post
             return in_array('network_wide', (array) $display, true);
         }
 
-        $legacyDisplay = get_post_meta($postId, 'rrze_notices_display', true);
-        if (!empty($legacyDisplay)) {
-            // Legacy meta key
-            return in_array('network_wide', (array) $legacyDisplay, true);
-        }
-
-        // Legacy meta key
-        return (bool) get_post_meta($postId, 'rrze_notices_network_wide', true);
+        return false;
     }
 
     /**
@@ -283,14 +261,10 @@ class Post
      */
     public static function getVisibilityRoles(int $postId): array
     {
-        if ($visibility = get_post_meta($postId, 'notice_visibility', true)) {
-            $roles = get_post_meta($postId, 'notice_visibility_roles', true);
-            return $visibility === 'roles' && $roles ? $roles : ['all'];
-        } else {
-            // Legacy meta key
-            $roles = (array) get_post_meta($postId, 'rrze_notices_visibility', true);
-            return in_array('all', $roles, true) ? ['all'] : $roles;
-        }
+        $visibility = get_post_meta($postId, 'notice_visibility', true);
+        $roles = get_post_meta($postId, 'notice_visibility_roles', true);
+        return $visibility === 'roles' && $roles ? $roles : ['all'];
+
     }
 
     /**
@@ -300,57 +274,7 @@ class Post
      */
     public static function refreshNoticeLifecycle(): void
     {
-        $args = [
-            'fields' => 'ids',
-            'post_type' => CPTNotice::POST_TYPE,
-            'post_status' => 'publish',
-            'numberposts' => -1,
-        ];
-        $posts = get_posts($args);
+        // TODO: Reimplementierung mit Schedule-Logik (Issue 3).
 
-        if (!$posts) {
-            return;
-        }
-
-        foreach ($posts as $postId) {
-            $notice = get_post_meta($postId, 'notice_data', true);
-            if (empty($notice) || empty($notice['event'])) {
-                continue;
-            }
-
-            $notice = (object) $notice;
-            $noticeStarted = Event::hasNoticeStarted($notice);
-            $expired = Event::isNoticeExpired($notice);
-
-            if ($expired) {
-                wp_update_post([
-                    'ID' => $postId,
-                    'post_status' => self::EXPIRED_POST_STATUS
-                ]);
-            }
-
-            if ($expired || !$noticeStarted) {
-                $noticeId = NoticeId::forPost((int) $postId);
-                $dismissal = new Dismiss((string) $noticeId, true);
-                $dismissal->clearForAllUsers();
-            }
-
-            if (!$expired) {
-                NoticeCache::rebuildLocal((int) $postId);
-            } else {
-                delete_post_meta($postId, 'notice_data');
-            }
-
-            if (
-                Utils::isPluginActiveForNetwork()
-                && self::isNetworkWide($postId)
-            ) {
-                if (!$expired) {
-                    NoticeCache::syncNetwork((int) $postId);
-                } else {
-                    NoticeCache::removeNetwork((int) $postId);
-                }
-            }
-        }
     }
 }

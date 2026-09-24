@@ -47,7 +47,7 @@ class Utils
     /**
      * Return localized weekday labels ordered by the site's week start.
      *
-     * @param string|null $format Label format: full, short, min, or rrule.
+     * @param string|null $format Label format: full, short, min.
      * @return array<int|string, string> Ordered weekday labels.
      */
     public static function getDaysOfWeek($format = null)
@@ -65,25 +65,13 @@ class Utils
     /**
      * Return localized weekday labels in their canonical order.
      *
-     * @param string|null $format Label format: full, short, min, or rrule.
+     * @param string|null $format Label format: full, short, min.
      * @return array<int|string, string> Weekday labels keyed by day index or name.
      */
     public static function daysOfWeek($format = null)
     {
         global $wp_locale;
-        $daysOfWeek = [];
         switch ($format) {
-            case 'rrule':
-                $daysOfWeek = [
-                    'monday' => 'MO',
-                    'tuesday' => 'TU',
-                    'wednesday' => 'WE',
-                    'thursday' => 'TH',
-                    'friday' => 'FR',
-                    'saturday' => 'SA',
-                    'sunday' => 'SU',
-                ];
-                break;
             case 'min':
                 $daysOfWeek = [
                     0 => $wp_locale->get_weekday_initial($wp_locale->get_weekday(0)),
@@ -133,22 +121,6 @@ class Utils
         global $wp_locale;
         $monthNames = [];
         switch ($format) {
-            case 'rrule':
-                $monthNames = [
-                    'jan' => 1,
-                    'feb' => 2,
-                    'mar' => 3,
-                    'apr' => 4,
-                    'may' => 5,
-                    'jun' => 6,
-                    'jul' => 7,
-                    'aug' => 8,
-                    'sep' => 9,
-                    'oct' => 10,
-                    'nov' => 11,
-                    'dec' => 12,
-                ];
-                break;
             case 'short':
                 $monthNames = [
                     0 => $wp_locale->get_month_abbrev($wp_locale->get_month('01')),
@@ -184,63 +156,6 @@ class Utils
                 break;
         }
         return $monthNames;
-    }
-    /**
-     * Generate a stable iCalendar UID for a notice or one of its occurrences.
-     *
-     * Calendar clients use the UID to update an imported event. A random value
-     * would create a duplicate whenever the same notice is exported again.
-     *
-     * @param int    $postId    Notice post ID.
-     * @param string $occurrence Stable occurrence discriminator, usually a date.
-     * @return string RFC 5545-compatible globally unique identifier.
-     */
-    public static function createUid(int $postId = 0, string $occurrence = ''): string
-    {
-        $host = (string) parse_url(site_url(), PHP_URL_HOST);
-        $blogId = function_exists('get_current_blog_id') ? get_current_blog_id() : 0;
-        $instance = $occurrence !== '' ? '-' . substr(hash('sha256', $occurrence), 0, 16) : '';
-
-        return sprintf(
-            'rrze-notices-%d-%d%s@%s',
-            $blogId,
-            $postId,
-            $instance,
-            $host ?: 'localhost'
-        );
-    }
-
-    /**
-     * Determine whether a value can represent a valid date and time.
-     *
-     * @param \DateTime|string|int $date Date object, parseable string, or timestamp.
-     * @return bool
-     */
-    public static function isValidDate($date): bool
-    {
-        if (empty($date)) {
-            return false;
-        }
-
-        if ($date instanceof \DateTime) {
-            return true;
-        }
-
-        if (is_numeric($date)) {
-            try {
-                new \DateTime('@' . $date);
-                return true;
-            } catch (\Exception $e) {
-                // continue to the next check
-            }
-        }
-
-        try {
-            new \DateTime($date);
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
     }
 
 }

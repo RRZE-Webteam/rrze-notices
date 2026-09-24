@@ -47,9 +47,7 @@ class Notice
         'type' => 'info',
         'hide_title' => false,
         'preview' => false,
-        'subscription_link' => '',
         'edit_link' => '',
-        'event' => [],
         'is_dismissible' => true
     ];
 
@@ -123,16 +121,7 @@ class Notice
             return;
         }
 
-        $event = (object) $this->options['event'];
-        $eventReadableDatetime = Event::readableDatetime($event);
-
-        $eventDate = sprintf(
-            '<p class="notice-event-date">%s</p>',
-            $eventReadableDatetime
-        );
-
         $html  = $this->renderTitle();
-        $html .= $eventDate;
         $html .= $this->renderMessage();
 
         $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
