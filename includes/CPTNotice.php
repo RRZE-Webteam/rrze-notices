@@ -42,7 +42,7 @@ class CPTNotice
                 'supports' => [
                     'title',
                 ],
-                'capability_type' => self::capabilityType(),
+                'capability_type' => ['notice', 'notices'],
                 'map_meta_cap' => true,
             ]
         );
@@ -78,18 +78,6 @@ class CPTNotice
         );
     }
 
-    /**
-     * Get the capability type.
-     * 
-     * @return array
-     */
-    private static function capabilityType(): array
-    {
-        $networkOptions = Options::getNetworkOptions();
-        $capability = Utils::isPluginActiveForNetwork() ? $networkOptions->access : 'manage_options';
-        $capabilityType = $capability === 'manage_options' ? 'page' : self::POST_TYPE;
-        return [$capabilityType, $capabilityType . 's'];
-    }
 
     /**
      * Get the labels.

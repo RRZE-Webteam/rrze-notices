@@ -113,7 +113,7 @@ class Utils
     /**
      * Return localized month labels or recurrence month numbers.
      *
-     * @param string|null $format Label format: full, short, or rrule.
+     * @param string|null $format Label format: full, short.
      * @return array<int|string, int|string> Month values keyed by index or abbreviation.
      */
     public static function getMonthNames($format = null)

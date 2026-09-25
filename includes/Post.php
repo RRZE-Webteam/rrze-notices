@@ -26,8 +26,9 @@ class Post
         add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
         add_action('delete_post', [__CLASS__, 'handleDeletedPost'], 10, 2);
-        add_filter('user_has_cap', [__CLASS__, 'restrictPostEditing'], 10, 4);
+        add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
         add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
+
     }
 
     /**
@@ -57,7 +58,7 @@ class Post
     }
 
     /**
-     * Append custom post status to the postbox.
+     * Add custom post status to the postbox.
      *
      * @return void
      */
@@ -172,29 +173,58 @@ class Post
     }
 
     /**
-     * Restrict editing of network-wide notices
+     * Map notice capabilities to manage_options or manage_network_options.
      *
-     * @param array $allcaps
-     * @param array $caps
-     * @param array $args
-     * @param object $user
-     * @return array
+     * WordPress calls this filter whenever it checks a capability for a
+     * notice post. Instead of relying on page capabilities (which editors
+     * also have), we map to manage_options or manage_network_options
+     * depending on the network setting.
+     *
+     * @param string[] $caps    Required primitive capabilities.
+     * @param string   $cap     Capability being checked.
+     * @param int      $userId  User ID.
+     * @param array    $args    Additional arguments, $args[0] is the post ID for post-specific caps.
+     * @return string[]
      */
-    public static function restrictPostEditing($allcaps, $caps, $args, $user)
+    public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
     {
-        if (isset($caps[0], $args[2])) {
-            $post = get_post($args[2]);
+        $noticeCaps = [
+            'edit_notice',
+            'read_notice',
+            'delete_notice',
+            'edit_notices',
+            'edit_others_notices',
+            'publish_notices',
+            'read_private_notices',
+            'delete_notices',
+            'delete_private_notices',
+            'delete_published_notices',
+            'delete_others_notices',
+            'edit_private_notices',
+            'edit_published_notices',
+        ];
+
+        if (!in_array($cap, $noticeCaps, true)) {
+            return $caps;
+        }
+
+        //Network-wide notices are superadmin-only
+        if (!empty($args[0])) {
+            $post = get_post($args[0]);
             if (
-                $post &&
-                $post->post_type === CPTNotice::POST_TYPE &&
-                get_post_meta($post->ID, 'notice_network_wide', true) === 'on' &&
-                !is_super_admin()
+                $post
+                && $post->post_type === CPTNotice::POST_TYPE
+                && get_post_meta($post->ID, 'notice_network_wide', true) === 'on'
+                && !is_super_admin($userId)
             ) {
-                $allcaps[$caps[0]] = false;
+                return ['do_not_allow'];
             }
         }
-        return $allcaps;
+        //Map to the configured access capability
+        $networkOptions = Options::getNetworkOptions();
+        return [$networkOptions -> access];
     }
+
 
     /**
      * Get the available notice types
