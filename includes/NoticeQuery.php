@@ -100,7 +100,7 @@ final class NoticeQuery
     }
 
     /**
-     * Apply the common event-boundary and role-visibility policies.
+     * Apply role-visibility policy.
      *
      * @param object $notice Cached notice data.
      * @return bool

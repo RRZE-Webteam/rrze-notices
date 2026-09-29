@@ -4,6 +4,7 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+
 /**
  * Registers notice-post lifecycle, status, and capability behavior.
  */
@@ -58,7 +59,7 @@ class Post
     }
 
     /**
-     * Add custom post status to the postbox.
+     * Add custom post status to the postbox (site editor).
      *
      * @return void
      */
@@ -88,7 +89,7 @@ class Post
     }
 
     /**
-     * Append custom post status to the quick edit.
+     * Append custom post status to the quick edit settings.
      *
      * @return void
      */
@@ -304,7 +305,35 @@ class Post
      */
     public static function refreshNoticeLifecycle(): void
     {
-        // TODO: Reimplementierung mit Schedule-Logik (Issue 3).
+        $postIDs= get_posts([
+            'fields' => 'ids',
+            'post_type' => CPTNotice::POST_TYPE,
+            'post_status' => 'publish',
+            'numberposts' => -1,
+        ]);
+
+        if (empty($postIDs)) {
+            return;
+        }
+
+        $now = time();
+
+        foreach ($postIDs as $postID) {
+            $visibleUntil = (int) get_post_meta($postID, 'notice_visible_until_gmt', true);
+
+            if (!$visibleUntil) {
+                continue;
+            }
+
+            if ($now >= $visibleUntil) {
+                wp_update_post([
+                    'ID' => $postID,
+                    'post_status' => self::EXPIRED_POST_STATUS
+                ]);
+
+                NoticeCache::removeNetwork($postID);
+            }
+        }
 
     }
 }

@@ -47,6 +47,7 @@ class Columns
             'notice_type' => __('Type', 'rrze-notices'),
             'visibility' => __('Visibility', 'rrze-notices'),
             'network_wide' => __('Network-Wide', 'rrze-notices'),
+            'visible_until' => __('Visible Until', 'rrze-notices'),
             // 'date' => __('Date', 'rrze-notices')
         ];
         if (!is_super_admin() || !Utils::isPluginActiveForNetwork()) {
@@ -101,6 +102,14 @@ class Columns
             case 'visibility':
                 echo $visibility;
                 break;
+            case 'visible_until':
+                $visibleUntil = (int) get_post_meta($postId, 'notice_visible_until_gmt', true);
+                if ($visibleUntil) {
+                    echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), $visibleUntil));
+                } else {
+                    echo '&mdash;';
+                }
+                break;
             default:
                 break;
         }
@@ -115,6 +124,7 @@ class Columns
     public function defineSortableColumns(array $columns): array
     {
         $columns['notice_type'] = 'notice_type';
+        $columns['visible_until'] = 'visible_until';
         return $columns;
     }
 
@@ -144,6 +154,10 @@ class Columns
             case 'notice_type':
                 $query->set('meta_key', 'notice_type');
                 $query->set('orderby', 'meta_value');
+                break;
+            case 'visible_until':
+                $query->set('meta_key', 'notice_visible_until_gmt');
+                $query->set('orderby', 'meta_value_num');
                 break;
         }
     }

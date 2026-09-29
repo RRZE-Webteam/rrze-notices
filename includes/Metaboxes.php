@@ -18,9 +18,9 @@ class Metaboxes
     {
         add_action('cmb2_admin_init', [__CLASS__, 'registerNoticeMetabox']);
         add_action('cmb2_save_field_notice_visibility', [__CLASS__, 'saveNoticeVisibilityField'], 10, 3);
-        add_action('cmb2_save_field_event_start', [__CLASS__, 'saveEventStartField'], 10, 3);
-        add_action('cmb2_save_field_event_end', [__CLASS__, 'saveEventEndField'], 10, 3);
+        add_action('cmb2_save_field_notice_visible_until', [__CLASS__, 'saveVisibleUntilField'], 10, 3);
     }
+
 
     /**
      * Register the complete notice-settings metabox and its fields.
@@ -30,7 +30,6 @@ class Metaboxes
     public static function registerNoticeMetabox(): void
     {
         $objectTypes = [CPTNotice::POST_TYPE];
-        $startOfWeek = get_option('start_of_week');
 
         $cmb = new_cmb2_box([
             'id' => 'rrze_notices_metabox',
@@ -42,7 +41,6 @@ class Metaboxes
         ]);
 
         self::addNoticeFields($cmb);
-        self::addEventFields($cmb, (int) $startOfWeek);
     }
 
     /**
@@ -55,7 +53,7 @@ class Metaboxes
     {
         // Notice Type options
         $cmb->add_field([
-            'id'   => 'notice_type',
+            'id' => 'notice_type',
             'name' => __('Type', 'rrze-notices'),
             'type' => 'radio',
             'default' => 'info',
@@ -69,6 +67,7 @@ class Metaboxes
             'name' => __('Display', 'rrze-notices'),
             'id' => 'notice_display',
             'type' => 'multicheck',
+            'select_all_button' => false,
             'options' => self::getDisplayOptions()
         ]);
         // Notice Visibility
@@ -91,72 +90,19 @@ class Metaboxes
             'options' => self::getRoleVisibilityOptions(),
             'classes' => ['notice_visibility_roles'],
         ]);
-
-    }
-
-    /**
-     * Add event boundary fields.
-     *
-     * @param \CMB2 $cmb         Notice settings metabox.
-     * @param int   $startOfWeek WordPress weekday index.
-     * @return void
-     */
-    private static function addEventFields(\CMB2 $cmb, int $startOfWeek): void
-    {
-        // Event Start date-time->timestamp
         $cmb->add_field([
-            'name' => __('Event Start', 'rrze-notices'),
-            'id' => 'event_start',
+            'name' => __('Visible until', 'rrze-notices')
+                . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
+                . __('(Date and time)', 'rrze-notices') . '</span>',
+            'id' => 'notice_visible_until',
             'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'event date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'event time format', 'rrze-notices'),
+            'date_format' => _x('Y/m/d', 'date format', 'rrze-notices'),
+            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
             'attributes' => [
-                'data-datepicker' => json_encode(
-                    [
-                        'firstDay' => $startOfWeek,
-                        'dayNames' => Utils::getDaysOfWeek('short'),
-                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                        'monthNamesShort' => Utils::getMonthNames('short')
-                    ]
-                ),
-                'data-timepicker' => json_encode(
-                    [
-                        'stepMinute' => 5,
-                    ]
-                ),
                 'required' => 'required'
-            ]
+            ],
         ]);
-        // End date-time->timestamp
-        $cmb->add_field([
-            'name' => __('Event End', 'rrze-notices'),
-            'id' => 'event_end',
-            'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'event date format', 'rrze-notices'),
-            'time_format' => _x('g:i a', 'event time format', 'rrze-notices'),
-            'attributes' => [
-                'data-datepicker' => json_encode(
-                    [
-                        'firstDay' => $startOfWeek,
-                        'dayNames' => Utils::getDaysOfWeek('short'),
-                        'dayNamesMin' => Utils::getDaysOfWeek('min'),
-                        'monthNamesShort' => Utils::getMonthNames('short')
-                    ]
-                ),
-                'data-timepicker' => json_encode(
-                    [
-                        'stepMinute' => 5,
-                    ]
-                ),
-                'required' => 'required'
-            ]
-        ]);
-        // All day event
-        $cmb->add_field([
-            'name' => __('All Day Event', 'rrze-notices') . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">' . __('(Time settings will be ignored)', 'rrze-notices') . '</span>',
-            'id' => 'event_all_day',
-            'type' => 'checkbox',
-        ]);
+
     }
 
 
@@ -216,12 +162,12 @@ class Metaboxes
     /**
      * Remove stale role selections when visibility changes to all users.
      *
-     * @param bool        $updated Whether CMB2 changed the stored value.
-     * @param string      $action  CMB2 save action.
-     * @param \CMB2_Field $field   Saved visibility field.
+     * @param bool $updated Whether CMB2 changed the stored value.
+     * @param string $action CMB2 save action.
+     * @param \CMB2_Field $field Saved visibility field.
      * @return void
      */
-    public static function saveNoticeVisibilityField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveNoticeVisibilityField(bool $updated, string $action, \CMB2_Field $field): void
     {
         $postId = $field->object_id;
         if ($field->value === 'all') {
@@ -230,33 +176,22 @@ class Metaboxes
     }
 
     /**
-     * Save the event start as an absolute GMT timestamp.
+     * Save the display-until value as an absolute GMT timestamp.
      *
      * @param bool        $updated Whether CMB2 changed the stored value.
      * @param string      $action  CMB2 save action.
-     * @param \CMB2_Field $field   Saved event-start field.
+     * @param \CMB2_Field $field   Saved display-until field.
      * @return void
      */
-    public static function saveEventStartField(bool $updated, string $action, \CMB2_Field $field)
+    public static function saveVisibleUntilField(bool $updated, string $action, \CMB2_Field $field): void
     {
-        $postId = $field->object_id;
-        $unixTimestamp = self::wallTimeTimestampToUnix((int) $field->value);
-        update_post_meta($postId, 'event_start_gmt', $unixTimestamp);
-    }
-
-    /**
-     * Save the event end as an absolute GMT timestamp.
-     *
-     * @param bool        $updated Whether CMB2 changed the stored value.
-     * @param string      $action  CMB2 save action.
-     * @param \CMB2_Field $field   Saved event-end field.
-     * @return void
-     */
-    public static function saveEventEndField(bool $updated, string $action, \CMB2_Field $field)
-    {
-        $postId = $field->object_id;
-        $unixTimestamp = self::wallTimeTimestampToUnix((int) $field->value);
-        update_post_meta($postId, 'event_end_gmt', $unixTimestamp);
+        $postId = $field->object_id; //ID of post to be saved
+        if (!empty($field->value)) {
+            $gmtTimestamp = self::wallTimeTimestampToUnix((int)$field->value);
+            update_post_meta($postId, 'notice_visible_until_gmt', $gmtTimestamp);
+        } else {
+            delete_post_meta($postId, 'notice_visible_until_gmt');
+        }
     }
 
 

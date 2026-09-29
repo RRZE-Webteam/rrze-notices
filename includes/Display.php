@@ -83,7 +83,6 @@ class Display
                 'type' => (string) $notice->type,
                 'hide_title' => (bool) $notice->hide_title,
                 'edit_link' => $editLink,
-                'event' => (object) $notice->event,
             ]
         );
     }
@@ -111,7 +110,7 @@ class Display
         }
 
         $noticeData = get_post_meta($post->ID, 'notice_data', true);
-        if (!is_array($noticeData) || empty($noticeData['event']) || empty($noticeData['content'])) {
+        if (!is_array($noticeData) || empty($noticeData['content'])) {
             return;
         }
 
@@ -131,7 +130,6 @@ class Display
                 'type' => (string) $notice->type,
                 'hide_title' => (bool) $notice->hide_title,
                 'edit_link' => $editLink,
-                'event' => (object) $notice->event,
                 'preview' => true,
                 'is_dismissible' => false,
             ]
