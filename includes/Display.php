@@ -109,8 +109,8 @@ class Display
             return;
         }
 
-        $noticeData = get_post_meta($post->ID, 'notice_data', true);
-        if (!is_array($noticeData) || empty($noticeData['content'])) {
+        $noticeData = Post::buildNoticeData((int) $post -> ID);
+        if ($noticeData === null || empty($noticeData['content'])) {
             return;
         }
 

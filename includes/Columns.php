@@ -65,9 +65,9 @@ class Columns
      */
     public function renderColumn(string $column, int $postId): void
     {
-        $notice = get_post_meta($postId, 'notice_data', true);
-        if (!empty($notice)) {
-            $notice = (object) $notice;
+        $noticeData = Post::buildNoticeData($postId);
+        if ($noticeData !== null) {
+            $notice = (object) $noticeData;
             $types = [
                 'info' => __('Info', 'rrze-notices'),
                 'warning' => __('Warning', 'rrze-notices')

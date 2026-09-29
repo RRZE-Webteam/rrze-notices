@@ -50,7 +50,7 @@ class Post
             'show_in_admin_all_list' => false,
             'show_in_admin_status_list' => true,
             'label_count' => _n_noop(
-                /* translators: %s: Number of expired posts. */
+            /* translators: %s: Number of expired posts. */
                 'Expired <span class="count">(%s)</span>',
                 'Expired <span class="count">(%s)</span>',
                 'rrze-notices'
@@ -112,9 +112,9 @@ class Post
     /**
      * Reset user dismissals when a notice is newly published.
      *
-     * @param string   $newStatus New post status.
-     * @param string   $oldStatus Previous post status.
-     * @param \WP_Post $post      Transitioned post.
+     * @param string $newStatus New post status.
+     * @param string $oldStatus Previous post status.
+     * @param \WP_Post $post Transitioned post.
      * @return void
      */
     public static function transitionPostStatus($newStatus, $oldStatus, $post)
@@ -124,8 +124,8 @@ class Post
         }
 
         if ($newStatus === 'publish' && $oldStatus !== 'publish') {
-            $noticeId = NoticeId::forPost((int) $post->ID);
-            $dismissal = new Dismiss((string) $noticeId, true);
+            $noticeId = NoticeId::forPost((int)$post->ID);
+            $dismissal = new Dismiss((string)$noticeId, true);
             $dismissal->clearForAllUsers();
         }
     }
@@ -143,19 +143,25 @@ class Post
             return;
         }
 
-        NoticeCache::rebuildLocal($postId);
-
         if (
             is_super_admin() &&
             Utils::isPluginActiveForNetwork()
         ) {
+            $networkOptions = Options::getNetworkOptions();
+            $noticeKey = (string)NoticeId::forPost($postId);
+
             if (self::isNetworkWide($postId)) {
-                NoticeCache::syncNetwork($postId);
+                $networkOptions->network_wide[$noticeKey] = [
+                    'blog_id' => get_current_blog_id(),
+                    'post_id' => $postId,
+                ];
                 update_post_meta($postId, 'notice_network_wide', 'on');
             } else {
-                NoticeCache::removeNetwork($postId);
+                unset($networkOptions->network_wide[$noticeKey]);
                 delete_post_meta($postId, 'notice_network_wide');
             }
+
+            update_site_option(Options::getNetworkOptionName(), $networkOptions);
         }
     }
 
@@ -168,9 +174,19 @@ class Post
      */
     public static function handleDeletedPost(int $postId, object $post): void
     {
-        if ($post->post_type === CPTNotice::POST_TYPE) {
-            NoticeCache::removeNetwork($postId);
+        if ($post->post_type !== CPTNotice::POST_TYPE) {
+            return;
         }
+
+        $networkOptions = Options::getNetworkOptions();
+        $noticeKey = (string)NoticeId::forPost($postId);
+
+        if (!isset($networkOptions->network_wide[$noticeKey])) {
+            return;
+        }
+
+        unset($networkOptions->network_wide[$noticeKey]);
+        update_site_option(Options::getNetworkOptionName(), $networkOptions);
     }
 
     /**
@@ -181,10 +197,10 @@ class Post
      * also have), we map to manage_options or manage_network_options
      * depending on the network setting.
      *
-     * @param string[] $caps    Required primitive capabilities.
-     * @param string   $cap     Capability being checked.
-     * @param int      $userId  User ID.
-     * @param array    $args    Additional arguments, $args[0] is the post ID for post-specific caps.
+     * @param string[] $caps Required primitive capabilities.
+     * @param string $cap Capability being checked.
+     * @param int $userId User ID.
+     * @param array $args Additional arguments, $args[0] is the post ID for post-specific caps.
      * @return string[]
      */
     public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
@@ -223,7 +239,7 @@ class Post
         }
         //Map to the configured access capability
         $networkOptions = Options::getNetworkOptions();
-        return [$networkOptions -> access];
+        return [$networkOptions->access];
     }
 
 
@@ -262,7 +278,7 @@ class Post
     {
         $display = get_post_meta($postId, 'notice_display', true);
         if (!empty($display)) {
-            return in_array('hide_title', (array) $display, true);
+            return in_array('hide_title', (array)$display, true);
         }
 
         return false;
@@ -278,7 +294,7 @@ class Post
     {
         $display = get_post_meta($postId, 'notice_display', true);
         if (!empty($display)) {
-            return in_array('network_wide', (array) $display, true);
+            return in_array('network_wide', (array)$display, true);
         }
 
         return false;
@@ -299,13 +315,37 @@ class Post
     }
 
     /**
-     * Refresh lifecycle state for all published notices.
+     * Build notice data directly from post and post meta.
+     *
+     * @param int $postId Notice post ID.
+     * @return array<string, mixed>|null Notice data array, or null if post is invalid.
+     */
+    public static function buildNoticeData(int $postId): ?array
+    {
+        $post = get_post($postId);
+        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
+            return null;
+        }
+        return [
+            'title' => $post->post_title,
+            'content' => $post->post_content,
+            'type' => self::getNoticeType($postId),
+            'hide_title' => self::shouldHideTitle($postId),
+            'visibility' => self::getVisibilityRoles($postId),
+            'network_wide' => self::isNetworkWide($postId),
+            'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
+        ];
+    }
+
+
+    /**
+     * Refresh lifecycle state for all published notices (Cron-Job)
      *
      * @return void
      */
     public static function refreshNoticeLifecycle(): void
     {
-        $postIDs= get_posts([
+        $postIDs = get_posts([
             'fields' => 'ids',
             'post_type' => CPTNotice::POST_TYPE,
             'post_status' => 'publish',
@@ -319,7 +359,7 @@ class Post
         $now = time();
 
         foreach ($postIDs as $postID) {
-            $visibleUntil = (int) get_post_meta($postID, 'notice_visible_until_gmt', true);
+            $visibleUntil = (int)get_post_meta($postID, 'notice_visible_until_gmt', true);
 
             if (!$visibleUntil) {
                 continue;
@@ -331,9 +371,14 @@ class Post
                     'post_status' => self::EXPIRED_POST_STATUS
                 ]);
 
-                NoticeCache::removeNetwork($postID);
+                $networkOptions = Options::getNetworkOptions();
+                $noticeKey = (string)NoticeId::forPost((int)$postID);
+                if (isset($networkOptions->network_wide[$noticeKey])) {
+                    unset($networkOptions->network_wide[$noticeKey]);
+                    update_site_option(Options::getNetworkOptionName(), $networkOptions);
+                }
             }
         }
-
     }
+
 }

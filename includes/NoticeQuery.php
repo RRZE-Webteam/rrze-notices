@@ -29,34 +29,47 @@ final class NoticeQuery
     /**
      * Return notices published by other public sites in the network.
      *
-     * @return array<int, array{id:NoticeId, notice:object, from_network:bool}>
+     * @return array<int, array{id:NoticeId, notice:object,
+    from_network:bool}>
      */
     private function findNetworkNotices(): array
     {
-        if (!Utils::isPluginActiveForNetwork() || empty($this->networkOptions->network_wide)) {
+        if (!Utils::isPluginActiveForNetwork() ||
+            empty($this->networkOptions->network_wide)) {
             return [];
         }
 
+        $currentBlogId = get_current_blog_id();
         $matches = [];
-        foreach ($this->networkOptions->network_wide as $storedId => $noticeData) {
+
+        foreach ($this->networkOptions->network_wide as $storedId => $entry)
+        {
             $noticeId = NoticeId::fromString($storedId);
             if (
                 !$noticeId
-                || $noticeId->blogId() === get_current_blog_id()
+                || $noticeId->blogId() === $currentBlogId
                 || !get_blog_status($noticeId->blogId(), 'public')
-                || !is_array($noticeData)
+                || !is_array($entry)
+                || empty($entry['post_id'])
             ) {
                 continue;
             }
 
-            $notice = (object) $noticeData;
-            if ($this->isActiveAndVisible($notice)) {
-                $matches[] = [
-                    'id' => $noticeId,
-                    'notice' => $notice,
-                    'from_network' => true,
-                ];
+            switch_to_blog($noticeId->blogId());
+
+            $noticeData = Post::buildNoticeData((int) $entry['post_id']);
+            if ($noticeData !== null) {
+                $notice = (object) $noticeData;
+                if ($this->isActiveAndVisible($notice)) {
+                    $matches[] = [
+                        'id' => $noticeId,
+                        'notice' => $notice,
+                        'from_network' => true,
+                    ];
+                }
             }
+
+            restore_current_blog();
         }
 
         return $matches;
@@ -81,12 +94,13 @@ final class NoticeQuery
 
         $matches = [];
         foreach ($postIds as $postId) {
-            $noticeData = get_post_meta($postId, 'notice_data', true);
-            if (!is_array($noticeData)) {
+            $noticeData = Post::buildNoticeData($postId);
+            if ($noticeData === null) {
                 continue;
             }
 
             $notice = (object) $noticeData;
+
             if ($this->isActiveAndVisible($notice)) {
                 $matches[] = [
                     'id' => NoticeId::forPost((int) $postId),
