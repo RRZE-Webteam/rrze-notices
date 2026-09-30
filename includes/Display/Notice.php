@@ -50,7 +50,6 @@ class Notice
     private $options = [
         'screens' => [],
         'type' => 'info',
-        'hide_title' => false,
         'preview' => false,
         'edit_link' => '',
         'is_dismissible' => true
@@ -175,7 +174,7 @@ class Notice
      */
     public function renderTitle(): string
     {
-        if (!$this->title || $this->options['hide_title']) {
+        if (!$this->title) {
             return '';
         }
 

@@ -120,9 +120,7 @@ class Metaboxes
      */
     private static function getDisplayOptions(): array
     {
-        $options = [
-            'hide_title' => __('Hide Title', 'rrze-notices'),
-        ];
+        $options = [];
         if (
             is_super_admin() &&
             Helper::isPluginActiveForNetwork()
