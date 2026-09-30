@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 defined('WP_UNINSTALL_PLUGIN') || exit;
 
 function rrze_notices_cleanup_site(): void

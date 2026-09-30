@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
 Plugin Name:     RRZE Notices
 Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
