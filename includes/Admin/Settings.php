@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Admin;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Helper;
+use RRZE\Notices\Options;
 
 /**
  * Registers and renders the multisite network settings page.

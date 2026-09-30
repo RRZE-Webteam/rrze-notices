@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Editor;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\CPT\CPTNotice;
+use RRZE\Notices\Helper;
+use RRZE\Notices\Admin\Users;
 
 /**
  * Defines CMB2 notice fields and normalizes their saved values.

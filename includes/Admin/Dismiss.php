@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Admin;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Display\NoticeId;
 
 /**
  * Persists per-user notice dismissals and handles the AJAX dismissal request.

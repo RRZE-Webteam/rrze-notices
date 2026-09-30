@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Display;
 
 defined('ABSPATH') || exit;
 

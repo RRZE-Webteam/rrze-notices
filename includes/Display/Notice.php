@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Display;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Admin\Dismiss;
 
 /**
  * Represents and renders one dashboard notice for the current request.

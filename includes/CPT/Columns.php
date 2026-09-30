@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\CPT;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Helper;
+use RRZE\Notices\Admin\Users;
 
 /**
  * Configures and renders columns on the notice post list screen.

@@ -1,28 +1,57 @@
+[![Aktuelle Version](https://img.shields.io/github/package-json/v/rrze-webteam/r
+rze-notices/main?label=Version)](https://github.com/RRZE-Webteam/rrze-notices)
+[![Release                                                                      
+Version](https://img.shields.io/github/v/release/rrze-webteam/rrze-notices?label
+=Release+Version)](https://github.com/rrze-webteam/rrze-notices/releases/)      
+[![GitHub License](https://img.shields.io/github/license/rrze-webteam/rrze-notic
+es)](https://github.com/RRZE-Webteam/rrze-notices)                              
+[![GitHub issues](https://img.shields.io/github/issues/RRZE-Webteam/rrze-notices
+)](https://github.com/RRZE-Webteam/rrze-notices/issues)
+
 # RRZE Notices
-WordPress-Plugin für die Verwaltung und Auflistung von Admin-Mitteilungen.
 
-## Download
+Role-based admin notices for WordPress Multisite with per-user dismissal.
 
-GITHub-Repo: https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
+## Features
 
-## Autor
-RRZE-Webteam, http://www.rrze.fau.de
+- Notice types: info, warning
+- Role-based visibility (all site roles, standard roles for network-wide notices)
+- Per-user dismissal via AJAX
+- Network-wide notices for Multisite (super admins only)
+- Automatic expiration via scheduled display period
+- Admin bar badge with notice count and dropdown
 
-## Copryright
-GNU General Public License (GPL) Version 2
+## Documentation
 
-## Beschreibung
+https://www.wp.rrze.fau.de/plugins/externe-daten-einbinden/rrze-notices/
 
-Administratornachrichten, die von diesem Plugin generiert werden, sind spezielle Nachrichten, die im "Dashboard" angezeigt werden. Diese Nachrichten dienen dazu, registrierte Benutzer über wichtige Angelegenheiten im Zusammenhang mit der Website zu informieren.
+## Requirements
 
-Über das Menü "Dashboard/Nachrichten" können Administratoren Nachrichten erstellen. Sobald ein Benutzer eine Nachricht gelesen hat, kann er die Nachricht ausblenden, so dass sie nicht mehr erscheint.
+- WordPress 6.5+
+- PHP 8.2+
 
-In einer "Multisite-Installation" und wenn das Plugin netzwerkweit aktiviert ist, können Superadministratoren auch Nachrichten für das gesamte Netzwerk erstellen, die auf dem "Dashboard" aller Websites im Netzwerk angezeigt werden. Das Menü "Netzwerkverwaltung/Einstellungen/Nachrichten" ermöglicht es Superadministratoren, die Nachrichtenfunktionen zu aktivieren und den Zugriff auf die Nachrichtenverwaltung zu vergeben. 
+## Installation
 
-Eine Nachricht enthält die folgenden Felder:
-- den Titel
-- den Inhalt
-- die Nachrichtenart (informativ oder Warnhinweis)
-- das Verfallsdatum, das verhindert, dass Nachrichten nach einem bestimmten Datum angezeigt werden
-- Anzeigeoptionen (Titel ausblenden, alternativer Stil, netzwerkweit)
-- Sichtbarkeit, die es ermöglicht, die Nachrichten abhängig von der Rolle des Benutzers anzuzeigen
+Download the latest release from https://github.com/RRZE-Webteam/rrze-notices               
+Network-activate the plugin on Multisite, then enable it in Network Settings > Notices.
+
+## Multisite
+
+Fully Multisite-capable. Network activation required. 
+Super admins can enable the plugin and create network-wide notices via Network Settings > Notices. 
+Site admins create local notices visible only on their site.
+
+## Accessibility
+
+Admin notices use semantic WordPress markup. Dismiss buttons are     
+keyboard-operable.
+
+## License
+
+[GPLv3 or later](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Maintainer
+
+RRZE Webteam ([webmaster@fau.de](mailto:webmaster@fau.de))
+                                                                                  
+---      

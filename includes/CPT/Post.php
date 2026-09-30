@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\CPT;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Helper;
+use RRZE\Notices\Options;
+use RRZE\Notices\Admin\Dismiss;
+use RRZE\Notices\Display\NoticeId;
 
 
 /**

@@ -17,7 +17,7 @@ visibility. Users can dismiss notices individually.
 
 Features:
 
-* Notice types: info, warning, error
+* Notice types: info, warning
 * Role-based visibility (all site roles, standard roles for network-wide notices)
 * Per-user dismissal via AJAX
 * Network-wide notices for Multisite (super admins only)
@@ -26,10 +26,8 @@ Features:
 
 == Installation ==
 
-Install and update via RRZE Updater or download the latest release from the
-repository.
-Network-activate the plugin on Multisite, then enable it in Network Settings >
-Notices.
+Install and update via RRZE Updater or download the latest release from the repository.
+Network-activate the plugin on Multisite, then enable it in Network Settings > Notices.
 
 == Changelog ==
 

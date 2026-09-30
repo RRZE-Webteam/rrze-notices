@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Display;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Helper;
+use RRZE\Notices\CPT\CPTNotice;
+use RRZE\Notices\CPT\Post;
 
 /**
  * Finds active notices that target the current user.

@@ -6,6 +6,15 @@ namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+use RRZE\Notices\Admin\AdminBar;
+use RRZE\Notices\Admin\Dismiss;
+use RRZE\Notices\Admin\Settings;
+use RRZE\Notices\CPT\CPTNotice;
+use RRZE\Notices\CPT\Cron;
+use RRZE\Notices\CPT\Post;
+use RRZE\Notices\CPT\Registration;
+use RRZE\Notices\Display\Display;
+
 /**
  * Bootstraps plugin components after requirements and network settings pass.
  */
@@ -48,7 +57,7 @@ class Main
             }
         }
 
-        CPT::registerHooks();
+        Registration::registerHooks();
 
         $adminBar = new AdminBar;
         $adminBar->registerHooks();

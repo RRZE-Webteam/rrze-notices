@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Admin;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Options;
+use RRZE\Notices\Display\NoticeId;
+use RRZE\Notices\Display\NoticeQuery;
 
 /**
  * Collects active notices and exposes them through the WordPress admin bar.

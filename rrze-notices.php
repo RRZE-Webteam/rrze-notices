@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
   Plugin Name:     RRZE Notices
-  Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
+  Plugin URI:      https://github.com/RRZE-Webteam/rrze-notices
   Description:     Management and listing of admin notices.
   Version:         4.0.0
   Author:          RRZE Webteam
@@ -20,6 +20,8 @@ declare(strict_types=1);
 namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\CPT\Cron;
 
 /** @var string Minimum supported PHP version. */
 const RRZE_PHP_VERSION = '8.2';

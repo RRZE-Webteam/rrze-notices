@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\CPT;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Editor\Metaboxes;
 
 /**
  * Coordinates registration and administration of the notice post type.
  */
-class CPT
+class Registration
 {
     /**
      * Register post-type, metadata, and list-table hooks.

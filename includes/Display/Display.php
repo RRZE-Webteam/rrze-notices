@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RRZE\Notices;
+namespace RRZE\Notices\Display;
 
 defined('ABSPATH') || exit;
+
+use RRZE\Notices\Helper;
+use RRZE\Notices\Options;
+use RRZE\Notices\CPT\CPTNotice;
+use RRZE\Notices\CPT\Post;
 
 /**
  * Registers active notices for display in the WordPress dashboard.
