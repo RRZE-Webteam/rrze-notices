@@ -50,7 +50,7 @@ class Columns
             'visible_until' => __('Visible Until', 'rrze-notices'),
             // 'date' => __('Date', 'rrze-notices')
         ];
-        if (!is_super_admin() || !Utils::isPluginActiveForNetwork()) {
+        if (!is_super_admin() || !Helper::isPluginActiveForNetwork()) {
             unset($columns['network_wide']);
         }
         return $columns;
@@ -75,39 +75,39 @@ class Columns
             $noticeType = in_array($notice->type, array_keys($types)) ? $types[$notice->type] : __('Info', 'rrze-notices');
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
-                '&mdash;';
+                '-';
 
             $availableRoles = array_merge(['all' => __('All', 'rrze-notices')], Users::getRoles());
             $roles = $notice->visibility;
             $visibility = [];
             foreach ($roles as $roleSlug) {
                 if (isset($availableRoles[$roleSlug])) {
-                    $visibility[] = $availableRoles[$roleSlug];
+                    $visibility[] = esc_html($availableRoles[$roleSlug]);
                 }
             }
-            $visibility = !empty($visibility) ? implode(', ', $visibility) : '&mdash;';
+            $visibility = !empty($visibility) ? implode(', ', $visibility) : '-';
         } else {
-            $noticeType = '&mdash;';
-            $visibility = '&mdash;';
-            $networkWide = '&mdash;';
+            $noticeType = '-';
+            $visibility = '-';
+            $networkWide = '-';
         }
 
         switch ($column) {
             case 'notice_type':
-                echo $noticeType;
+                echo esc_html($noticeType);
                 break;
             case 'network_wide':
-                echo $networkWide;
+                echo wp_kses($networkWide, ['span' => ['class' => []]]);
                 break;
             case 'visibility':
-                echo $visibility;
+                echo esc_html($visibility);
                 break;
             case 'visible_until':
                 $visibleUntil = (int) get_post_meta($postId, 'notice_visible_until_gmt', true);
                 if ($visibleUntil) {
                     echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), $visibleUntil));
                 } else {
-                    echo '&mdash;';
+                    echo esc_html('-');
                 }
                 break;
             default:

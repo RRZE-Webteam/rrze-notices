@@ -23,8 +23,6 @@ class Post
     public static function registerHooks(): void
     {
         add_action('init', [__CLASS__, 'registerPostStatus']);
-        add_action('admin_footer-post.php', [__CLASS__, 'appendPostStatusPostbox']);
-        add_action('admin_footer-edit.php', [__CLASS__, 'appendPostStatusQuickEdit']);
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
         add_action('delete_post', [__CLASS__, 'handleDeletedPost'], 10, 2);
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
@@ -58,56 +56,6 @@ class Post
         ]);
     }
 
-    /**
-     * Add custom post status to the postbox (site editor).
-     *
-     * @return void
-     */
-    public static function appendPostStatusPostbox()
-    {
-        $post = get_post();
-        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
-            return;
-        }
-
-        $selected = '';
-        $postStatusDisplay = '';
-        $title = _x('Expired', 'custom post status', 'rrze-notices');
-        if ($post->post_status === self::EXPIRED_POST_STATUS) {
-            $postStatusDisplay = '$(".misc-pub-post-status span#post-status-display").text("' . $title . '");';
-            $selected = ' selected=\"selected\"';
-        }
-        $script = '
-        <script>
-        jQuery(document).ready(function($){
-        $("select#post_status").append("<option value=\"expired\"' . $selected . '>' . $title . '</option>");
-        ' . $postStatusDisplay . '
-        });
-        </script>
-        ';
-        echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
-    }
-
-    /**
-     * Append custom post status to the quick edit settings.
-     *
-     * @return void
-     */
-    public static function appendPostStatusQuickEdit()
-    {
-        $post = get_post();
-        if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
-            return;
-        }
-
-        $title = _x('Expired', 'custom post status', 'rrze-notices');
-        $script = "<script>
-        jQuery(document).ready(function($) {
-        $('select[name=\"_status\"]').append('<option value=\"expired\">" . $title . "</option>');
-        });
-        </script>";
-        echo str_replace(PHP_EOL, '', trim(preg_replace('/\s+/', ' ', $script)));
-    }
 
     /**
      * Reset user dismissals when a notice is newly published.
@@ -145,7 +93,7 @@ class Post
 
         if (
             is_super_admin() &&
-            Utils::isPluginActiveForNetwork()
+            Helper::isPluginActiveForNetwork()
         ) {
             $networkOptions = Options::getNetworkOptions();
             $noticeKey = (string)NoticeId::forPost($postId);

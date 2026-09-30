@@ -34,7 +34,7 @@ final class NoticeQuery
      */
     private function findNetworkNotices(): array
     {
-        if (!Utils::isPluginActiveForNetwork() ||
+        if (!Helper::isPluginActiveForNetwork() ||
             empty($this->networkOptions->network_wide)) {
             return [];
         }

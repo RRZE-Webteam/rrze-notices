@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 /**
  * Collection of shared WordPress, date, and identifier helpers.
  */
-class Utils
+class Helper
 {
     /**
      * Read a value from the array returned by get_post_meta().
@@ -20,11 +20,8 @@ class Utils
     {
         if (!isset($meta[$key][0])) {
             return '';
-        } elseif (is_serialized($meta[$key][0])) {
-            return unserialize($meta[$key][0]);
-        } else {
-            return $meta[$key][0];
         }
+        return maybe_unserialize($meta[$key][0]);
     }
 
     /**

@@ -61,39 +61,6 @@ class Dismiss
         self::$hooksRegistered = true;
     }
 
-    /**
-     * Print the script for dismissing the notice.
-     *
-     * @return void
-     */
-    public function renderDismissalScript(): void
-    {
-        if (!$this->isDismissible) return;
-
-        $nonce = wp_create_nonce('rrze_notices_dismiss_' . $this->id); ?>
-        <script>
-            window.addEventListener('load', function() {
-                var dismissalButton = document.querySelector('div#rrze-notices-<?php echo esc_attr($this->id); ?>.is-dismissible');
-                if (!dismissalButton) {
-                    return;
-                }
-                dismissalButton.addEventListener('click', function(event) {
-                    if (event.target.tagName.toLowerCase() === 'a') {
-                        return;
-                    }
-                    var request = new XMLHttpRequest(),
-                        requestBody = '';
-                    requestBody += 'id=<?php echo esc_attr(rawurlencode($this->id)); ?>';
-                    requestBody += '&action=rrze_notices_dismiss';
-                    requestBody += '&nonce=<?php echo esc_html($nonce); ?>';
-                    request.open('POST', '<?php echo esc_url(admin_url('admin-ajax.php')); ?>');
-                    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    request.send(requestBody);
-                });
-            });
-        </script>
-<?php
-    }
 
     /**
      * Determine whether the current user dismissed this notice.
@@ -120,7 +87,7 @@ class Dismiss
             return;
         }
 
-        check_ajax_referer('rrze_notices_dismiss_' . $noticeId, 'nonce', true);
+        check_ajax_referer('rrze_notices_dismiss_' ,'nonce', true);
         update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId, true);
     }
 

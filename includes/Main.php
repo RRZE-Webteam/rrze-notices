@@ -38,7 +38,7 @@ class Main
     {
         $networkOptions = Options::getNetworkOptions();
 
-        if (Utils::isPluginActiveForNetwork()) {
+        if (Helper::isPluginActiveForNetwork()) {
             $settings = new Settings;
             $settings->registerHooks();
             if (!$networkOptions->enabled) {
@@ -77,6 +77,17 @@ class Main
             $assetFile['dependencies'] ?? [],
             $assetFile['version'] ?? plugin()->getVersion()
         );
+        wp_enqueue_script(
+            'rrze-notices-dismiss',
+            plugins_url('build/dismiss.js', plugin()->getBasename()),
+            [],
+            $assetFile['version'] ?? plugin()->getVersion(),
+            true
+        );
+        wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('rrze_notices_dismiss'),
+        ]);
 
         $isNoticeEditor = in_array($hook, ['post.php', 'post-new.php'], true)
             && $post
@@ -91,6 +102,29 @@ class Main
                 $assetFile['version'] ?? plugin()->getVersion(),
                 true
             );
+
+            $isNoticeScreen = $isNoticeEditor
+                || (
+                    $hook === 'edit.php'
+                    && isset($_GET['post_type'])
+                    && $_GET['post_type'] === CPTNotice::POST_TYPE
+                );
+
+            if ($isNoticeScreen) {
+                wp_enqueue_script(
+                    'rrze-notices-post-status',
+                    plugins_url('build/post-status.js', plugin()->getBasename()),
+                    [],
+                    $assetFile['version'] ?? plugin()->getVersion(),
+                    true
+                );
+                wp_localize_script('rrze-notices-post-status',
+                    'rrzeNoticesPostStatus', [
+                        'statusValue' => Post::EXPIRED_POST_STATUS,
+                        'statusLabel' => _x('Expired', 'custom post status', 'rrze-notices'),
+                        'currentStatus' => $post ? $post->post_status : '',
+                    ]);
+            }
         }
     }
 }

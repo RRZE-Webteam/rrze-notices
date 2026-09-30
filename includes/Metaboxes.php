@@ -119,7 +119,7 @@ class Metaboxes
         ];
         if (
             is_super_admin() &&
-            Utils::isPluginActiveForNetwork()
+            Helper::isPluginActiveForNetwork()
         ) {
             $options['network_wide'] = __('Network-Wide', 'rrze-notices');
         }
@@ -138,7 +138,7 @@ class Metaboxes
         $options = [];
         if (
             is_super_admin() &&
-            Utils::isPluginActiveForNetwork()
+           Helper::isPluginActiveForNetwork()
         ) {
             foreach ($availableRoles as $role => $name) {
                 $options[$role] = $name;

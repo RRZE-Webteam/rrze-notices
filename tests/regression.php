@@ -87,7 +87,7 @@ function get_post_meta(int $postId, string $key = '', bool $single = false): mix
     return $testPostMeta[$postId][$key] ?? ($single ? '' : []);
 }
 
-require_once dirname(__DIR__) . '/includes/Utils.php';
+require_once dirname(__DIR__) . '/includes/Helper.php';
 require_once dirname(__DIR__) . '/includes/Users.php';
 require_once dirname(__DIR__) . '/includes/NoticeId.php';
 require_once dirname(__DIR__) . '/includes/NoticeVisibility.php';

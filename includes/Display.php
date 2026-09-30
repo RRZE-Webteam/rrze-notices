@@ -63,7 +63,7 @@ class Display
         $editLink = '';
         if (current_user_can('manage_options')) {
             $editText = is_super_admin()
-                && Utils::isPluginActiveForNetwork()
+                && Helper::isPluginActiveForNetwork()
                 && !empty($notice->network_wide)
                     ? __('Edit (Network-Wide)', 'rrze-notices')
                     : __('Edit', 'rrze-notices');

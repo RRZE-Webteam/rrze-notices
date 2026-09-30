@@ -31,17 +31,16 @@ class Notices
         }
 
         add_action('admin_notices', [$this, 'renderNotices']);
-        add_action('admin_footer', [$this, 'renderDismissalScripts']);
         $this->hooksRegistered = true;
     }
 
     /**
      * Add a notice.
      *
-     * @param string $id      A unique ID for this notice. Can contain lowercase characters and underscores.
-     * @param string $title   The title for our notice.
+     * @param string $id A unique ID for this notice. Can contain lowercase characters and underscores.
+     * @param string $title The title for our notice.
      * @param string $message The message for our notice.
-     * @param array  $options An array of additional options to change the defaults for this notice.
+     * @param array $options An array of additional options to change the defaults for this notice.
      *                        See Notice::__construct() for details.
      * @return void
      */
@@ -99,19 +98,4 @@ class Notices
         }
     }
 
-    /**
-     * Render dismissal scripts for visible notices.
-     *
-     * @return void
-     */
-    public function renderDismissalScripts(): void
-    {
-        $notices = $this->getAll();
-
-        foreach ($notices as $notice) {
-            if ($notice->shouldDisplay() && $notice->dismissal) {
-                $notice->dismissal->renderDismissalScript();
-            }
-        }
-    }
 }

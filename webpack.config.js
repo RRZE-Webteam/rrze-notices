@@ -4,12 +4,15 @@ const { basename, dirname, resolve } = require("path");
 const srcDir = "src";
 const admin = resolve(process.cwd(), "src", "admin");
 const cmb2 = resolve(process.cwd(), "src", "cmb2");
+const dismiss = resolve(process.cwd(), "src", "dismiss");
 
 module.exports = {
     ...defaultConfig,
     entry: {
         admin,
         cmb2,
+        dismiss,
+        "post-status": resolve(process.cwd(), "src", "post-status"),
     },
     output: {
         path: resolve(process.cwd(), "build"),
