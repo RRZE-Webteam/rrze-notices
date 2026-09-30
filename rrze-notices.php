@@ -3,17 +3,19 @@
 declare(strict_types=1);
 
 /*
-Plugin Name:     RRZE Notices
-Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
-Description:     Management and listing of admin notices.
-Version:         4.0.0
-Author:          RRZE Webteam
-Author URI:      https://blogs.fau.de/webworking/
-License:         GNU General Public License v2
-License URI:     http://www.gnu.org/licenses/gpl-2.0.html
-Domain Path:     /languages
-Text Domain:     rrze-notices
-*/
+  Plugin Name:     RRZE Notices
+  Plugin URI:      https://gitlab.rrze.fau.de/rrze-webteam/rrze-notices
+  Description:     Management and listing of admin notices.
+  Version:         4.0.0
+  Author:          RRZE Webteam
+  Author URI:      https://blogs.fau.de/webworking/
+  License:         GNU General Public License Version 3
+  License URI:     https://www.gnu.org/licenses/gpl-3.0.html
+  Domain Path:     /languages
+  Text Domain:     rrze-notices
+  Requires at least: 6.5
+  Requires PHP:      8.2
+  */
 
 namespace RRZE\Notices;
 

@@ -2,9 +2,6 @@
 ### NetBeans ###
 **/nbproject/
 
-### Composer ###
-composer.lock
-
 ### Node ###
 node_modules/
 
