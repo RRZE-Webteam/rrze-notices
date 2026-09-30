@@ -36,10 +36,10 @@ class Settings
         add_action('network_admin_menu', [$this, 'registerNetworkAdminMenu']);
         add_action('admin_init', [$this, 'handleSettingsSubmission']);
         add_action('admin_init', [$this, 'registerNetworkSettings']);
-        add_filter('network_admin_plugin_action_links_' . plugin()->getBasename(), [$this, 'addNetworkSettingsLink']);
+        add_filter('network_admin_plugin_action_links_' . plugin_basename(RRZE_NOTICES_FILE), [$this, 'addNetworkSettingsLink']);
     }
 
-    /**
+        /**
      * Add a settings link to the network plugins screen.
      *
      * @param string[] $links Existing plugin action links.

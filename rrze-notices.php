@@ -25,6 +25,11 @@ const RRZE_PHP_VERSION = '8.2';
 /** @var string Minimum supported WordPress version. */
 const RRZE_WP_VERSION = '6.5';
 
+define('RRZE_NOTICES_VERSION', '4.0.0');
+define('RRZE_NOTICES_FILE', __FILE__);
+define('RRZE_NOTICES_DIR', plugin_dir_path(__FILE__));
+define('RRZE_NOTICES_URL', plugin_dir_url(__FILE__));
+
 /**
  * Load Composer dependencies and the plugin PSR-4 autoloader.
  */
@@ -60,14 +65,14 @@ function systemRequirements(): string
     $error = '';
     if (!is_php_version_compatible(RRZE_PHP_VERSION)) {
         $error = sprintf(
-            /* translators: 1: Server PHP version number, 2: Required PHP version number. */
+        /* translators: 1: Server PHP version number, 2: Required PHP version number. */
             __('The server is running PHP version %1$s. The Plugin requires at least PHP version %2$s.', 'rrze-notices'),
             $phpVersion,
             RRZE_PHP_VERSION
         );
     } elseif (!is_wp_version_compatible(RRZE_WP_VERSION)) {
         $error = sprintf(
-            /* translators: 1: Server WordPress version number, 2: Required WordPress version number. */
+        /* translators: 1: Server WordPress version number, 2: Required WordPress version number. */
             __('The server is running WordPress version %1$s. The Plugin requires at least WordPress version %2$s.', 'rrze-notices'),
             $wpVersion,
             RRZE_WP_VERSION
@@ -88,7 +93,7 @@ function activation()
         deactivate_plugins(plugin_basename(__FILE__));
         wp_die(
             sprintf(
-                /* translators: 1: The plugin name, 2: The error string. */
+            /* translators: 1: The plugin name, 2: The error string. */
                 __('Plugins: %1$s: %2$s', 'rrze-notices'),
                 plugin_basename(__FILE__),
                 $error
@@ -107,7 +112,7 @@ function deactivation(bool $networkWide = false)
 {
     if (is_multisite() && $networkWide) {
         foreach (get_sites(['fields' => 'ids', 'number' => 0]) as $siteId) {
-            switch_to_blog((int) $siteId);
+            switch_to_blog((int)$siteId);
             Cron::clearSchedule();
             restore_current_blog();
         }
@@ -117,18 +122,29 @@ function deactivation(bool $networkWide = false)
     Cron::clearSchedule();
 }
 
+
 /**
- * Return the request-scoped plugin metadata instance.
+ * Displays an admin notice when system requirements are not met.
  *
- * @return Plugin
+ * Named function — not a closure — so it can be registered as a proper
+ * hook callback (Standard §11). Only shown to users who can act on it
+ * (Standard §68).
  */
-function plugin()
+function showRequirementsNotice(): void
 {
-    static $instance;
-    if (null === $instance) {
-        $instance = new Plugin(__FILE__);
+    if (!current_user_can('activate_plugins')) {
+        return;
     }
-    return $instance;
+
+    $error = systemRequirements();
+    if ($error === '') {
+        return;
+    }
+
+    printf(
+        '<div class="notice notice-error"><p>%s</p></div>',
+        esc_html($error)
+    );
 }
 
 /**
@@ -139,26 +155,10 @@ function plugin()
 function loaded()
 {
     loadTextdomain();
-    plugin()->initialize();
-    if ($error = systemRequirements()) {
-        add_action('admin_init', function () use ($error) {
-            if (current_user_can('activate_plugins')) {
-                $pluginData = get_plugin_data(plugin()->getFile());
-                $pluginName = $pluginData['Name'];
-                $tag = is_plugin_active_for_network(plugin()->getBasename()) ? 'network_admin_notices' : 'admin_notices';
-                add_action($tag, function () use ($pluginName, $error) {
-                    printf(
-                        '<div class="notice notice-error"><p>' .
-                            /* translators: 1: The plugin name, 2: The error string. */
-                            __('Plugins: %1$s: %2$s', 'rrze-notices') .
-                            '</p></div>',
-                        esc_html($pluginName),
-                        esc_html($error)
-                    );
-                });
-            }
-        });
+    if (systemRequirements() !== '') {
+        add_action('admin_notices', __NAMESPACE__ . '\showRequirementsNotice');
         return;
     }
     Main::bootstrap();
+
 }

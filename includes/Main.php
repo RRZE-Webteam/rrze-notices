@@ -72,18 +72,18 @@ class Main
     {
         global $post;
 
-        $assetFile = include(plugin()->getPath('build') . 'admin.asset.php');
+        $assetFile = include(RRZE_NOTICES_DIR . 'build/admin.asset.php');
         wp_enqueue_style(
             'rrze-notices-admin',
-            plugins_url('build/admin.style.css', plugin()->getBasename()),
+            plugins_url('build/admin.style.css', RRZE_NOTICES_FILE),
             $assetFile['dependencies'] ?? [],
-            $assetFile['version'] ?? plugin()->getVersion()
+            $assetFile['version'] ?? RRZE_NOTICES_VERSION
         );
         wp_enqueue_script(
             'rrze-notices-dismiss',
-            plugins_url('build/dismiss.js', plugin()->getBasename()),
+            plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
             [],
-            $assetFile['version'] ?? plugin()->getVersion(),
+            $assetFile['version'] ?? RRZE_NOTICES_VERSION,
             true
         );
         wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
@@ -96,37 +96,37 @@ class Main
             && $post->post_type === CPTNotice::POST_TYPE;
 
         if ($isNoticeEditor) {
-            $assetFile = include(plugin()->getPath('build') . 'cmb2.asset.php');
+            $assetFile = include(RRZE_NOTICES_DIR . 'build/cmb2.asset.php');
             wp_enqueue_script(
                 'rrze-notices-cmb2',
-                plugins_url('build/cmb2.js', plugin()->getBasename()),
+                plugins_url('build/cmb2.js', RRZE_NOTICES_FILE),
                 $assetFile['dependencies'] ?? [],
-                $assetFile['version'] ?? plugin()->getVersion(),
+                RRZE_NOTICES_VERSION,
                 true
             );
+        }
 
-            $isNoticeScreen = $isNoticeEditor
-                || (
-                    $hook === 'edit.php'
-                    && isset($_GET['post_type'])
-                    && $_GET['post_type'] === CPTNotice::POST_TYPE
-                );
+        $isNoticeScreen = $isNoticeEditor
+            || (
+                $hook === 'edit.php'
+                && isset($_GET['post_type'])
+                && $_GET['post_type'] === CPTNotice::POST_TYPE
+            );
 
-            if ($isNoticeScreen) {
-                wp_enqueue_script(
-                    'rrze-notices-post-status',
-                    plugins_url('build/post-status.js', plugin()->getBasename()),
-                    [],
-                    $assetFile['version'] ?? plugin()->getVersion(),
-                    true
-                );
-                wp_localize_script('rrze-notices-post-status',
-                    'rrzeNoticesPostStatus', [
-                        'statusValue' => Post::EXPIRED_POST_STATUS,
-                        'statusLabel' => _x('Expired', 'custom post status', 'rrze-notices'),
-                        'currentStatus' => $post ? $post->post_status : '',
-                    ]);
-            }
+        if ($isNoticeScreen) {
+            wp_enqueue_script(
+                'rrze-notices-post-status',
+                plugins_url('build/post-status.js', RRZE_NOTICES_FILE),
+                [],
+                $assetFile['version'] ?? RRZE_NOTICES_VERSION,
+                true
+            );
+            wp_localize_script('rrze-notices-post-status',
+                'rrzeNoticesPostStatus', [
+                    'statusValue' => Post::EXPIRED_POST_STATUS,
+                    'statusLabel' => _x('Expired', 'custom post status', 'rrze-notices'),
+                    'currentStatus' => $post ? $post->post_status : '',
+                ]);
         }
     }
 }

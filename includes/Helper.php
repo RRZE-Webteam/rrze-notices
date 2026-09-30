@@ -37,7 +37,7 @@ class Helper
             return false;
         }
         $plugins = get_site_option('active_sitewide_plugins');
-        if (isset($plugins[plugin()->getBasename()])) {
+        if (isset($plugins[plugin_basename(RRZE_NOTICES_FILE)])) {
             return true;
         }
         return false;
