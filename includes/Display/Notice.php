@@ -7,6 +7,7 @@ namespace RRZE\Notices\Display;
 defined('ABSPATH') || exit;
 
 use RRZE\Notices\Admin\Dismiss;
+use RRZE\Notices\Editor\AllowedHtml;
 
 /**
  * Represents and renders one dashboard notice for the current request.
@@ -55,28 +56,6 @@ class Notice
         'is_dismissible' => true
     ];
 
-    /**
-     * Allowed HTML in the message.
-     *
-     * @var array<string, array<string, array<mixed>>>
-     */
-    private $allowedHtml = [
-        'p' => [
-            'class' => [],
-        ],
-        'a' => [
-            'href' => [],
-            'rel' => [],
-        ],
-        'em' => [],
-        'strong' => [],
-        'br' => [],
-        'ol' => [],
-        'ul' => [],
-        'li' => [],
-        'ins' => [],
-        'blockquote' => []
-    ];
 
     /**
      * Allowed WordPress notice types.
@@ -108,8 +87,6 @@ class Notice
         if (!$this->id || !$this->message) {
             return;
         }
-
-        $this->allowedHtml = apply_filters('rrze_notices_allowed_html', $this->allowedHtml);
 
         $this->dismissal = new Dismiss($this->id, $this->options['is_dismissible']);
     }
@@ -215,7 +192,7 @@ class Notice
      */
     public function renderMessage(): string
     {
-        return wpautop(wp_kses($this->message, $this->allowedHtml));
+        return wpautop(wp_kses($this->message, AllowedHtml::get()));
     }
 
     /**

@@ -7,6 +7,7 @@ namespace RRZE\Notices\CPT;
 defined('ABSPATH') || exit;
 
 use RRZE\Notices\Editor\Metaboxes;
+use RRZE\Notices\Editor\EditorConfig;
 
 /**
  * Coordinates registration and administration of the notice post type.
@@ -25,6 +26,8 @@ class Registration
         Post::registerHooks();
 
         Metaboxes::registerHooks();
+
+        EditorConfig::registerHooks();
 
         $columns = new Columns;
         $columns->registerHooks();
