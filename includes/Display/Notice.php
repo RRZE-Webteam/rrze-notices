@@ -52,7 +52,9 @@ class Notice
         'type' => 'info',
         'preview' => false,
         'edit_link' => '',
-        'is_dismissible' => true
+        'is_dismissible' => true,
+        'event_start' => 0,
+        'event_end' => 0,
     ];
 
 
@@ -102,6 +104,7 @@ class Notice
         }
 
         $html  = $this->renderTitle();
+        $html .= $this->renderEventDate();
         $html .= $this->renderMessage();
 
         $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
@@ -183,6 +186,61 @@ class Notice
             esc_html($this->title)
         );
     }
+
+    /**
+     * Return the event date markup, or an empty string if no
+    event date is set.
+     *
+     * @return string
+     */
+    public function renderEventDate(): string
+    {
+        $start = (int) $this->options['event_start'];
+        if (!$start) {
+            return '';
+        }
+
+        $end = (int) $this->options['event_end'];
+
+        $startDate = wp_date(_x('d.m.Y', 'date format', 'rrze-notices'), $start);
+        $startTime = wp_date(_x('H:i', 'time format', 'rrze-notices'), $start);
+        $startHasTime = wp_date('H:i', $start) !== '00:00';
+
+        if (!$end || $end <= $start) {
+            // Single date, optionally with time
+            $output = $startHasTime
+                ? sprintf('%s, %s Uhr', $startDate, $startTime)
+                : $startDate;
+        } else {
+            $endDate = wp_date(_x('d.m.Y', 'date format', 'rrze-notices'), $end);
+            $endTime = wp_date(_x('H:i', 'time format', 'rrze-notices'), $end);
+            $endHasTime = wp_date('H:i', $end) !== '00:00';
+            $sameDay = wp_date('Y-m-d', $start) === wp_date('Y-m-d', $end);
+
+            if ($sameDay) {
+                // Same day: show date once, time range
+                if ($startHasTime && $endHasTime) {
+                    $output = sprintf('%s, %s – %s Uhr', $startDate, $startTime, $endTime);
+                } elseif ($startHasTime) {
+                    $output = sprintf('%s, %s Uhr', $startDate, $startTime);
+                } else {
+                    $output = $startDate;
+                }
+            } else {
+                // Different days
+                $startPart = $startHasTime
+                    ? sprintf('%s, %s Uhr', $startDate, $startTime)
+                    : $startDate;
+                $endPart = $endHasTime
+                    ? sprintf('%s, %s Uhr', $endDate, $endTime)
+                    : $endDate;
+                $output = sprintf('%s – %s', $startPart, $endPart);
+            }
+        }
+
+        return sprintf('<p class="notice-event-date">%s</p>', esc_html($output));
+    }
+
 
     /**
      * Return the sanitized message markup.

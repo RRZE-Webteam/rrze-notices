@@ -34,7 +34,7 @@ class Post
         add_action('delete_post', [__CLASS__, 'handleDeletedPost'], 10, 2);
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
         add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
-
+        add_action('admin_notices', [__CLASS__, 'showValidationNotice']);
     }
 
     /**
@@ -97,7 +97,28 @@ class Post
         if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
         }
+        // Clear event dates when the display option is unchecked.
+        $display = (array) get_post_meta($postId, 'notice_display', true);
 
+        if (in_array('show_event_date', $display, true)) {
+            $eventStart = (int) get_post_meta($postId, 'notice_event_start',
+                true);
+            if (!$eventStart) {
+                $display = array_diff($display, ['show_event_date']);
+                update_post_meta($postId, 'notice_display', $display);
+                delete_post_meta($postId, 'notice_event_start');
+                delete_post_meta($postId, 'notice_event_end');
+
+                set_transient(
+                    'rrze_notices_validation_' . $postId,
+                    __('Event date display was disabled because no start date was set.', 'rrze-notices'),
+                    30
+                );
+            }
+        } else {
+            delete_post_meta($postId, 'notice_event_start');
+            delete_post_meta($postId, 'notice_event_end');
+        }
         if (
             is_super_admin() &&
             Helper::isPluginActiveForNetwork()
@@ -289,6 +310,8 @@ class Post
             'visibility' => self::getVisibilityRoles($postId),
             'network_wide' => self::isNetworkWide($postId),
             'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
+            'event_start'=> (int) get_post_meta($postId, 'notice_event_start', true),
+            'event_end'=> (int) get_post_meta($postId, 'notice_event_end', true),
         ];
     }
 
@@ -334,6 +357,37 @@ class Post
                 }
             }
         }
+    }
+
+    /**
+     * Display a one-time validation notice after saving.
+     *
+     * @return void
+     */
+    public static function showValidationNotice(): void
+    {
+        $screen = get_current_screen();
+        if (!$screen || $screen->id !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
+        global $post;
+        if (!$post instanceof \WP_Post) {
+            return;
+        }
+
+        $transientKey = 'rrze_notices_validation_' . $post->ID;
+        $message = get_transient($transientKey);
+        if (!$message) {
+            return;
+        }
+
+        delete_transient($transientKey);
+
+        printf(
+            '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+            esc_html($message)
+        );
     }
 
 }

@@ -113,6 +113,9 @@ class Main
                 RRZE_NOTICES_VERSION,
                 true
             );
+            wp_localize_script('rrze-notices-cmb2', 'rrzeNoticesCmb2', [
+                'clearLabel' => __('Clear', 'rrze-notices'),
+            ]);
         }
 
         $isNoticeScreen = $isNoticeEditor

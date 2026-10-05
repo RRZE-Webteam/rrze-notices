@@ -90,6 +90,8 @@ class Display
                 'type' => (string) $notice->type,
                 'hide_title' => (bool) $notice->hide_title,
                 'edit_link' => $editLink,
+                'event_start' => (int) $notice->event_start,
+                'event_end' => (int) $notice->event_end,
             ]
         );
     }
@@ -139,6 +141,8 @@ class Display
                 'edit_link' => $editLink,
                 'preview' => true,
                 'is_dismissible' => false,
+                'event_start' => (int) $notice->event_start,
+                'event_end' => (int) $notice->event_end,
             ]
         );
 

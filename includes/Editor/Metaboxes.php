@@ -28,6 +28,7 @@ class Metaboxes
     }
 
 
+
     /**
      * Register the complete notice-settings metabox and its fields.
      *
@@ -82,7 +83,7 @@ class Metaboxes
             'id' => 'notice_visibility',
             'type' => 'radio',
             'options' => [
-                'all' => __('All', 'rrze-notices'),
+                'all' => __('All Users', 'rrze-notices'),
                 'roles' => __('By User Role', 'rrze-notices'),
             ],
             'default' => 'all'
@@ -95,6 +96,26 @@ class Metaboxes
             'type' => 'multicheck',
             'options' => self::getRoleVisibilityOptions(),
             'classes' => ['notice_visibility_roles'],
+        ]);
+        // Event start date and time
+        $cmb->add_field([
+            'id' => 'notice_event_start',
+            'name' => __('Event Start', 'rrze-notices')
+                . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
+                . __('(required)', 'rrze-notices') . '</span>',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
+            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
+        ]);
+        // Event end date and time
+        $cmb->add_field([
+            'id' => 'notice_event_end',
+            'name' => __('Event End', 'rrze-notices')
+            . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
+            . __('(optional)', 'rrze-notices') . '</span>',
+            'type' => 'text_datetime_timestamp',
+            'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
+            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
         ]);
         $cmb->add_field([
             'name' => __('Visible until', 'rrze-notices')
@@ -113,14 +134,15 @@ class Metaboxes
 
 
     /**
-     * Get an array of display options
-     * e.g. $options['hide_title'] = 'Hide Title'
+     * Get an array of display options for the notice metabox.
      *
      * @return array
      */
     private static function getDisplayOptions(): array
     {
-        $options = [];
+        $options = [
+            'show_event_date' => __('Show Event Date', 'rrze-notices'),
+        ];
         if (
             is_super_admin() &&
             Helper::isPluginActiveForNetwork()
