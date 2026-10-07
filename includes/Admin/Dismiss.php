@@ -91,7 +91,7 @@ class Dismiss
             return;
         }
 
-        check_ajax_referer('rrze_notices_dismiss_' ,'nonce', true);
+        check_ajax_referer('rrze_notices_dismiss', 'nonce', true);
         update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId, true);
     }
 

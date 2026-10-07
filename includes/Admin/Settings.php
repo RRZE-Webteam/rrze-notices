@@ -77,8 +77,8 @@ class Settings
     {
         add_submenu_page(
             'settings.php',
-            __('Notices', 'rrze-notices'),
-            __('Notices', 'rrze-notices'),
+            __('RRZE Notices', 'rrze-notices'),
+            __('RRZE Notices', 'rrze-notices'),
             'manage_network_options',
             'rrze-notices',
             [$this, 'renderNetworkSettingsPage']
@@ -174,7 +174,7 @@ class Settings
     public function renderNetworkSettingsPage(): void
     {
         echo '<div class="wrap">';
-        echo '<h2>', esc_html(__('Notices Network Settings', 'rrze-notices')), '</h2>';
+        echo '<h2>', esc_html(__('RRZE Notices Network Settings', 'rrze-notices')), '</h2>';
         echo '<form method="post">';
         settings_fields('rrze_notices_network');
         do_settings_sections('rrze_notices_network');

@@ -228,7 +228,8 @@ class Post
     {
         return [
             'info' => __('Info', 'rrze-notices'),
-            'warning' => __('Warning', 'rrze-notices')
+            'warning' => __('Warning', 'rrze-notices'),
+            'error' => __('Critical', 'rrze-notices')
         ];
     }
 

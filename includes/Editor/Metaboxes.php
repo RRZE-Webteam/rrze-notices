@@ -66,7 +66,8 @@ class Metaboxes
             'default' => 'info',
             'options' => [
                 'info' => __('Info', 'rrze-notices'),
-                'warning' => __('Warning', 'rrze-notices')
+                'warning' => __('Warning', 'rrze-notices'),
+                'error' => __('Critical', 'rrze-notices')
             ],
         ]);
         // Notice Display options
@@ -123,7 +124,7 @@ class Metaboxes
                 . __('(Date and time)', 'rrze-notices') . '</span>',
             'id' => 'notice_visible_until',
             'type' => 'text_datetime_timestamp',
-            'date_format' => _x('Y/m/d', 'date format', 'rrze-notices'),
+            'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
             'time_format' => _x('H:i', 'time format', 'rrze-notices'),
             'attributes' => [
                 'required' => 'required'
@@ -213,29 +214,11 @@ class Metaboxes
     {
         $postId = $field->object_id; //ID of post to be saved
         if (!empty($field->value)) {
-            $gmtTimestamp = self::wallTimeTimestampToUnix((int)$field->value);
+            $gmtTimestamp = (int)$field->value;
             update_post_meta($postId, 'notice_visible_until_gmt', $gmtTimestamp);
         } else {
             delete_post_meta($postId, 'notice_visible_until_gmt');
         }
-    }
-
-
-    /**
-     * Convert CMB2's wall-time timestamp into an absolute GMT timestamp.
-     *
-     * @param int $timestamp CMB2 timestamp representing local wall time.
-     * @return int Unix timestamp, or zero for an empty value.
-     */
-    private static function wallTimeTimestampToUnix(int $timestamp): int
-    {
-        if (!$timestamp) {
-            return 0;
-        }
-
-        $local = new \DateTimeImmutable(gmdate('Y-m-d H:i:s', $timestamp), wp_timezone());
-
-        return $local->getTimestamp();
     }
 
 }

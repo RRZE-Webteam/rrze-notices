@@ -89,11 +89,27 @@ class Notices
     /**
      * Render all registered notices.
      *
+     * If at least one visible error-type notice exists, a full-viewport
+     * backdrop is rendered first to block interaction with the rest of
+     * the dashboard until the notice is dismissed.
+     *
      * @return void
      */
     public function renderNotices(): void
     {
         $notices = $this->getAll();
+
+        $hasError = false;
+        foreach ($notices as $notice) {
+            if ($notice->isError() && $notice->shouldDisplay() && !$notice->isPreview()) {
+                $hasError = true;
+                break;
+            }
+        }
+
+        if ($hasError) {
+            echo '<div class="rrze-notices-backdrop" role="presentation"></div>';
+        }
 
         foreach ($notices as $notice) {
             $notice->render();

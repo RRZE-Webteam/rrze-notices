@@ -93,6 +93,29 @@ class Notice
     }
 
     /**
+     * Whether this notice is an error-type notice.
+     *
+     * Error notices trigger a modal backdrop on the dashboard
+     * that blocks interaction until the notice is dismissed.
+     *
+     * @return bool
+     */
+    public function isError(): bool
+    {
+        return $this->options['type'] === 'error';
+    }
+
+    /**
+     * Whether this notice is rendered as an editor preview.
+     *
+     * @return bool
+     */
+    public function isPreview(): bool
+    {
+        return (bool) $this->options['preview'];
+    }
+
+    /**
      * Render the notice markup.
      *
      * @return void
@@ -166,6 +189,11 @@ class Notice
         $classes[] = 'notice-' . $type;
 
         $classes[] = 'notice-alt';
+
+        if ($this->isError() && !$this->options['preview']) {
+            $classes[] = 'rrze-notices-modal';
+            $this->options['is_dismissible'] = true;
+        }
 
         return implode(' ', $classes);
     }
