@@ -52,10 +52,18 @@ add_action('plugins_loaded', __NAMESPACE__ . '\loaded');
  */
 function loadTextdomain()
 {
-    load_plugin_textdomain('rrze-notices', false, dirname(plugin_basename(__FILE__)) . '/languages');
+    load_plugin_textdomain('rrze-notices', false,
+        dirname(plugin_basename(__FILE__)) . '/languages');
+
+    $locale = determine_locale();
+    $moFile = RRZE_NOTICES_DIR . 'languages/cmb2-' . $locale .
+        '.mo';
+    if (is_readable($moFile)) {
+        load_textdomain('cmb2', $moFile);
+    }
 }
 
-/**
+    /**
  * Verify the active PHP and WordPress versions.
  *
  * @return string Localized error message, or an empty string when compatible.

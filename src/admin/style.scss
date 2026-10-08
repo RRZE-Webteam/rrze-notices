@@ -5,9 +5,15 @@
     }
 }
 
+.rrze-notices {
+    --rrze-notices-text-muted: #555;
+    --rrze-notices-error-border: #d63638;
+    --rrze-notices-backdrop-bg: rgba(0, 0, 0, 0.55);
+}
+
 .expiration.column-expiration {
     span.expired {
-        color: #a00;
+        color: var(--rrze-notices-error-border);
     }
 
     span[title] {
@@ -18,7 +24,7 @@
 .rrze-notices.notice {
     .notice-event-date {
         font-weight: bold;
-        color: #555;
+        color: var(--rrze-notices-text-muted);
     }
     .notice-actions {
         position: absolute;
@@ -34,19 +40,18 @@
     position: fixed;
     z-index: 100000;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--rrze-notices-backdrop-bg);
 }
 
 // Error notice sits above the backdrop.
 .rrze-notices.notice-error {
-    border: 4px solid #d63638;
+    border: 4px solid var(--rrze-notices-error-border);
 
     &.rrze-notices-modal {
         position: relative;
         z-index: 100001;
     }
 }
-
 
 .rrze-notices.notice.notice-preview {
     .notice-actions {
@@ -63,6 +68,13 @@
 }
 
 #wp-admin-bar-rrze-notices {
+    --rrze-notices-badge-bg: #0073aa;
+    --rrze-notices-badge-text: #fff;
+    --rrze-notices-bar-border: #32373c;
+    --rrze-notices-bar-info: #00a0d1;
+    --rrze-notices-bar-warning: #ffb900;
+    --rrze-notices-bar-divider: #4a4f55;
+
     .ab-icon:before {
         content: "\f534";
         top: 2px;
@@ -70,9 +82,9 @@
     }
 
     .notices-count {
-        background-color: #0073aa;
+        background-color: var(--rrze-notices-badge-bg);
         border-radius: 50%;
-        color: #fff;
+        color: var(--rrze-notices-badge-text);
         font-weight: bold;
         padding: 2px 6px;
         font-size: 0.85em;
@@ -85,22 +97,22 @@
             padding: 0;
 
             & > li {
-                border-left: 4px solid #32373c;
+                border-left: 4px solid var(--rrze-notices-bar-border);
                 padding: 0;
 
                 &.notices-info {
-                    border-left-color: #00a0d1;
+                    border-left-color: var(--rrze-notices-bar-info);
                 }
 
                 &.notices-warning {
-                    border-left-color: #ffb900;
+                    border-left-color: var(--rrze-notices-bar-warning);
                 }
 
                 .ab-item {
                     height: 100% !important;
                     white-space: normal !important;
                     padding: 0.5em 1em;
-                    border-bottom: 1px solid #4a4f55;
+                    border-bottom: 1px solid var(--rrze-notices-bar-divider);
                     line-height: 0.5em;
 
                     a {

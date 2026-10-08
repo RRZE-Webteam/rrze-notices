@@ -106,10 +106,22 @@ class Dismiss
     {
         global $wpdb;
         $metaKey = self::PREFIX . "_{$this->id}";
-        $sql = $wpdb->prepare(
+        $userIds = $wpdb->get_col($wpdb->prepare(
+            "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = %s",
+            $metaKey
+        ));
+
+        if (empty($userIds)) {
+            return;
+        }
+
+        $wpdb->query($wpdb->prepare(
             "DELETE FROM $wpdb->usermeta WHERE meta_key = %s",
             $metaKey
-        );
-        $wpdb->query($sql);
+        ));
+
+        foreach ($userIds as $userId) {
+            wp_cache_delete($userId, 'user_meta');
+        }
     }
 }

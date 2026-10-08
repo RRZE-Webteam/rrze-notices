@@ -27,11 +27,11 @@ class Users
      * @param bool $builtInOnly Restrict results to WordPress built-in roles.
      * @return array<string, string> Role slug to display-label map.
      */
-    public static function getRoles(bool $translated = true, bool $builtInOnly = true): array
+    public static function getRoles(bool $translated = true, bool $builtInOnly = false): array
     {
-        $wpRoles = new WP_Roles();
+        $wpRoles = wp_roles(); //WP help function
         $roles = $wpRoles->get_names();
-        if (true === $translated) {
+        if ($translated) {
             $roles = array_map('translate_user_role', $roles);
         }
         if ($builtInOnly) {

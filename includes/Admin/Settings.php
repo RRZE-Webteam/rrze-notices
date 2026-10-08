@@ -17,8 +17,8 @@ class Settings
     /** @var string Network option key used by the plugin. */
     protected string $networkOptionName;
 
-    /** @var object Parsed network-wide plugin options. */
-    protected object $networkOptions;
+    /** @var array Parsed network-wide plugin options. */
+    protected array $networkOptions;
 
     /**
      * Load the current network settings.
@@ -104,8 +104,8 @@ class Settings
         $settings = isset($_POST['rrze_notices_settings']) && is_array($_POST['rrze_notices_settings'])
             ? wp_unslash($_POST['rrze_notices_settings'])
             : [];
-        $this->networkOptions->enabled = !empty($settings['enabled']) ? 1 : 0;
-        $this->networkOptions->access = ($settings['access'] ?? '') === 'manage_options'
+        $this->networkOptions['enabled'] = !empty($settings['enabled']) ? 1 : 0;
+        $this->networkOptions['access'] = ($settings['access'] ?? '') === 'manage_options'
             ? 'manage_options'
             : 'manage_network_options';
         update_site_option($this->networkOptionName, $this->networkOptions);
@@ -139,10 +139,10 @@ class Settings
     {
         echo '<fieldset>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions->enabled), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions['enabled']), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
         echo '</label><br>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->networkOptions->enabled), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->networkOptions['enabled']), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
         echo '</label>';
         echo '</fieldset>';
     }
@@ -157,11 +157,11 @@ class Settings
         echo '<fieldset>';
         echo '<label>';
         echo '<input name="readonly" type="checkbox" value="manage_network_options" disabled checked="checked">';
-        echo __('Superadmins', 'rrze-notices');
+        echo __('Superadmins (only networkwide notices)', 'rrze-notices');
         echo '</label><br>';
         echo '<label>';
-        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ', checked($this->networkOptions->access, 'manage_options', false), '>';
-        echo __('Administrators', 'rrze-notices');
+        echo '<input name="rrze_notices_settings[access]" type="checkbox" value="manage_options" ', checked($this->networkOptions['access'], 'manage_options', false), '>';
+        echo __('Administrators (Webmaster can publish notices on their own website)', 'rrze-notices');
         echo '</label>';
         echo '</fieldset>';
     }

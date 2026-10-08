@@ -65,19 +65,16 @@ class Columns
      * Render the value for a custom notice-list column.
      *
      * @param string $column Column identifier.
-     * @param int    $postId Notice post ID.
+     * @param int $postId Notice post ID.
      * @return void
      */
     public function renderColumn(string $column, int $postId): void
     {
         $noticeData = Post::buildNoticeData($postId);
         if ($noticeData !== null) {
-            $notice = (object) $noticeData;
-            $types = [
-                'info' => __('Info', 'rrze-notices'),
-                'warning' => __('Warning', 'rrze-notices')
-            ];
-            $noticeType = in_array($notice->type, array_keys($types)) ? $types[$notice->type] : __('Info', 'rrze-notices');
+            $notice = (object)$noticeData;
+            $types = Post::getNoticeTypes();
+            $noticeType = isset($types[$notice->type]) ? $types[$notice->type] : $types['info'];
             $networkWide = $notice->network_wide ?
                 '<span class="dashicons dashicons-yes"></span>' :
                 '-';
@@ -108,7 +105,7 @@ class Columns
                 echo esc_html($visibility);
                 break;
             case 'visible_until':
-                $visibleUntil = (int) get_post_meta($postId, 'notice_visible_until_gmt', true);
+                $visibleUntil = (int)get_post_meta($postId, 'notice_visible_until_gmt', true);
                 if ($visibleUntil) {
                     echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), $visibleUntil));
                 } else {
@@ -157,12 +154,33 @@ class Columns
         $orderBy = $query->get('orderby');
         switch ($orderBy) {
             case 'notice_type':
-                $query->set('meta_key', 'notice_type');
-                $query->set('orderby', 'meta_value');
+                $query->set('meta_query', [
+                    'relation' => 'OR',
+                    'notice_type_clause' => [
+                        'key' => 'notice_type',
+                        'compare' => 'EXISTS',
+                    ],
+                    [
+                        'key' => 'notice_type',
+                        'compare' => 'NOT EXISTS',
+                    ],
+                ]);
+                $query->set('orderby', 'notice_type_clause');
                 break;
             case 'visible_until':
-                $query->set('meta_key', 'notice_visible_until_gmt');
-                $query->set('orderby', 'meta_value_num');
+                $query->set('meta_query', [
+                    'relation' => 'OR',
+                    'visible_until_clause' => [
+                        'key' => 'notice_visible_until_gmt',
+                        'compare' => 'EXISTS',
+                        'type' => 'NUMERIC',
+                    ],
+                    [
+                        'key' => 'notice_visible_until_gmt',
+                        'compare' => 'NOT EXISTS',
+                    ],
+                ]);
+                $query->set('orderby', 'visible_until_clause');
                 break;
         }
     }

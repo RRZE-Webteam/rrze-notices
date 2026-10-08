@@ -97,6 +97,15 @@ class Post
         if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
             return;
         }
+
+        if ($post->post_status === 'publish' && empty(trim($post->post_content))) {
+            set_transient(
+                'rrze_notices_validation_' . $postId,
+                __('This notice has no content and will not be displayed.', 'rrze-notices'),
+                30
+            );
+        }
+
         // Clear event dates when the display option is unchecked.
         $display = (array) get_post_meta($postId, 'notice_display', true);
 
@@ -127,13 +136,13 @@ class Post
             $noticeKey = (string)NoticeId::forPost($postId);
 
             if (self::isNetworkWide($postId)) {
-                $networkOptions->network_wide[$noticeKey] = [
+                $networkOptions['network_wide'][$noticeKey] = [
                     'blog_id' => get_current_blog_id(),
                     'post_id' => $postId,
                 ];
                 update_post_meta($postId, 'notice_network_wide', 'on');
             } else {
-                unset($networkOptions->network_wide[$noticeKey]);
+                unset($networkOptions['network_wide'][$noticeKey]);
                 delete_post_meta($postId, 'notice_network_wide');
             }
 
@@ -157,11 +166,11 @@ class Post
         $networkOptions = Options::getNetworkOptions();
         $noticeKey = (string)NoticeId::forPost($postId);
 
-        if (!isset($networkOptions->network_wide[$noticeKey])) {
+        if (!isset($networkOptions['network_wide'][$noticeKey])) {
             return;
         }
 
-        unset($networkOptions->network_wide[$noticeKey]);
+        unset($networkOptions['network_wide'][$noticeKey]);
         update_site_option(Options::getNetworkOptionName(), $networkOptions);
     }
 
@@ -179,7 +188,8 @@ class Post
      * @param array $args Additional arguments, $args[0] is the post ID for post-specific caps.
      * @return string[]
      */
-    public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
+    public static function mapNoticeCapabilities(array $caps, string $cap, int
+                                                       $userId, array $args): array
     {
         $noticeCaps = [
             'edit_notice',
@@ -197,11 +207,27 @@ class Post
             'edit_published_notices',
         ];
 
-        if (!in_array($cap, $noticeCaps, true)) {
+        // WordPress core meta caps (edit_post, read_post, delete_post)
+        // are mapped by core to notice-specific caps, but the filter
+        // receives the original $cap. We must catch them here too.
+        $coreMetaCaps = ['edit_post', 'read_post', 'delete_post'];
+
+        $isNoticeCap = in_array($cap, $noticeCaps, true);
+        $isCoreMetaCap = false;
+
+        if (!$isNoticeCap && in_array($cap, $coreMetaCaps, true) &&
+            !empty($args[0])) {
+            $post = get_post($args[0]);
+            if ($post && $post->post_type === CPTNotice::POST_TYPE) {
+                $isCoreMetaCap = true;
+            }
+        }
+
+        if (!$isNoticeCap && !$isCoreMetaCap) {
             return $caps;
         }
 
-        //Network-wide notices are superadmin-only
+        // Network-wide notices are superadmin-only
         if (!empty($args[0])) {
             $post = get_post($args[0]);
             if (
@@ -213,9 +239,10 @@ class Post
                 return ['do_not_allow'];
             }
         }
-        //Map to the configured access capability
+
+        // Map to the configured access capability
         $networkOptions = Options::getNetworkOptions();
-        return [$networkOptions->access];
+        return [$networkOptions['access']];
     }
 
 
@@ -224,7 +251,7 @@ class Post
      *
      * @return array
      */
-    private static function getNoticeTypes(): array
+    public static function getNoticeTypes(): array
     {
         return [
             'info' => __('Info', 'rrze-notices'),
@@ -352,8 +379,8 @@ class Post
 
                 $networkOptions = Options::getNetworkOptions();
                 $noticeKey = (string)NoticeId::forPost((int)$postID);
-                if (isset($networkOptions->network_wide[$noticeKey])) {
-                    unset($networkOptions->network_wide[$noticeKey]);
+                if (isset($networkOptions['network_wide'][$noticeKey])) {
+                    unset($networkOptions['network_wide'][$noticeKey]);
                     update_site_option(Options::getNetworkOptionName(), $networkOptions);
                 }
             }

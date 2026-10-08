@@ -18,7 +18,7 @@ final class NoticeQuery
     /**
      * @param object $networkOptions Parsed network-wide plugin options.
      */
-    public function __construct(private readonly object $networkOptions)
+    public function __construct(private readonly array $networkOptions)
     {
     }
 
@@ -41,14 +41,14 @@ final class NoticeQuery
     private function findNetworkNotices(): array
     {
         if (!Helper::isPluginActiveForNetwork() ||
-            empty($this->networkOptions->network_wide)) {
+            empty($this->networkOptions['network_wide'])) {
             return [];
         }
 
         $currentBlogId = get_current_blog_id();
         $matches = [];
 
-        foreach ($this->networkOptions->network_wide as $storedId => $entry)
+        foreach ($this->networkOptions['network_wide'] as $storedId => $entry)
         {
             $noticeId = NoticeId::fromString($storedId);
             if (

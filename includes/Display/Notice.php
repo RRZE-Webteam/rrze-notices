@@ -235,9 +235,13 @@ class Notice
         $startHasTime = wp_date('H:i', $start) !== '00:00';
 
         if (!$end || $end <= $start) {
-            // Single date, optionally with time
             $output = $startHasTime
-                ? sprintf('%s, %s Uhr', $startDate, $startTime)
+                ? sprintf(
+                /* translators: 1: date, 2: time */
+                    _x('%1$s, %2$s', 'single date with time', 'rrze-notices'),
+                    $startDate,
+                    $startTime
+                )
                 : $startDate;
         } else {
             $endDate = wp_date(_x('d.m.Y', 'date format', 'rrze-notices'), $end);
@@ -246,23 +250,45 @@ class Notice
             $sameDay = wp_date('Y-m-d', $start) === wp_date('Y-m-d', $end);
 
             if ($sameDay) {
-                // Same day: show date once, time range
                 if ($startHasTime && $endHasTime) {
-                    $output = sprintf('%s, %s – %s Uhr', $startDate, $startTime, $endTime);
+                    $output = sprintf(
+                    /* translators: 1: date, 2: start time, 3: end time */
+                        _x('%1$s, %2$s – %3$s', 'same day time range', 'rrze-notices'),
+                        $startDate,
+                        $startTime,
+                        $endTime
+                    );
                 } elseif ($startHasTime) {
-                    $output = sprintf('%s, %s Uhr', $startDate, $startTime);
+                    $output = sprintf(
+                    /* translators: 1: date, 2: time */
+                        _x('%1$s, %2$s', 'single date with time', 'rrze-notices'),
+                        $startDate,
+                        $startTime
+                    );
                 } else {
                     $output = $startDate;
                 }
             } else {
-                // Different days
                 $startPart = $startHasTime
-                    ? sprintf('%s, %s Uhr', $startDate, $startTime)
+                    ? sprintf(
+                        _x('%1$s, %2$s', 'single date with time', 'rrze-notices'),
+                        $startDate,
+                        $startTime
+                    )
                     : $startDate;
                 $endPart = $endHasTime
-                    ? sprintf('%s, %s Uhr', $endDate, $endTime)
+                    ? sprintf(
+                        _x('%1$s, %2$s', 'single date with time', 'rrze-notices'),
+                        $endDate,
+                        $endTime
+                    )
                     : $endDate;
-                $output = sprintf('%s – %s', $startPart, $endPart);
+                /* translators: 1: start date/time, 2: end date/time */
+                $output = sprintf(
+                    _x('%1$s – %2$s', 'date range', 'rrze-notices'),
+                    $startPart,
+                    $endPart
+                );
             }
         }
 
@@ -295,6 +321,14 @@ class Notice
             require_once ABSPATH . 'wp-admin/includes/screen.php';
         }
 
-        return (in_array(get_current_screen()->id, $this->options['screens'], true));
+        $screen = get_current_screen();
+        if (!$screen) {
+            return false;
+        }
+
+        return in_array($screen->id, $this->options['screens'], true);
+
     }
+
+
 }

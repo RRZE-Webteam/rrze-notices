@@ -14,6 +14,7 @@ use RRZE\Notices\CPT\Cron;
 use RRZE\Notices\CPT\Post;
 use RRZE\Notices\CPT\Registration;
 use RRZE\Notices\Display\Display;
+use RRZE\Notices\Display\NoticeQuery;
 
 /**
  * Bootstraps plugin components after requirements and network settings pass.
@@ -52,17 +53,19 @@ class Main
         if (Helper::isPluginActiveForNetwork()) {
             $settings = new Settings;
             $settings->registerHooks();
-            if (!$networkOptions->enabled) {
+            if (!$networkOptions['enabled']) {
                 return;
             }
         }
 
         Registration::registerHooks();
 
-        $adminBar = new AdminBar;
+        $noticeQuery = new NoticeQuery($networkOptions);
+
+        $adminBar = new AdminBar($noticeQuery);
         $adminBar->registerHooks();
 
-        $display = new Display;
+        $display = new Display($noticeQuery);
         $display->registerHooks();
 
         Cron::registerHooks();

@@ -6,7 +6,6 @@ namespace RRZE\Notices\Admin;
 
 defined('ABSPATH') || exit;
 
-use RRZE\Notices\Options;
 use RRZE\Notices\Display\NoticeId;
 use RRZE\Notices\Display\NoticeQuery;
 
@@ -28,9 +27,9 @@ class AdminBar
     /**
      * Initialize the active-notice query.
      */
-    public function __construct()
+    public function __construct(NoticeQuery $noticeQuery)
     {
-        $this->noticeQuery = new NoticeQuery(Options::getNetworkOptions());
+        $this->noticeQuery = $noticeQuery;
     }
 
     /**

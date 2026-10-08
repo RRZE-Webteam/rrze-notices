@@ -23,7 +23,7 @@ class Options
     {
         return [
             'enabled' => 0,
-            'access' => 'manage_network_options',
+            'access' => 'manage_options',
             'network_wide' => []
         ];
     }
@@ -31,9 +31,9 @@ class Options
     /**
      * Get normalized options shared by the multisite network.
      *
-     * @return object{enabled:int, access:string, network_wide:array<string, array<string, mixed>>}
+     * @return array {enabled:int, access:string, network_wide:array<string, array<string, mixed>>}
      */
-    public static function getNetworkOptions(): object
+    public static function getNetworkOptions(): array
     {
         $defaults = self::defaultNetworkOptions();
 
@@ -41,7 +41,7 @@ class Options
         $options = wp_parse_args($options, $defaults);
         $options = array_intersect_key($options, $defaults);
 
-        return (object) $options;
+        return $options;
     }
 
     /**

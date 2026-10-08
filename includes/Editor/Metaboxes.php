@@ -161,28 +161,19 @@ class Metaboxes
      */
     private static function getRoleVisibilityOptions(): array
     {
-        $availableRoles = Users::getRoles();
-        $options = [];
-        if (
-            is_super_admin() &&
-           Helper::isPluginActiveForNetwork()
-        ) {
-            foreach ($availableRoles as $role => $name) {
-                $options[$role] = $name;
-            }
+        if (is_super_admin() && Helper::isPluginActiveForNetwork()) {
+            $availableRoles = Users::getRoles(builtInOnly: true);
         } else {
-            $countUsers = count_users();
-            foreach ($availableRoles as $role => $name) {
-                $count = $countUsers['avail_roles'][$role] ?? 0;
-                if ($count > 0) {
-                    $options[$role] = sprintf('%s (%d)', $name, $count);
-                } else {
-                    $options[$role] = sprintf('%s (&mdash;)', $name);;
-                }
-            }
+            $availableRoles = Users::getRoles();
+        }
+
+        $options = [];
+        foreach ($availableRoles as $role => $name) {
+            $options[$role] = $name;
         }
 
         return $options;
+
     }
 
 

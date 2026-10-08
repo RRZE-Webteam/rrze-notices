@@ -7,7 +7,6 @@ namespace RRZE\Notices\Display;
 defined('ABSPATH') || exit;
 
 use RRZE\Notices\Helper;
-use RRZE\Notices\Options;
 use RRZE\Notices\CPT\CPTNotice;
 use RRZE\Notices\CPT\Post;
 
@@ -23,10 +22,10 @@ class Display
     /**
      * Initialize the notice collection and query service.
      */
-    public function __construct()
+    public function __construct(NoticeQuery $noticeQuery)
     {
         $this->notices = new Notices();
-        $this->noticeQuery = new NoticeQuery(Options::getNetworkOptions());
+        $this->noticeQuery = $noticeQuery;
     }
 
     /**

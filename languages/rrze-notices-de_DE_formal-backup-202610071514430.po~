@@ -3,10 +3,10 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-06 11:35+0000\n"
+"PO-Revision-Date: 2026-10-07 09:13+0000\n"
 "Last-Translator: RRZE Webteam <webmaster@fau.de>\n"
-"Language-Team: Deutsch\n"
-"Language: de_DE\n"
+"Language-Team: Deutsch (Sie)\n"
+"Language: de_DE_formal\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -78,7 +78,7 @@ msgstr "In den Hinweis einfügen"
 #: includes/CPT/CPTNotice.php:112
 msgctxt "backend: post type label"
 msgid "New Notice"
-msgstr "Neuer Hinweise"
+msgstr "Neuer Hinweis"
 
 #: includes/CPT/CPTNotice.php:142
 msgctxt "backend: post type label"
@@ -185,14 +185,10 @@ msgstr "Abgelaufen"
 
 #: includes/Display/Notice.php:205 includes/Display/Notice.php:215
 #: includes/Editor/Metaboxes.php:107 includes/Editor/Metaboxes.php:117
-msgctxt "date format"
-msgid "d.m.Y"
-msgstr "Tag Monat Jahr"
-
 #: includes/Editor/Metaboxes.php:126
 msgctxt "date format"
-msgid "Y/m/d"
-msgstr "Jahr Monat Tag"
+msgid "d.m.Y"
+msgstr ""
 
 #: includes/Editor/Metaboxes.php:74
 msgid "Display"
@@ -208,7 +204,7 @@ msgstr "Bearbeiten (netzwerkweit)"
 
 #: includes/Admin/Settings.php:129
 msgid "Enable Notices"
-msgstr "Hinweise aktivieren"
+msgstr "Nachrichten aktivieren"
 
 #: includes/CPT/Post.php:114
 msgid "Event date display was disabled because no start date was set."
@@ -218,11 +214,11 @@ msgstr ""
 
 #: includes/Editor/Metaboxes.php:113
 msgid "Event End"
-msgstr "Event Start"
+msgstr "Event Ende"
 
 #: includes/Editor/Metaboxes.php:103
 msgid "Event Start"
-msgstr "Event Ende"
+msgstr "Event Start"
 
 #: includes/CPT/Post.php:57
 #, php-format
@@ -250,7 +246,7 @@ msgstr "Info"
 
 #. Description of the plugin
 msgid "Management and listing of admin notices."
-msgstr "Verwaltung und Auflistung von Dashboard Hinweisen."
+msgstr "Verwaltung und Auflistung von Hinweisen."
 
 #: includes/CPT/Columns.php:54 includes/Editor/Metaboxes.php:150
 msgid "Network-Wide"
@@ -264,7 +260,6 @@ msgstr "Hinweis"
 msgid "Notice Settings"
 msgstr "Einstellungen"
 
-#: includes/Admin/Settings.php:80 includes/Admin/Settings.php:81
 #: includes/Admin/AdminBar.php:96
 msgid "Notices"
 msgstr "Hinweise"
@@ -277,10 +272,6 @@ msgstr "Hinweise sind deaktiviert."
 msgid "Notices is enabled."
 msgstr "Hinweise sind aktiviert."
 
-#: includes/Admin/Settings.php:177
-msgid "Notices Network Settings"
-msgstr "Netzwerk-Einstellungen &rsaquo; Nachrichten"
-
 #. 1: The plugin name, 2: The error string.
 #: rrze-notices.php:101
 #, php-format
@@ -292,8 +283,14 @@ msgid "Preview"
 msgstr "Vorschau"
 
 #. Name of the plugin
+#: includes/Admin/Settings.php:80 includes/Admin/Settings.php:81
 msgid "RRZE Notices"
-msgstr "RRZE Hinweise"
+msgstr "RRZE Notices"
+
+#: includes/Admin/Settings.php:177
+#| msgid "Notices Network Settings"
+msgid "RRZE Notices Network Settings"
+msgstr "Netzwerk-Einstellungen &rsaquo; RRZE Notices"
 
 #. Author of the plugin
 msgid "RRZE Webteam"

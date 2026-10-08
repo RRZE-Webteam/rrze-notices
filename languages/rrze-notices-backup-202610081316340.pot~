@@ -1,0 +1,365 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: RRZE Notices\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-07 13:03+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.8; wp-7.1.2; php-8.3.30\n"
+"X-Domain: rrze-notices"
+
+#: includes/Editor/Metaboxes.php:124
+msgid "(Date and time)"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:116
+msgid "(optional)"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:106
+msgid "(required)"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:95
+msgid "(Visibility based on user role)"
+msgstr ""
+
+#: includes/Admin/Settings.php:130
+msgid "Access"
+msgstr ""
+
+#: includes/Admin/Settings.php:164
+msgid "Administrators"
+msgstr ""
+
+#: includes/CPT/Columns.php:85
+msgid "All"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:87
+msgid "All Users"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:102
+msgctxt "backend: post type label"
+msgid "Add New"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:107
+msgctxt "backend: post type label"
+msgid "Add New Notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:147
+msgctxt "backend: post type label"
+msgid "All Notices"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:117
+msgctxt "backend: post type label"
+msgid "Edit Notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:172
+msgctxt "backend: post type label"
+msgid "Filter notice list"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:162
+msgctxt "backend: post type label"
+msgid "Insert into notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:112
+msgctxt "backend: post type label"
+msgid "New Notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:142
+msgctxt "backend: post type label"
+msgid "No notices found in Trash."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:137
+msgctxt "backend: post type label"
+msgid "No notices found."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:152
+msgctxt "backend: post type label"
+msgid "Notice Archives"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:157
+msgctxt "backend: post type label"
+msgid "Notice Attributes"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:192
+msgctxt "backend: post type label"
+msgid "Notice published privately."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:187
+msgctxt "backend: post type label"
+msgid "Notice published."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:197
+msgctxt "backend: post type label"
+msgid "Notice reverted to draft."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:202
+msgctxt "backend: post type label"
+msgid "Notice scheduled."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:207
+msgctxt "backend: post type label"
+msgid "Notice updated."
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:37
+msgctxt "backend: post type label"
+msgid "Notices"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:182
+msgctxt "backend: post type label"
+msgid "Notices list"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:177
+msgctxt "backend: post type label"
+msgid "Notices list navigation"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:132
+msgctxt "backend: post type label"
+msgid "Search Notices"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:167
+msgctxt "backend: post type label"
+msgid "Uploaded to this notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:122
+msgctxt "backend: post type label"
+msgid "View Notice"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:127
+msgctxt "backend: post type label"
+msgid "View Notices"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:92
+msgctxt "backend: post type label (general name)"
+msgid "Notices"
+msgstr ""
+
+#: includes/CPT/CPTNotice.php:97
+msgctxt "backend: post type label (singular name)"
+msgid "Notice"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:88
+msgid "By User Role"
+msgstr ""
+
+#: includes/Main.php:117
+msgid "Clear"
+msgstr ""
+
+#: includes/CPT/Post.php:232 includes/Editor/Metaboxes.php:70
+msgid "Critical"
+msgstr ""
+
+#: includes/Main.php:139 includes/CPT/Post.php:51
+msgctxt "custom post status"
+msgid "Expired"
+msgstr ""
+
+#: includes/Display/Notice.php:233 includes/Display/Notice.php:243
+#: includes/Editor/Metaboxes.php:108 includes/Editor/Metaboxes.php:118
+#: includes/Editor/Metaboxes.php:127
+msgctxt "date format"
+msgid "d.m.Y"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:75
+msgid "Display"
+msgstr ""
+
+#: includes/Display/Display.php:76
+msgid "Edit"
+msgstr ""
+
+#: includes/Display/Display.php:75
+msgid "Edit (Network-Wide)"
+msgstr ""
+
+#: includes/Admin/Settings.php:129
+msgid "Enable Notices"
+msgstr ""
+
+#: includes/CPT/Post.php:114
+msgid "Event date display was disabled because no start date was set."
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:114
+msgid "Event End"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:104
+msgid "Event Start"
+msgstr ""
+
+#: includes/CPT/Post.php:57
+#, php-format
+msgid "Expired <span class=\"count\">(%s)</span>"
+msgid_plural "Expired <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/Admin/Settings.php:127
+msgid "General"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://blogs.fau.de/webworking/"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://github.com/RRZE-Webteam/rrze-notices"
+msgstr ""
+
+#: includes/CPT/Post.php:230 includes/CPT/Columns.php:77
+#: includes/CPT/Columns.php:80 includes/Editor/Metaboxes.php:68
+msgid "Info"
+msgstr ""
+
+#. Description of the plugin
+msgid "Management and listing of admin notices."
+msgstr ""
+
+#: includes/CPT/Columns.php:54 includes/Editor/Metaboxes.php:151
+msgid "Network-Wide"
+msgstr ""
+
+#: includes/CPT/Columns.php:51
+msgid "Notice"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:43
+msgid "Notice Settings"
+msgstr ""
+
+#: includes/Admin/AdminBar.php:96
+msgid "Notices"
+msgstr ""
+
+#: includes/Admin/Settings.php:145
+msgid "Notices is disabled."
+msgstr ""
+
+#: includes/Admin/Settings.php:142
+msgid "Notices is enabled."
+msgstr ""
+
+#. 1: The plugin name, 2: The error string.
+#: rrze-notices.php:101
+#, php-format
+msgid "Plugins: %1$s: %2$s"
+msgstr ""
+
+#: includes/Display/Display.php:130
+msgid "Preview"
+msgstr ""
+
+#. Name of the plugin
+#: includes/Admin/Settings.php:80 includes/Admin/Settings.php:81
+msgid "RRZE Notices"
+msgstr ""
+
+#: includes/Admin/Settings.php:177
+msgid "RRZE Notices Network Settings"
+msgstr ""
+
+#. Author of the plugin
+msgid "RRZE Webteam"
+msgstr ""
+
+#: includes/Admin/Settings.php:181
+msgid "Save Changes"
+msgstr ""
+
+#: includes/Admin/Settings.php:65
+msgid "Settings"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:145
+msgid "Show Event Date"
+msgstr ""
+
+#: includes/Admin/Settings.php:160
+msgid "Superadmins"
+msgstr ""
+
+#. 1: Server PHP version number, 2: Required PHP version number.
+#: rrze-notices.php:73
+#, php-format
+msgid ""
+"The server is running PHP version %1$s. The Plugin requires at least PHP "
+"version %2$s."
+msgstr ""
+
+#. 1: Server WordPress version number, 2: Required WordPress version number.
+#: rrze-notices.php:80
+#, php-format
+msgid ""
+"The server is running WordPress version %1$s. The Plugin requires at least "
+"WordPress version %2$s."
+msgstr ""
+
+#: includes/Display/Notice.php:234 includes/Display/Notice.php:244
+#: includes/Editor/Metaboxes.php:109 includes/Editor/Metaboxes.php:119
+#: includes/Editor/Metaboxes.php:128
+msgctxt "time format"
+msgid "H:i"
+msgstr ""
+
+#: includes/CPT/Columns.php:52 includes/Editor/Metaboxes.php:64
+msgid "Type"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:93
+msgid "User Roles"
+msgstr ""
+
+#: includes/CPT/Columns.php:53 includes/Editor/Metaboxes.php:83
+msgid "Visibility"
+msgstr ""
+
+#: includes/CPT/Columns.php:55
+msgid "Visible Until"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:122
+msgid "Visible until"
+msgstr ""
+
+#: includes/CPT/Post.php:231 includes/CPT/Columns.php:78
+#: includes/Editor/Metaboxes.php:69
+msgid "Warning"
+msgstr ""
