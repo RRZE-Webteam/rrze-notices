@@ -102,7 +102,7 @@ class Post
             set_transient(
                 'rrze_notices_validation_' . $postId,
                 __('This notice has no content and will not be displayed.', 'rrze-notices'),
-                30
+                120
             );
         }
 
@@ -121,7 +121,7 @@ class Post
                 set_transient(
                     'rrze_notices_validation_' . $postId,
                     __('Event date display was disabled because no start date was set.', 'rrze-notices'),
-                    30
+                    120
                 );
             }
         } else {

@@ -40,7 +40,7 @@ class Notice
      *
      * @var Dismiss|null
      */
-    public ?Dismiss $dismissal = null;
+    public Dismiss $dismissal;
 
     /**
      * Default notice options.
@@ -53,6 +53,7 @@ class Notice
         'preview' => false,
         'edit_link' => '',
         'is_dismissible' => true,
+        'hide_title' => false,
         'event_start' => 0,
         'event_end' => 0,
     ];
@@ -84,11 +85,6 @@ class Notice
         $this->title = $title;
         $this->message = $message;
         $this->options = wp_parse_args($options, $this->options);
-
-        if (!$this->id || !$this->message) {
-            return;
-        }
-
         $this->dismissal = new Dismiss($this->id, $this->options['is_dismissible']);
     }
 
@@ -134,8 +130,15 @@ class Notice
         $noticeActions = array_filter($noticeActions);
         $html .= sprintf(
             '<div class="notice-actions">%s</div>',
-            implode('&nbsp;&nbsp;|&nbsp;&nbsp;', $noticeActions)
+            wp_kses(
+                implode('&nbsp;&nbsp;|&nbsp;&nbsp;', $noticeActions),
+                [
+                    'a' => ['href' => [], 'class' => []],
+                    'span' => ['class' => []],
+                ]
+            )
         );
+
 
         printf(
             '<div id="%1$s" class="%2$s">%3$s</div>',
@@ -205,7 +208,7 @@ class Notice
      */
     public function renderTitle(): string
     {
-        if (!$this->title) {
+        if (!$this->title || $this->options['hide_title']) {
             return '';
         }
 

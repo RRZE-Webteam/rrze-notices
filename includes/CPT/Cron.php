@@ -53,6 +53,11 @@ class Cron
      */
     public static function refreshNoticeLifecycle(): void
     {
+        if (!function_exists('is_plugin_active') ||
+            !is_plugin_active(plugin_basename(RRZE_NOTICES_FILE))) {
+            self::clearSchedule();
+            return;
+        }
         Post::refreshNoticeLifecycle();
     }
 

@@ -48,6 +48,9 @@ class Notices
      */
     public function add($id, $title, $message, $options = [])
     {
+        if (empty($id) || empty($message)) {
+            return;
+        }
         $this->notices[$id] = new Notice($id, $title, $message, $options);
     }
 

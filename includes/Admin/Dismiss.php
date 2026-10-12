@@ -85,14 +85,15 @@ class Dismiss
      */
     public static function handleAjaxDismissal(): void
     {
-        $action = isset($_POST['action']) ? sanitize_key(wp_unslash($_POST['action'])) : '';
         $noticeId = isset($_POST['id']) ? sanitize_key(wp_unslash($_POST['id'])) : '';
-        if ($action !== 'rrze_notices_dismiss' || !NoticeId::fromString($noticeId)) {
-            return;
+        if (!$noticeId || !NoticeId::fromString($noticeId)) {
+            wp_send_json_error(null, 400);
         }
 
         check_ajax_referer('rrze_notices_dismiss', 'nonce', true);
-        update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId, true);
+        update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId,
+            true);
+        wp_send_json_success();
     }
 
     /**

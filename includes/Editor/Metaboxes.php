@@ -142,6 +142,7 @@ class Metaboxes
     private static function getDisplayOptions(): array
     {
         $options = [
+            'hide_title' => __('Hide Title', 'rrze-notices'),
             'show_event_date' => __('Show Event Date', 'rrze-notices'),
         ];
         if (

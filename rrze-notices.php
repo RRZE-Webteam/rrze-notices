@@ -122,15 +122,6 @@ function activation()
  */
 function deactivation(bool $networkWide = false)
 {
-    if (is_multisite() && $networkWide) {
-        foreach (get_sites(['fields' => 'ids', 'number' => 0]) as $siteId) {
-            switch_to_blog((int)$siteId);
-            Cron::clearSchedule();
-            restore_current_blog();
-        }
-        return;
-    }
-
     Cron::clearSchedule();
 }
 
