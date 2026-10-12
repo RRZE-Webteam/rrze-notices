@@ -15,6 +15,9 @@ use RRZE\Notices\CPT\Post;
  */
 final class NoticeQuery
 {
+    /** @var array|null Cached result for the current request. */
+    private ?array $cachedResult = null;
+
     /**
      * @param object $networkOptions Parsed network-wide plugin options.
      */
@@ -29,14 +32,21 @@ final class NoticeQuery
      */
     public function findActiveForCurrentUser(): array
     {
-        return array_merge($this->findNetworkNotices(), $this->findLocalNotices());
+        if ($this->cachedResult === null) {
+            $this->cachedResult = array_merge(
+                $this->findNetworkNotices(),
+                $this->findLocalNotices()
+            );
+        }
+
+        return $this->cachedResult;
     }
 
     /**
      * Return notices published by other public sites in the network.
      *
      * @return array<int, array{id:NoticeId, notice:object,
-    from_network:bool}>
+     * from_network:bool}>
      */
     private function findNetworkNotices(): array
     {
@@ -48,8 +58,7 @@ final class NoticeQuery
         $currentBlogId = get_current_blog_id();
         $matches = [];
 
-        foreach ($this->networkOptions['network_wide'] as $storedId => $entry)
-        {
+        foreach ($this->networkOptions['network_wide'] as $storedId => $entry) {
             $noticeId = NoticeId::fromString($storedId);
             if (
                 !$noticeId
@@ -63,9 +72,9 @@ final class NoticeQuery
 
             switch_to_blog($noticeId->blogId());
 
-            $noticeData = Post::buildNoticeData((int) $entry['post_id']);
+            $noticeData = Post::buildNoticeData((int)$entry['post_id']);
             if ($noticeData !== null) {
-                $notice = (object) $noticeData;
+                $notice = (object)$noticeData;
                 if ($this->isActiveAndVisible($notice)) {
                     $matches[] = [
                         'id' => $noticeId,
@@ -105,11 +114,11 @@ final class NoticeQuery
                 continue;
             }
 
-            $notice = (object) $noticeData;
+            $notice = (object)$noticeData;
 
             if ($this->isActiveAndVisible($notice)) {
                 $matches[] = [
-                    'id' => NoticeId::forPost((int) $postId),
+                    'id' => NoticeId::forPost((int)$postId),
                     'notice' => $notice,
                     'from_network' => false,
                 ];

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 12:18+0000\n"
+"POT-Creation-Date: 2026-10-12 12:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Administrators (Webmaster can publish notices on their own website)"
 msgstr ""
 
-#: includes/CPT/Columns.php:82
+#: includes/CPT/Columns.php:91
 msgid "All"
 msgstr ""
 
@@ -177,20 +177,24 @@ msgstr ""
 msgid "By User Role"
 msgstr ""
 
-#: includes/Main.php:120
+#: includes/Main.php:126
 msgid "Clear"
+msgstr ""
+
+#: includes/CPT/Columns.php:247
+msgid "Create and manage dashboard notices for your website."
 msgstr ""
 
 #: includes/CPT/Post.php:259 includes/Editor/Metaboxes.php:70
 msgid "Critical"
 msgstr ""
 
-#: includes/Main.php:142 includes/CPT/Post.php:51
+#: includes/Main.php:148 includes/CPT/Post.php:51
 msgctxt "custom post status"
 msgid "Expired"
 msgstr ""
 
-#: includes/Display/Notice.php:233 includes/Display/Notice.php:247
+#: includes/Display/Notice.php:231 includes/Display/Notice.php:245
 #: includes/Editor/Metaboxes.php:108 includes/Editor/Metaboxes.php:118
 #: includes/Editor/Metaboxes.php:127
 msgctxt "date format"
@@ -198,7 +202,7 @@ msgid "d.m.Y"
 msgstr ""
 
 #. 1: start date/time, 2: end date/time
-#: includes/Display/Notice.php:288
+#: includes/Display/Notice.php:286
 #, php-format
 msgctxt "date range"
 msgid "%1$s – %2$s"
@@ -208,7 +212,7 @@ msgstr ""
 msgid "Display"
 msgstr ""
 
-#: includes/Display/Display.php:75
+#: includes/Admin/NetworkNotices.php:176 includes/Display/Display.php:75
 msgid "Edit"
 msgstr ""
 
@@ -243,6 +247,10 @@ msgstr[1] ""
 msgid "General"
 msgstr ""
 
+#: includes/Editor/Metaboxes.php:145
+msgid "Hide Title"
+msgstr ""
+
 #. Author URI of the plugin
 msgid "https://blogs.fau.de/webworking/"
 msgstr ""
@@ -255,15 +263,24 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
+#: includes/Admin/NetworkNotices.php:58
+msgid "Latest Network Notices"
+msgstr ""
+
 #. Description of the plugin
 msgid "Management and listing of admin notices."
 msgstr ""
 
-#: includes/CPT/Columns.php:54 includes/Editor/Metaboxes.php:151
+#: includes/Admin/NetworkNotices.php:38 includes/Admin/NetworkNotices.php:39
+msgid "Network Notices"
+msgstr ""
+
+#: includes/CPT/Columns.php:60 includes/Display/Display.php:87
+#: includes/Editor/Metaboxes.php:152
 msgid "Network-Wide"
 msgstr ""
 
-#: includes/CPT/Columns.php:51
+#: includes/CPT/Columns.php:57
 msgid "Notice"
 msgstr ""
 
@@ -289,8 +306,12 @@ msgstr ""
 msgid "Plugins: %1$s: %2$s"
 msgstr ""
 
-#: includes/Display/Display.php:129
+#: includes/Display/Display.php:138
 msgid "Preview"
+msgstr ""
+
+#: includes/Admin/NetworkNotices.php:157
+msgid "Published"
 msgstr ""
 
 #. Name of the plugin
@@ -307,7 +328,7 @@ msgid "RRZE Webteam"
 msgstr ""
 
 #. 1: date, 2: start time, 3: end time
-#: includes/Display/Notice.php:256
+#: includes/Display/Notice.php:254
 #, php-format
 msgctxt "same day time range"
 msgid "%1$s, %2$s – %3$s"
@@ -321,13 +342,13 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:145
+#: includes/Editor/Metaboxes.php:146
 msgid "Show Event Date"
 msgstr ""
 
 #. 1: date, 2: time
-#: includes/Display/Notice.php:241 includes/Display/Notice.php:264
-#: includes/Display/Notice.php:274 includes/Display/Notice.php:281
+#: includes/Display/Notice.php:239 includes/Display/Notice.php:262
+#: includes/Display/Notice.php:272 includes/Display/Notice.php:279
 #, php-format
 msgctxt "single date with time"
 msgid "%1$s, %2$s"
@@ -353,18 +374,22 @@ msgid ""
 "WordPress version %2$s."
 msgstr ""
 
+#: includes/Admin/NetworkNotices.php:63
+msgid "There are no active network-wide notices."
+msgstr ""
+
 #: includes/CPT/Post.php:104
 msgid "This notice has no content and will not be displayed."
 msgstr ""
 
-#: includes/Display/Notice.php:234 includes/Display/Notice.php:248
+#: includes/Display/Notice.php:232 includes/Display/Notice.php:246
 #: includes/Editor/Metaboxes.php:109 includes/Editor/Metaboxes.php:119
 #: includes/Editor/Metaboxes.php:128
 msgctxt "time format"
 msgid "H:i"
 msgstr ""
 
-#: includes/CPT/Columns.php:52 includes/Editor/Metaboxes.php:64
+#: includes/CPT/Columns.php:58 includes/Editor/Metaboxes.php:64
 msgid "Type"
 msgstr ""
 
@@ -372,11 +397,11 @@ msgstr ""
 msgid "User Roles"
 msgstr ""
 
-#: includes/CPT/Columns.php:53 includes/Editor/Metaboxes.php:83
+#: includes/CPT/Columns.php:59 includes/Editor/Metaboxes.php:83
 msgid "Visibility"
 msgstr ""
 
-#: includes/CPT/Columns.php:55
+#: includes/CPT/Columns.php:61
 msgid "Visible Until"
 msgstr ""
 

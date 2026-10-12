@@ -47,7 +47,7 @@ class Display
     public function registerDashboardNotices(): void
     {
         foreach ($this->noticeQuery->findActiveForCurrentUser() as $match) {
-            $this->addDashboardNotice($match['id'], $match['notice']);
+            $this->addDashboardNotice($match['id'], $match['notice'], $match['from_network']);
         }
 
         $this->notices->registerHooks();
@@ -57,10 +57,10 @@ class Display
      * Add one cached notice to the dashboard collection.
      *
      * @param NoticeId $noticeId Canonical network notice identifier.
-     * @param object   $notice   Cached notice data.
+     * @param object $notice Cached notice data.
      * @return void
      */
-    private function addDashboardNotice(NoticeId $noticeId, object $notice): void
+    private function addDashboardNotice(NoticeId $noticeId, object $notice, bool $fromNetwork = false): void
     {
         if (empty($notice->content)) {
             return;
@@ -69,10 +69,10 @@ class Display
         $editLink = '';
         if (current_user_can('manage_options')) {
             $editText = is_super_admin()
-                && Helper::isPluginActiveForNetwork()
-                && !empty($notice->network_wide)
-                    ? __('Edit (Network-Wide)', 'rrze-notices')
-                    : __('Edit', 'rrze-notices');
+            && Helper::isPluginActiveForNetwork()
+            && !empty($notice->network_wide)
+                ? __('Edit (Network-Wide)', 'rrze-notices')
+                : __('Edit', 'rrze-notices');
             $editLink = sprintf(
                 '<a href="%1$s">%2$s</a>',
                 esc_url($notice->admin_link),
@@ -80,17 +80,26 @@ class Display
             );
         }
 
+        $networkLabel = '';
+        if ($fromNetwork) {
+            $networkLabel = sprintf(
+                '<span class="notice-network-label">%s</span>',
+                esc_html__('Network-Wide', 'rrze-notices')
+            );
+        }
+
         $this->notices->add(
-            (string) $noticeId,
-            (string) $notice->title,
-            (string) $notice->content,
+            (string)$noticeId,
+            (string)$notice->title,
+            (string)$notice->content,
             [
                 'screens' => ['dashboard'],
-                'type' => (string) $notice->type,
-                'hide_title' => (bool) $notice->hide_title,
+                'type' => (string)$notice->type,
+                'hide_title' => (bool)$notice->hide_title,
                 'edit_link' => $editLink,
-                'event_start' => (int) $notice->event_start,
-                'event_end' => (int) $notice->event_end,
+                'is_dismissible' => true,
+                'event_start' => (int)$notice->event_start,
+                'event_end' => (int)$notice->event_end,
             ]
         );
     }
@@ -117,12 +126,12 @@ class Display
             return;
         }
 
-        $noticeData = Post::buildNoticeData((int) $post -> ID);
+        $noticeData = Post::buildNoticeData((int)$post->ID);
         if ($noticeData === null || empty($noticeData['content'])) {
             return;
         }
 
-        $notice = (object) $noticeData;
+        $notice = (object)$noticeData;
 
         $editLink = sprintf(
             '<span class="notice-preview">%s</span>',
@@ -130,18 +139,18 @@ class Display
         );
 
         $this->notices->add(
-            (string) NoticeId::forPost((int) $post->ID),
-            (string) $notice->title,
-            (string) $notice->content,
+            (string)NoticeId::forPost((int)$post->ID),
+            (string)$notice->title,
+            (string)$notice->content,
             [
                 'screens' => [CPTNotice::POST_TYPE],
-                'type' => (string) $notice->type,
-                'hide_title' => (bool) $notice->hide_title,
+                'type' => (string)$notice->type,
+                'hide_title' => (bool)$notice->hide_title,
                 'edit_link' => $editLink,
                 'preview' => true,
                 'is_dismissible' => false,
-                'event_start' => (int) $notice->event_start,
-                'event_end' => (int) $notice->event_end,
+                'event_start' => (int)$notice->event_start,
+                'event_end' => (int)$notice->event_end,
             ]
         );
 

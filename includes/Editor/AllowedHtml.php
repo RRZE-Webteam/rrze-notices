@@ -17,7 +17,7 @@ class AllowedHtml
      * site-specific code can extend the allowlist without touching the plugin.
      *
      * @return array<string, array<string, array<mixed>>> wp_kses-compatible
-    allowlist.
+     * allowlist.
      */
     public static function get(): array
     {

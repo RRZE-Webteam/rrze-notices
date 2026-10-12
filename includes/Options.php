@@ -37,7 +37,7 @@ class Options
     {
         $defaults = self::defaultNetworkOptions();
 
-        $options = (array) get_site_option(static::NETWORK_OPTION_NAME);
+        $options = (array)get_site_option(static::NETWORK_OPTION_NAME);
         $options = wp_parse_args($options, $defaults);
         $options = array_intersect_key($options, $defaults);
 

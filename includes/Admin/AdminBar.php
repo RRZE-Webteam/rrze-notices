@@ -51,13 +51,13 @@ class AdminBar
     public function collectNotices(): void
     {
         foreach ($this->noticeQuery->findActiveForCurrentUser() as $match) {
-            $noticeId = (string) $match['id'];
+            $noticeId = (string)$match['id'];
             if ($this->isDismissed($noticeId)) {
                 continue;
             }
 
             $notice = $match['notice'];
-            $this->addNotice($noticeId, (string) $notice->title, (string) $notice->type);
+            $this->addNotice($noticeId, (string)$notice->title, (string)$notice->type);
         }
 
         if ($this->notices !== []) {
@@ -69,13 +69,13 @@ class AdminBar
      * Append one notice to the admin-bar collection.
      *
      * @param string $noticeId Canonical site-qualified notice ID.
-     * @param string $title    Notice title.
-     * @param string $type     Notice severity/type slug.
+     * @param string $title Notice title.
+     * @param string $type Notice severity/type slug.
      * @return void
      */
     protected function addNotice(string $noticeId, string $title, string $type): void
     {
-        $this->notices[] = (object) [
+        $this->notices[] = (object)[
             'id' => $noticeId,
             'title' => $title,
             'type' => $type,
@@ -134,7 +134,7 @@ class AdminBar
             return;
         }
 
-        $href = add_query_arg('rrze-notices-id', (string) $noticeId, get_dashboard_url());
+        $href = add_query_arg('rrze-notices-id', (string)$noticeId, get_dashboard_url());
         wp_safe_redirect($href);
         exit;
     }
@@ -147,7 +147,7 @@ class AdminBar
      */
     protected function isDismissed(string $noticeId): bool
     {
-        return (bool) get_user_meta(
+        return (bool)get_user_meta(
             get_current_user_id(),
             Dismiss::PREFIX . '_' . $noticeId,
             true

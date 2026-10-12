@@ -25,6 +25,9 @@ class Columns
         $this->customPostType = CPTNotice::POST_TYPE;
     }
 
+    /** @var array<int, array|null> Cached notice data per post ID. */
+    private static array $noticeDataCache = [];
+
     /**
      * Register notice-list column hooks.
      *
@@ -36,6 +39,9 @@ class Columns
         add_action('manage_' . $this->customPostType . '_posts_custom_column', [$this, 'renderColumn'], 10, 2);
         add_filter('manage_edit-' . $this->customPostType . '_sortable_columns', [$this, 'defineSortableColumns']);
         add_action('load-edit.php', [$this, 'registerSortingHook']);
+        add_action('load-edit.php', [$this, 'registerNetworkFilter']);
+        add_filter('views_edit-' . $this->customPostType, [$this, 'addListDescription']);
+
     }
 
     /**
@@ -70,7 +76,10 @@ class Columns
      */
     public function renderColumn(string $column, int $postId): void
     {
-        $noticeData = Post::buildNoticeData($postId);
+        if (!array_key_exists($postId, self::$noticeDataCache)) {
+            self::$noticeDataCache[$postId] = Post::buildNoticeData($postId);
+        }
+        $noticeData = self::$noticeDataCache[$postId];
         if ($noticeData !== null) {
             $notice = (object)$noticeData;
             $types = Post::getNoticeTypes();
@@ -184,4 +193,60 @@ class Columns
                 break;
         }
     }
+
+    /**
+     * Hide network-wide notices from the post list for non-superadmins.
+     *
+     * @return void
+     */
+    public function registerNetworkFilter(): void
+    {
+        if (!is_super_admin()) {
+            add_action('pre_get_posts', [$this, 'excludeNetworkWideNotices']);
+        }
+    }
+
+    /**
+     * Exclude posts with notice_network_wide meta from the query.
+     *
+     * @param \WP_Query $query Current admin list query.
+     * @return void
+     */
+    public function excludeNetworkWideNotices($query): void
+    {
+        if ($this->customPostType !== $query->get('post_type')) {
+            return;
+        }
+
+        $metaQuery = $query->get('meta_query') ?: [];
+        $metaQuery[] = [
+            'relation' => 'OR',
+            [
+                'key' => 'notice_network_wide',
+                'compare' => 'NOT EXISTS',
+            ],
+            [
+                'key' => 'notice_network_wide',
+                'value' => 'on',
+                'compare' => '!=',
+            ],
+        ];
+        $query->set('meta_query', $metaQuery);
+    }
+
+    /**
+     * Add a description text above the views bar on the notice list screen.
+     *
+     * @param array $views Existing view links.
+     * @return array Unmodified view links.
+     */
+    public function addListDescription(array $views): array
+    {
+        printf(
+            '<p class="description">%s</p>',
+            esc_html__('Create and manage dashboard notices for your website.', 'rrze-notices')
+        );
+        return $views;
+    }
+
 }

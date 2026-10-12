@@ -18,7 +18,7 @@ class CPTNotice
 
     /**
      * CPTNotice Constructor.
-     * 
+     *
      * @param array $args
      */
     private function __construct(private array $args)
@@ -27,7 +27,7 @@ class CPTNotice
 
     /**
      * Set default arguments.
-     * 
+     *
      * @return CPTNotice
      */
     private static function default(): self
@@ -52,7 +52,7 @@ class CPTNotice
 
     /**
      * Merge the default arguments with the public arguments.
-     * 
+     *
      * @return CPTNotice
      */
     public static function public(): self
@@ -67,7 +67,7 @@ class CPTNotice
 
     /**
      * Merge the default arguments with the non-public arguments.
-     * 
+     *
      * @return CPTNotice
      */
     public static function nonPublic(): self
@@ -83,7 +83,7 @@ class CPTNotice
 
     /**
      * Get the labels.
-     * 
+     *
      * @return array
      */
     private static function labels(): array
@@ -214,7 +214,7 @@ class CPTNotice
 
     /**
      * Get the arguments.
-     * 
+     *
      * @return array
      */
     public function args(): array
@@ -224,7 +224,7 @@ class CPTNotice
 
     /**
      * Merge the arguments.
-     * 
+     *
      * @param array $args
      * @return CPTNotice
      */

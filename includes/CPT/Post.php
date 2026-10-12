@@ -33,7 +33,7 @@ class Post
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
         add_action('delete_post', [__CLASS__, 'handleDeletedPost'], 10, 2);
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
-        add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
+        add_action('save_post_' . CPTNotice::POST_TYPE, [__CLASS__, 'handleNoticeSave']);
         add_action('admin_notices', [__CLASS__, 'showValidationNotice']);
     }
 
@@ -98,7 +98,7 @@ class Post
             return;
         }
 
-        if ($post->post_status === 'publish' && empty(trim($post->post_content))) {
+        if (empty(trim($post->post_content))) {
             set_transient(
                 'rrze_notices_validation_' . $postId,
                 __('This notice has no content and will not be displayed.', 'rrze-notices'),
@@ -107,10 +107,10 @@ class Post
         }
 
         // Clear event dates when the display option is unchecked.
-        $display = (array) get_post_meta($postId, 'notice_display', true);
+        $display = (array)get_post_meta($postId, 'notice_display', true);
 
         if (in_array('show_event_date', $display, true)) {
-            $eventStart = (int) get_post_meta($postId, 'notice_event_start',
+            $eventStart = (int)get_post_meta($postId, 'notice_event_start',
                 true);
             if (!$eventStart) {
                 $display = array_diff($display, ['show_event_date']);
@@ -188,8 +188,7 @@ class Post
      * @param array $args Additional arguments, $args[0] is the post ID for post-specific caps.
      * @return string[]
      */
-    public static function mapNoticeCapabilities(array $caps, string $cap, int
-                                                       $userId, array $args): array
+    public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
     {
         $noticeCaps = [
             'edit_notice',
@@ -338,8 +337,8 @@ class Post
             'visibility' => self::getVisibilityRoles($postId),
             'network_wide' => self::isNetworkWide($postId),
             'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
-            'event_start'=> (int) get_post_meta($postId, 'notice_event_start', true),
-            'event_end'=> (int) get_post_meta($postId, 'notice_event_end', true),
+            'event_start' => (int)get_post_meta($postId, 'notice_event_start', true),
+            'event_end' => (int)get_post_meta($postId, 'notice_event_end', true),
         ];
     }
 
@@ -363,27 +362,31 @@ class Post
         }
 
         $now = time();
+        $networkOptions = Options::getNetworkOptions();
+        $changed = false;
 
         foreach ($postIDs as $postID) {
-            $visibleUntil = (int)get_post_meta($postID, 'notice_visible_until_gmt', true);
+            $visibleUntil = (int)get_post_meta($postID,
+                'notice_visible_until_gmt', true);
 
-            if (!$visibleUntil) {
+            if (!$visibleUntil || $now < $visibleUntil) {
                 continue;
             }
 
-            if ($now >= $visibleUntil) {
-                wp_update_post([
-                    'ID' => $postID,
-                    'post_status' => self::EXPIRED_POST_STATUS
-                ]);
+            wp_update_post([
+                'ID' => $postID,
+                'post_status' => self::EXPIRED_POST_STATUS,
+            ]);
 
-                $networkOptions = Options::getNetworkOptions();
-                $noticeKey = (string)NoticeId::forPost((int)$postID);
-                if (isset($networkOptions['network_wide'][$noticeKey])) {
-                    unset($networkOptions['network_wide'][$noticeKey]);
-                    update_site_option(Options::getNetworkOptionName(), $networkOptions);
-                }
+            $noticeKey = (string)NoticeId::forPost((int)$postID);
+            if (isset($networkOptions['network_wide'][$noticeKey])) {
+                unset($networkOptions['network_wide'][$noticeKey]);
+                $changed = true;
             }
+        }
+
+        if ($changed) {
+            update_site_option(Options::getNetworkOptionName(), $networkOptions);
         }
     }
 

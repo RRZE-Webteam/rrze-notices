@@ -20,6 +20,10 @@ foreach ($postIds as $postId) {
 
 global $wpdb;
 $wpdb->query(
-    "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE 'rrze_notices_dismissed_%'"
+    $wpdb->prepare(
+        "DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE %s",
+        $wpdb->esc_like('rrze_notices_dismissed_') . '%'
+    )
 );
+
 

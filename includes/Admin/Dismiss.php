@@ -39,9 +39,9 @@ class Dismiss
 
     /**
      * Initialize dismissal state.
-     * 
-     * @param string $id            Site-qualified notice identifier.
-     * @param bool   $isDismissible Whether the notice can be dismissed.
+     *
+     * @param string $id Site-qualified notice identifier.
+     * @param bool $isDismissible Whether the notice can be dismissed.
      */
     public function __construct(string $id, bool $isDismissible = true)
     {
@@ -65,7 +65,6 @@ class Dismiss
         self::$hooksRegistered = true;
     }
 
-
     /**
      * Determine whether the current user dismissed this notice.
      *
@@ -75,7 +74,7 @@ class Dismiss
     {
         if (!$this->isDismissible) return false;
 
-        return (bool) get_user_meta(get_current_user_id(), self::PREFIX . "_{$this->id}", true);
+        return (bool)get_user_meta(get_current_user_id(), self::PREFIX . "_{$this->id}", true);
     }
 
     /**
@@ -85,12 +84,14 @@ class Dismiss
      */
     public static function handleAjaxDismissal(): void
     {
-        $noticeId = isset($_POST['id']) ? sanitize_key(wp_unslash($_POST['id'])) : '';
+        check_ajax_referer('rrze_notices_dismiss', 'nonce', true);
+
+        $noticeId = isset($_POST['id']) ? sanitize_key(wp_unslash($_POST['id']))
+            : '';
         if (!$noticeId || !NoticeId::fromString($noticeId)) {
             wp_send_json_error(null, 400);
         }
 
-        check_ajax_referer('rrze_notices_dismiss', 'nonce', true);
         update_user_meta(get_current_user_id(), self::PREFIX . '_' . $noticeId,
             true);
         wp_send_json_success();

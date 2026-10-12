@@ -11,16 +11,14 @@ defined('ABSPATH') || exit;
  */
 final class NoticeId
 {
-    private function __construct(
-        private readonly int $blogId,
-        private readonly int $postId
-    ) {
+    private function __construct(private readonly int $blogId, private readonly int $postId)
+    {
     }
 
     /**
      * Create an identifier for a notice post.
      *
-     * @param int      $postId Notice post ID.
+     * @param int $postId Notice post ID.
      * @param int|null $blogId Site ID, or the current site when omitted.
      * @return self
      */
@@ -46,12 +44,12 @@ final class NoticeId
             return null;
         }
 
-        $value = (string) $value;
+        $value = (string)$value;
         if (!preg_match('/^([1-9]\d*)-([1-9]\d*)$/', $value, $matches)) {
             return null;
         }
 
-        return new self((int) $matches[1], (int) $matches[2]);
+        return new self((int)$matches[1], (int)$matches[2]);
     }
 
     /**

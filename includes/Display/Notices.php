@@ -100,21 +100,7 @@ class Notices
      */
     public function renderNotices(): void
     {
-        $notices = $this->getAll();
-
-        $hasError = false;
-        foreach ($notices as $notice) {
-            if ($notice->isError() && $notice->shouldDisplay() && !$notice->isPreview()) {
-                $hasError = true;
-                break;
-            }
-        }
-
-        if ($hasError) {
-            echo '<div class="rrze-notices-backdrop" role="presentation"></div>';
-        }
-
-        foreach ($notices as $notice) {
+        foreach ($this->getAll() as $notice) {
             $notice->render();
         }
     }

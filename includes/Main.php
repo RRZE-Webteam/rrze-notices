@@ -9,12 +9,14 @@ defined('ABSPATH') || exit;
 use RRZE\Notices\Admin\AdminBar;
 use RRZE\Notices\Admin\Dismiss;
 use RRZE\Notices\Admin\Settings;
+use RRZE\Notices\Admin\NetworkNotices;
 use RRZE\Notices\CPT\CPTNotice;
 use RRZE\Notices\CPT\Cron;
 use RRZE\Notices\CPT\Post;
 use RRZE\Notices\CPT\Registration;
 use RRZE\Notices\Display\Display;
 use RRZE\Notices\Display\NoticeQuery;
+
 
 /**
  * Bootstraps plugin components after requirements and network settings pass.
@@ -58,6 +60,10 @@ class Main
             }
         }
 
+        if (Helper::isPluginActiveForNetwork()) {
+            NetworkNotices::registerHooks();
+        }
+
         Registration::registerHooks();
 
         $noticeQuery = new NoticeQuery($networkOptions);
@@ -88,24 +94,29 @@ class Main
         wp_enqueue_style(
             'rrze-notices-admin',
             plugins_url('build/admin.style.css', RRZE_NOTICES_FILE),
-            $assetFile['dependencies'] ?? [],
+            [],
             $assetFile['version'] ?? RRZE_NOTICES_VERSION
         );
-        wp_enqueue_script(
-            'rrze-notices-dismiss',
-            plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
-            [],
-            $assetFile['version'] ?? RRZE_NOTICES_VERSION,
-            true
-        );
-        wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('rrze_notices_dismiss'),
-        ]);
 
         $isNoticeEditor = in_array($hook, ['post.php', 'post-new.php'], true)
             && $post
             && $post->post_type === CPTNotice::POST_TYPE;
+
+        // Dismiss script only on screens where notices are displayed
+        if ($hook === 'index.php' || $isNoticeEditor) {
+            wp_enqueue_script(
+                'rrze-notices-dismiss',
+                plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
+                [],
+                $assetFile['version'] ?? RRZE_NOTICES_VERSION,
+                true
+            );
+            wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('rrze_notices_dismiss'),
+            ]);
+
+        }
 
         if ($isNoticeEditor) {
             $assetFile = include(RRZE_NOTICES_DIR . 'build/cmb2.asset.php');

@@ -1,17 +1,4 @@
 /**
- * Remove the backdrop when no modal error notices remain visible.
- */
-function maybeRemoveBackdrop() {
-    if (document.querySelector('.rrze-notices-modal')) {
-        return;
-    }
-    const backdrop = document.querySelector('.rrze-notices-backdrop');
-    if (backdrop) {
-        backdrop.remove();
-    }
-}
-
-/**
  * Handle notice dismissal via delegated click listener.
  *
  * WordPress adds a dismiss button (.notice-dismiss) to every notice
@@ -43,33 +30,4 @@ document.addEventListener('click', function (event) {
         body: body.toString(),
     });
 
-    // WordPress removes the notice element after a fadeTo(100ms) +
-    // slideUp(100ms) animation. Wait for that to finish, then check
-    // if the backdrop can go.
-    setTimeout(maybeRemoveBackdrop, 350);
-});
-
-/**
- * On page load: set focus and ARIA attributes on the first modal
- * error notice so keyboard and screen-reader users can reach it.
- */
-document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.querySelector('.rrze-notices-modal');
-    if (!modal) {
-        return;
-    }
-
-    modal.setAttribute('role', 'alertdialog');
-    modal.setAttribute('aria-modal', 'true');
-
-    // Use the notice title as the accessible label, if present.
-    const title = modal.querySelector('.notice-title');
-    if (title) {
-        title.id = title.id || 'rrze-notices-modal-title';
-        modal.setAttribute('aria-labelledby', title.id);
-    }
-
-    // tabindex allows a non-interactive element to receive focus.
-    modal.setAttribute('tabindex', '-1');
-    modal.focus();
 });

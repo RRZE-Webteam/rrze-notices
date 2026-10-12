@@ -42,7 +42,7 @@ class Settings
         add_filter('network_admin_plugin_action_links_' . plugin_basename(RRZE_NOTICES_FILE), [$this, 'addNetworkSettingsLink']);
     }
 
-        /**
+    /**
      * Add a settings link to the network plugins screen.
      *
      * @param string[] $links Existing plugin action links.

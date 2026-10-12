@@ -28,7 +28,6 @@ class Metaboxes
     }
 
 
-
     /**
      * Register the complete notice-settings metabox and its fields.
      *
@@ -112,8 +111,8 @@ class Metaboxes
         $cmb->add_field([
             'id' => 'notice_event_end',
             'name' => __('Event End', 'rrze-notices')
-            . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
-            . __('(optional)', 'rrze-notices') . '</span>',
+                . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
+                . __('(optional)', 'rrze-notices') . '</span>',
             'type' => 'text_datetime_timestamp',
             'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
             'time_format' => _x('H:i', 'time format', 'rrze-notices'),
@@ -197,9 +196,9 @@ class Metaboxes
     /**
      * Save the display-until value as an absolute GMT timestamp.
      *
-     * @param bool        $updated Whether CMB2 changed the stored value.
-     * @param string      $action  CMB2 save action.
-     * @param \CMB2_Field $field   Saved display-until field.
+     * @param bool $updated Whether CMB2 changed the stored value.
+     * @param string $action CMB2 save action.
+     * @param \CMB2_Field $field Saved display-until field.
      * @return void
      */
     public static function saveVisibleUntilField(bool $updated, string $action, \CMB2_Field $field): void

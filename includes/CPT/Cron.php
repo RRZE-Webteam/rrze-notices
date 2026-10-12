@@ -20,7 +20,7 @@ class Cron
 
     /**
      * Register scheduled notice-lifecycle hooks.
-     * 
+     *
      * @return void
      */
     public static function registerHooks(): void
@@ -34,7 +34,7 @@ class Cron
 
     /**
      * Activate the scheduled event if it's not already scheduled
-     * 
+     *
      * @return void
      */
     public static function ensureStatusUpdateScheduled(): void
@@ -48,22 +48,17 @@ class Cron
 
     /**
      * Method to be executed when the scheduled event is triggered
-     * 
+     *
      * @return void
      */
     public static function refreshNoticeLifecycle(): void
     {
-        if (!function_exists('is_plugin_active') ||
-            !is_plugin_active(plugin_basename(RRZE_NOTICES_FILE))) {
-            self::clearSchedule();
-            return;
-        }
         Post::refreshNoticeLifecycle();
     }
 
     /**
      * Clear the scheduled event hook
-     * 
+     *
      * @return void
      */
     public static function clearSchedule()

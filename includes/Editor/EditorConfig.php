@@ -40,7 +40,7 @@ class EditorConfig
     /**
      * Set editor height, disable media buttons and auto-expand.
      *
-     * @param array  $settings Editor settings.
+     * @param array $settings Editor settings.
      * @param string $editorId Editor instance ID.
      * @return array Modified settings.
      */
@@ -78,12 +78,11 @@ class EditorConfig
     /**
      * Restrict quicktag buttons in the Text tab to allowed elements.
      *
-     * @param array  $settings Quicktags settings.
+     * @param array $settings Quicktags settings.
      * @param string $editorId Editor instance ID.
      * @return array Modified settings.
      */
-    public static function filterQuicktagsSettings(array $settings, string
-                                                         $editorId): array
+    public static function filterQuicktagsSettings(array $settings, string $editorId): array
     {
         if (!self::isNoticeEditor()) {
             return $settings;

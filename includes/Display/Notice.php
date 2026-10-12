@@ -74,10 +74,10 @@ class Notice
     /**
      * Constructor.
      *
-     * @param string $id      A unique ID for this notice. Can contain lowercase characters and underscores.
-     * @param string $title   The title of the notice.
+     * @param string $id A unique ID for this notice. Can contain lowercase characters and underscores.
+     * @param string $title The title of the notice.
      * @param string $message The message of the notice.
-     * @param array  $options An array of additional options to change the defaults for the notice.
+     * @param array $options An array of additional options to change the defaults for the notice.
      */
     public function __construct($id, $title, $message, $options = [])
     {
@@ -108,7 +108,7 @@ class Notice
      */
     public function isPreview(): bool
     {
-        return (bool) $this->options['preview'];
+        return (bool)$this->options['preview'];
     }
 
     /**
@@ -122,7 +122,7 @@ class Notice
             return;
         }
 
-        $html  = $this->renderTitle();
+        $html = $this->renderTitle();
         $html .= $this->renderEventDate();
         $html .= $this->renderMessage();
 
@@ -159,7 +159,7 @@ class Notice
             return false;
         }
 
-        if (!$this->dismissal || $this->dismissal->isDismissed()) {
+        if ($this->dismissal->isDismissed()) {
             return false;
         }
 
@@ -193,11 +193,6 @@ class Notice
 
         $classes[] = 'notice-alt';
 
-        if ($this->isError() && !$this->options['preview']) {
-            $classes[] = 'rrze-notices-modal';
-            $this->options['is_dismissible'] = true;
-        }
-
         return implode(' ', $classes);
     }
 
@@ -220,18 +215,18 @@ class Notice
 
     /**
      * Return the event date markup, or an empty string if no
-    event date is set.
+     * event date is set.
      *
      * @return string
      */
     public function renderEventDate(): string
     {
-        $start = (int) $this->options['event_start'];
+        $start = (int)$this->options['event_start'];
         if (!$start) {
             return '';
         }
 
-        $end = (int) $this->options['event_end'];
+        $end = (int)$this->options['event_end'];
 
         $startDate = wp_date(_x('d.m.Y', 'date format', 'rrze-notices'), $start);
         $startTime = wp_date(_x('H:i', 'time format', 'rrze-notices'), $start);
