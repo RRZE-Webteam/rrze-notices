@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-12 12:38+0000\n"
+"PO-Revision-Date: 2026-10-13 12:44+0000\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -183,7 +183,7 @@ msgstr "Leeren"
 
 #: includes/CPT/Columns.php:247
 msgid "Create and manage dashboard notices for your website."
-msgstr "Erstelle und verwalte Dashboard-Meldungen für deine Website."
+msgstr "Erstelle und verwalte Dashboard Hinweise für deine Website."
 
 #: includes/CPT/Post.php:259 includes/Editor/Metaboxes.php:70
 msgid "Critical"
@@ -206,7 +206,7 @@ msgstr ""
 #, php-format
 msgctxt "date range"
 msgid "%1$s – %2$s"
-msgstr ""
+msgstr "%1$s – %2$s Uhr"
 
 #: includes/Editor/Metaboxes.php:75
 msgid "Display"
@@ -251,7 +251,7 @@ msgstr "Allgemein"
 
 #: includes/Editor/Metaboxes.php:145
 msgid "Hide Title"
-msgstr ""
+msgstr "Titel verbergen"
 
 #. Author URI of the plugin
 msgid "https://blogs.fau.de/webworking/"
@@ -267,7 +267,7 @@ msgstr "Info"
 
 #: includes/Admin/NetworkNotices.php:58
 msgid "Latest Network Notices"
-msgstr ""
+msgstr "Aktuelle netzwerkweite Hinweise"
 
 #. Description of the plugin
 msgid "Management and listing of admin notices."
@@ -275,7 +275,7 @@ msgstr "Verwaltung und Auflistung von Dashboard Hinweisen."
 
 #: includes/Admin/NetworkNotices.php:38 includes/Admin/NetworkNotices.php:39
 msgid "Network Notices"
-msgstr ""
+msgstr "Netzwerk Hinweise"
 
 #: includes/CPT/Columns.php:60 includes/Display/Display.php:87
 #: includes/Editor/Metaboxes.php:152
@@ -314,7 +314,7 @@ msgstr "Vorschau"
 
 #: includes/Admin/NetworkNotices.php:157
 msgid "Published"
-msgstr ""
+msgstr "Veröffentlicht"
 
 #. Name of the plugin
 #: includes/Admin/Settings.php:80 includes/Admin/Settings.php:81
@@ -335,7 +335,7 @@ msgstr "RRZE Webteam"
 #, php-format
 msgctxt "same day time range"
 msgid "%1$s, %2$s – %3$s"
-msgstr ""
+msgstr "%1$s, %2$s – %3$s Uhr"
 
 #: includes/Admin/Settings.php:181
 msgid "Save Changes"
@@ -355,7 +355,7 @@ msgstr "Event Datum anzeigen"
 #, php-format
 msgctxt "single date with time"
 msgid "%1$s, %2$s"
-msgstr ""
+msgstr "%1$s, %2$s Uhr"
 
 #: includes/Admin/Settings.php:160
 msgid "Superadmins (only networkwide notices)"
@@ -383,7 +383,7 @@ msgstr ""
 
 #: includes/Admin/NetworkNotices.php:63
 msgid "There are no active network-wide notices."
-msgstr ""
+msgstr "Es gibt derzeit keine aktiven netzwerkweiten Hinweise."
 
 #: includes/CPT/Post.php:104
 msgid "This notice has no content and will not be displayed."

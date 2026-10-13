@@ -36,7 +36,7 @@ class Post
         add_action('transition_post_status', [__CLASS__, 'transitionPostStatus'], 10, 3);
         add_action('delete_post', [__CLASS__, 'handleDeletedPost'], 10, 2);
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
-        add_action('save_post_' . CPTNotice::POST_TYPE, [__CLASS__, 'handleNoticeSave']);
+        add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
         add_action('admin_notices', [__CLASS__, 'showValidationNotice']);
     }
 
