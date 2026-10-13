@@ -11,6 +11,10 @@ use RRZE\Notices\Editor\AllowedHtml;
 
 /**
  * Represents and renders one dashboard notice for the current request.
+ *
+ * Handles screen targeting (only show on certain admin pages),
+ * per-user dismissal state, and the HTML output including title,
+ * event date, message, and action links.
  */
 class Notice
 {

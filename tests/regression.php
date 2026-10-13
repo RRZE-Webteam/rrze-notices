@@ -87,13 +87,18 @@ function get_post_meta(int $postId, string $key = '', bool $single = false): mix
     return $testPostMeta[$postId][$key] ?? ($single ? '' : []);
 }
 
-require_once dirname(__DIR__) . '/includes/Helper.php';
-require_once dirname(__DIR__) . '/includes/Users.php';
-require_once dirname(__DIR__) . '/includes/NoticeId.php';
-require_once dirname(__DIR__) . '/includes/NoticeVisibility.php';
+function wp_roles(): WP_Roles
+{
+    return new WP_Roles();
+}
 
-use RRZE\Notices\NoticeId;
-use RRZE\Notices\NoticeVisibility;
+require_once dirname(__DIR__) . '/includes/Helper.php';
+require_once dirname(__DIR__) . '/includes/Admin/Users.php';
+require_once dirname(__DIR__) . '/includes/Display/NoticeId.php';
+require_once dirname(__DIR__) . '/includes/Display/NoticeVisibility.php';
+
+use RRZE\Notices\Display\NoticeId;
+use RRZE\Notices\Display\NoticeVisibility;
 
 function assertSameValue(mixed $expected, mixed $actual, string $message): void
 {

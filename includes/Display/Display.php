@@ -12,6 +12,9 @@ use RRZE\Notices\CPT\Post;
 
 /**
  * Registers active notices for display in the WordPress dashboard.
+ *
+ * Collects notices from the current site and the network, then
+ * shows a live preview on the notice editing screen.
  */
 class Display
 {

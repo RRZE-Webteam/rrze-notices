@@ -10,7 +10,9 @@ use RRZE\Notices\Helper;
 use RRZE\Notices\Options;
 
 /**
- * Registers and renders the multisite network settings page.
+ * Network settings page (Network Admin > Settings > RRZE Notices).
+ *
+ * Lets super admins enable the plugin and choose the access level.
  */
 class Settings
 {
@@ -139,10 +141,10 @@ class Settings
     {
         echo '<fieldset>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions['enabled']), '>', esc_html_e('Notices is enabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions['enabled'], false), '>', esc_html__('Notices is enabled.', 'rrze-notices');
         echo '</label><br>';
         echo '<label>';
-        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->networkOptions['enabled']), '>', esc_html_e('Notices is disabled.', 'rrze-notices');
+        echo '<input type="radio" name="rrze_notices_settings[enabled]" value="0" ', checked('0', $this->networkOptions['enabled'], false), '>', esc_html__('Notices is disabled.', 'rrze-notices');
         echo '</label>';
         echo '</fieldset>';
     }

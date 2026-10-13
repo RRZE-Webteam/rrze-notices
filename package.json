@@ -13,12 +13,13 @@
         "url": "https://github.com/RRZE-Webteam/rrze-notices"
     },
     "author": {
-        "name": "RRZE-Webteam <webmaster@fau.de> (https://www.rrze.fau.de)",
+        "name": "RRZE-Webteam",
+        "email": "webmaster@fau.de",
         "url": "https://www.wordpress.rrze.fau.de"
     },
     "compatibility": {
         "wprequires": "6.5",
-        "wptestedup": "6.8",
+        "wptestedup": "7.1.3",
         "phprequires": "8.2"
     },
     "devDependencies": {

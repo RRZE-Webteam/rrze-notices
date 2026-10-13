@@ -7,6 +7,10 @@ defined('ABSPATH') || exit;
 
 /**
  * Single source of truth for HTML tags allowed in notice content.
+ *
+ * WordPress strips unsafe HTML with wp_kses(). This class defines
+ * which tags and attributes survive that filter, keeping notices
+ * safe while still allowing basic formatting like links and lists.
  */
 class AllowedHtml
 {

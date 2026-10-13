@@ -5,7 +5,9 @@
 
 # RRZE Notices
 
-Role-based admin notices for WordPress Multisite with per-user dismissal.
+Display important notices on the WordPress dashboard.  
+Target notices to specific user roles and let each user dismiss them individually. Supports both single site and
+Multisite networks.
 
 ## Documentation
 

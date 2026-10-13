@@ -13,7 +13,10 @@ use RRZE\Notices\Display\NoticeId;
 
 
 /**
- * Registers notice-post lifecycle, status, and capability behavior.
+ * Notice post lifecycle: custom status, capabilities, save logic, and expiration.
+ *
+ * Handles what happens when a notice is saved, published, deleted, or expires.
+ * Also controls who may edit notices via the 'map_meta_cap' filter.
  */
 class Post
 {
@@ -86,15 +89,26 @@ class Post
     }
 
     /**
-     * Rebuild cached notice data after CMB2 saves a notice.
+     * Process notice metadata after saving (event dates, network-wide flag).
      *
-     * @param int $postId
+     * Fires on 'save_post_notice'. Sets a validation transient for empty
+     * content, cleans up event dates, and syncs the network-wide index.
+     *
+     * @param int $postId The saved notice post ID.
      * @return void
      */
     public static function handleNoticeSave(int $postId): void
     {
         $post = get_post($postId);
         if (!$post || $post->post_type !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        if ($post->post_status === 'auto-draft') {
             return;
         }
 
@@ -175,17 +189,15 @@ class Post
     }
 
     /**
-     * Map notice capabilities to manage_options or manage_network_options.
+     * Control who may edit, read, or delete notices via 'map_meta_cap'.
      *
-     * WordPress calls this filter whenever it checks a capability for a
-     * notice post. Instead of relying on page capabilities (which editors
-     * also have), we map to manage_options or manage_network_options
-     * depending on the network setting.
+     * Maps notice capabilities to the access setting from network options.
+     * Network-wide notices are restricted to super admins.
      *
      * @param string[] $caps Required primitive capabilities.
-     * @param string $cap Capability being checked.
-     * @param int $userId User ID.
-     * @param array $args Additional arguments, $args[0] is the post ID for post-specific caps.
+     * @param string   $cap  Capability being checked.
+     * @param int      $userId User ID.
+     * @param array    $args   $args[0] is the post ID for post-specific caps.
      * @return string[]
      */
     public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
@@ -318,10 +330,12 @@ class Post
     }
 
     /**
-     * Build notice data directly from post and post meta.
+     * Assemble all display-relevant notice data from post and post meta.
+     *
+     * Central data source used by NoticeQuery, Columns, and Display.
      *
      * @param int $postId Notice post ID.
-     * @return array<string, mixed>|null Notice data array, or null if post is invalid.
+     * @return array<string, mixed>|null Notice data, or null if invalid.
      */
     public static function buildNoticeData(int $postId): ?array
     {
@@ -344,7 +358,10 @@ class Post
 
 
     /**
-     * Refresh lifecycle state for all published notices (Cron-Job)
+     * Expire notices whose visible-until date has passed (cron callback).
+     *
+     * Sets expired notices to the 'expired' status and removes them
+     * from the network-wide index in a single write.
      *
      * @return void
      */

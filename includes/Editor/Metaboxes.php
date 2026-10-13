@@ -11,7 +11,11 @@ use RRZE\Notices\Helper;
 use RRZE\Notices\Admin\Users;
 
 /**
- * Defines CMB2 notice fields and normalizes their saved values.
+ * Defines the notice settings fields below the editor (CMB2 metabox).
+ *
+ * CMB2 is a library that creates settings panels on the post-editing
+ * screen. This class registers fields for notice type, visibility,
+ * network-wide publishing, and the visible-until date.
  */
 class Metaboxes
 {

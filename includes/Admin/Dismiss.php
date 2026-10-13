@@ -9,7 +9,10 @@ defined('ABSPATH') || exit;
 use RRZE\Notices\Display\NoticeId;
 
 /**
- * Persists per-user notice dismissals and handles the AJAX dismissal request.
+ * Per-user notice dismissals stored as user meta.
+ *
+ * An AJAX request stores a flag so the notice stays hidden for that
+ * user. Dismissals are cleared when a notice is republished.
  */
 class Dismiss
 {

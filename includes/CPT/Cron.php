@@ -7,9 +7,9 @@ namespace RRZE\Notices\CPT;
 defined('ABSPATH') || exit;
 
 /**
- * Class Cron
+ * Hourly cron job that expires notices past their visible-until date.
  *
- * A class for managing scheduled events using WP cron functionality.
+ * Schedules itself on 'init' and clears the schedule on deactivation.
  */
 class Cron
 {

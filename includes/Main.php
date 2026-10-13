@@ -19,12 +19,23 @@ use RRZE\Notices\Display\NoticeQuery;
 
 
 /**
- * Bootstraps plugin components after requirements and network settings pass.
+ * Central entry point that wires up all plugin components.
+ *
+ * This class decides which parts of the plugin are active based on
+ * network settings (enabled, access level) and registers their
+ * WordPress hooks. No other class should instantiate components
+ * directly — Main is the single place where everything connects.
+ *
+ * Called from rrze-notices.php via Main::bootstrap() on the
+ * 'plugins_loaded' hook after system requirements have passed.
  */
 class Main
 {
     /**
-     * Prevent direct construction; use bootstrap().
+     * Private constructor — prevents creating instances with 'new Main()'.
+     *
+     * Use Main::bootstrap() instead. This pattern ensures the plugin
+     * is only initialized once and always through the same entry point.
      */
     private function __construct()
     {
@@ -44,7 +55,9 @@ class Main
     }
 
     /**
-     * Register all enabled plugin components.
+     * Wire up all plugin components based on network settings.
+     *
+     * Stops early if the plugin is network-activated but not enabled.
      *
      * @return void
      */
@@ -81,16 +94,17 @@ class Main
     }
 
     /**
-     * Enqueue scripts and styles for the admin area
+     * Enqueue admin scripts and styles, scoped to relevant screens only.
      *
-     * @param string $hook Current admin page hook suffix.
+     * @param string $hook Admin page hook suffix (e.g. 'index.php', 'post.php').
      * @return void
      */
     public function enqueueAdminAssets(string $hook): void
     {
         global $post;
 
-        $assetFile = include(RRZE_NOTICES_DIR . 'build/admin.asset.php');
+        $assetPath = RRZE_NOTICES_DIR . 'build/admin.asset.php';
+        $assetFile = file_exists($assetPath) ? include $assetPath : [];
         wp_enqueue_style(
             'rrze-notices-admin',
             plugins_url('build/admin.style.css', RRZE_NOTICES_FILE),
@@ -136,7 +150,7 @@ class Main
             || (
                 $hook === 'edit.php'
                 && isset($_GET['post_type'])
-                && $_GET['post_type'] === CPTNotice::POST_TYPE
+                && sanitize_key($_GET['post_type']) === CPTNotice::POST_TYPE
             );
 
         if ($isNoticeScreen) {

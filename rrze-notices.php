@@ -8,7 +8,7 @@ declare(strict_types=1);
   Description:     Management and listing of admin notices.
   Version:         4.0.0
   Author:          RRZE Webteam
-  Author URI:      https://blogs.fau.de/webworking/
+  Author URI:      https://www.wordpress.rrze.fau.de
   License:         GNU General Public License Version 3
   License URI:     https://www.gnu.org/licenses/gpl-3.0.html
   Domain Path:     /languages
@@ -63,7 +63,7 @@ function loadTextdomain()
     }
 }
 
-    /**
+/**
  * Verify the active PHP and WordPress versions.
  *
  * @return string Localized error message, or an empty string when compatible.

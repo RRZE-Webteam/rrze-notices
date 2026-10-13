@@ -8,6 +8,10 @@ defined('ABSPATH') || exit;
 
 /**
  * Provides normalized network option values.
+ *
+ * WordPress stores network options as serialized data that may be
+ * incomplete or outdated. This class merges stored values with
+ * safe defaults so the rest of the plugin always gets a complete array.
  */
 class Options
 {

@@ -7,7 +7,10 @@ namespace RRZE\Notices\CPT;
 defined('ABSPATH') || exit;
 
 /**
- * Fluent argument builder for the notice custom post type.
+ * Argument builder for the notice custom post type.
+ *
+ * Provides preset configurations (public/nonPublic) that can be
+ * extended with merge() before passing to register_post_type().
  */
 class CPTNotice
 {

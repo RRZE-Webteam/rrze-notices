@@ -8,6 +8,9 @@ defined('ABSPATH') || exit;
 
 /**
  * Immutable identifier for a notice within a multisite network.
+ *
+ * Format: "blogId-postId" (e.g. "3-42"). Used as array key in
+ * network options, as user-meta key for dismissals, and in URLs.
  */
 final class NoticeId
 {

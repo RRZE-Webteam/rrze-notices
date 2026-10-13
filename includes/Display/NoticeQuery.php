@@ -11,7 +11,10 @@ use RRZE\Notices\CPT\CPTNotice;
 use RRZE\Notices\CPT\Post;
 
 /**
- * Finds active notices that target the current user.
+ * Finds active notices (local and network-wide) that target the current user.
+ *
+ * Results are cached per request so that Display and AdminBar can
+ * both call findActiveForCurrentUser() without duplicate queries.
  */
 final class NoticeQuery
 {

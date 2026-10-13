@@ -10,7 +10,10 @@ use RRZE\Notices\Helper;
 use RRZE\Notices\Admin\Users;
 
 /**
- * Configures and renders columns on the notice post list screen.
+ * Custom columns for the notice list table in wp-admin.
+ *
+ * Adds Type, Visibility, Network-Wide, and Visible Until columns.
+ * Hides network-wide notices from non-superadmins.
  */
 class Columns
 {

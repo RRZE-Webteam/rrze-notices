@@ -10,7 +10,9 @@ use RRZE\Notices\Display\NoticeId;
 use RRZE\Notices\Display\NoticeQuery;
 
 /**
- * Collects active notices and exposes them through the WordPress admin bar.
+ * Admin bar badge with active notice count and dropdown list.
+ *
+ * Each item links to the dashboard. Dismissed notices are excluded.
  */
 class AdminBar
 {
@@ -100,7 +102,7 @@ class AdminBar
             'id' => 'rrze-notices',
             'parent' => 'top-secondary',
             'title' => $title,
-            'href' => false,
+            'href' => '',
         ]);
 
         foreach ($this->notices as $index => $notice) {
@@ -125,11 +127,15 @@ class AdminBar
      */
     public function redirectNoticeRequest(): void
     {
-        if (empty($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'rrze_notices_redirect_nonce')) {
+        $nonce = isset($_GET['_wpnonce'])
+            ? sanitize_text_field(wp_unslash($_GET['_wpnonce']))
+            : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'rrze_notices_redirect_nonce')) {
             return;
         }
 
-        $noticeId = NoticeId::fromString($_GET['rrze-notices-id'] ?? null);
+        $rawId = sanitize_text_field(wp_unslash($_GET['rrze-notices-id'] ?? ''));
+        $noticeId = NoticeId::fromString($rawId);
         if (!$noticeId) {
             return;
         }
@@ -138,6 +144,7 @@ class AdminBar
         wp_safe_redirect($href);
         exit;
     }
+
 
     /**
      * Determine whether the current user dismissed a notice.

@@ -7,7 +7,10 @@ namespace RRZE\Notices;
 defined('ABSPATH') || exit;
 
 /**
- * Collection of shared WordPress, date, and identifier helpers.
+ * Checks whether this plugin is network-activated.
+ *
+ * Used throughout the plugin to decide if network-wide features
+ * (cross-site notices, network settings) are available.
  */
 class Helper
 {

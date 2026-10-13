@@ -2,13 +2,15 @@
 Contributors: rrzewebteam
 Tags: notices, admin notices, dashboard, multisite
 Requires at least: 6.5
-Tested up to: 6.8
+Tested up to: 7.1.3
 Requires PHP: 8.2
 Stable tag: 4.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Role-based admin notices for WordPress Multisite with per-user dismissal.
+Display important notices on the WordPress dashboard.
+Target notices to specific user roles and let each user dismiss them individually. Supports both single site and
+Multisite networks.
 
 == Description ==
 
@@ -27,6 +29,7 @@ can choose whether site admins may also create notices on their own sites.
 * Role-based visibility — target all users or specific roles
 * Per-user dismissal via AJAX
 * Network-wide notices visible across all sites (super admins only)
+* Optional event date display (start and end) shown on the notice
 * Automatic expiration via a configurable visible-until date
 * Admin bar badge with notice count and dropdown
 * Read-only overview of active network notices for site admins

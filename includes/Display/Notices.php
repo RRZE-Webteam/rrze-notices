@@ -7,7 +7,10 @@ namespace RRZE\Notices\Display;
 defined('ABSPATH') || exit;
 
 /**
- * Request-scoped collection of notices to render in the WordPress admin.
+ * Collection of Notice objects rendered via the 'admin_notices' hook.
+ *
+ * Filled by Display during admin_init/admin_head, then rendered
+ * when WordPress fires admin_notices.
  */
 class Notices
 {

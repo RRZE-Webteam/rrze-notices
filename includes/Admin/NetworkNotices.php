@@ -12,7 +12,10 @@ use RRZE\Notices\Display\NoticeId;
 use RRZE\Notices\Editor\AllowedHtml;
 
 /**
- * Renders a read-only list of active network-wide notices.
+ * Read-only overview of active network-wide notices for site admins.
+ *
+ * Loads content from originating sites via switch_to_blog().
+ * Super admins see an edit link; site admins can only read.
  */
 class NetworkNotices
 {
@@ -140,7 +143,7 @@ class NetworkNotices
     {
         $typeClass = 'notice-' . esc_attr($notice['type']);
 
-        echo '<div class="rrze-notices-network-card notice ' . $typeClass . 'notice-alt">';
+        echo '<div class="rrze-notices-network-card notice ' . $typeClass . ' notice-alt">';
 
         // Title
         if (!empty($notice['title'])) {

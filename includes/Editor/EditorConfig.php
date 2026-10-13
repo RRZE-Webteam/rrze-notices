@@ -9,7 +9,11 @@ defined('ABSPATH') || exit;
 use RRZE\Notices\CPT\CPTNotice;
 
 /**
- * Configures the Classic Editor for the notice post type.
+ * Restricts the Classic Editor toolbar and allowed elements for notices.
+ *
+ * Notices support only a small set of HTML (see AllowedHtml). This
+ * class hides editor buttons that would produce unsupported markup,
+ * so authors only see formatting options that actually work.
  */
 class EditorConfig
 {

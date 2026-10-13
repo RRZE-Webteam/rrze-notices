@@ -9,7 +9,10 @@ defined('ABSPATH') || exit;
 use WP_Roles;
 
 /**
- * Provides user-role choices used by notice visibility controls.
+ * Role list for the notice visibility selector.
+ *
+ * Returns all site roles or only WordPress built-in roles
+ * (for network-wide notices where custom roles may not exist).
  */
 class Users
 {

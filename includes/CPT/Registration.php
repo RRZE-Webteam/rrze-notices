@@ -10,7 +10,8 @@ use RRZE\Notices\Editor\Metaboxes;
 use RRZE\Notices\Editor\EditorConfig;
 
 /**
- * Coordinates registration and administration of the notice post type.
+ * Registers the notice post type and wires up its sub-components
+ * (Post lifecycle, Metaboxes, EditorConfig, Columns).
  */
 class Registration
 {

@@ -9,7 +9,10 @@ defined('ABSPATH') || exit;
 use RRZE\Notices\Admin\Users;
 
 /**
- * Evaluates whether a notice targets the current user.
+ * Evaluates whether a notice targets the current user based on roles.
+ *
+ * Each notice stores a list of target roles. Super Admins always
+ * see all notices so they can administer them.
  */
 final class NoticeVisibility
 {
@@ -47,7 +50,9 @@ final class NoticeVisibility
         $knownRoles['all'] = true;
         $targetRoles = array_values(array_filter(
             $configuredRoles,
-            static fn($role): bool => is_string($role) && isset($knownRoles[$role])
+            static function ($role) use ($knownRoles): bool {
+                return is_string($role) && isset($knownRoles[$role]);
+            }
         ));
 
         return in_array('all', $targetRoles, true) || array_intersect($userRoles, $targetRoles) !== [];
