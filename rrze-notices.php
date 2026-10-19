@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
   Plugin Name:     RRZE Notices
   Plugin URI:      https://github.com/RRZE-Webteam/rrze-notices
-  Description:     Management and listing of admin notices.
+  Description:     Management and listing of admin dashboard notices.
   Version:         4.0.0
   Author:          RRZE Webteam
   Author URI:      https://www.wordpress.rrze.fau.de

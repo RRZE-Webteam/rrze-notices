@@ -207,10 +207,16 @@ class Metaboxes
      */
     public static function saveVisibleUntilField(bool $updated, string $action, \CMB2_Field $field): void
     {
-        $postId = $field->object_id; //ID of post to be saved
+        $postId = $field->object_id;
         if (!empty($field->value)) {
-            $gmtTimestamp = (int)$field->value;
-            update_post_meta($postId, 'notice_visible_until_gmt', $gmtTimestamp);
+            // CMB2 text_datetime_timestamp returns a local-time timestamp.
+            // Convert to UTC for correct expiration checks against time(). 
+            $localTimestamp = (int)$field->value;
+            $gmtTimestamp = $localTimestamp - (int)wp_timezone()->getOffset(
+                    new \DateTimeImmutable('@' . $localTimestamp)
+                );
+            update_post_meta($postId, 'notice_visible_until_gmt',
+                $gmtTimestamp);
         } else {
             delete_post_meta($postId, 'notice_visible_until_gmt');
         }

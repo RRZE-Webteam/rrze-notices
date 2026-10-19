@@ -119,7 +119,12 @@ class Columns
             case 'visible_until':
                 $visibleUntil = (int)get_post_meta($postId, 'notice_visible_until_gmt', true);
                 if ($visibleUntil) {
-                    echo esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), $visibleUntil));
+                    echo esc_html(
+                        wp_date(
+                            get_option('date_format') . ' ' . get_option('time_format'),
+                            $visibleUntil,
+                        )
+                    );
                 } else {
                     echo esc_html('-');
                 }
