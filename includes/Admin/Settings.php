@@ -140,6 +140,7 @@ class Settings
     public function renderEnabledField(): void
     {
         echo '<fieldset>';
+        echo '<legend class="screen-reader-text">' . esc_html__('Enable Notices', 'rrze-notices') . '</legend>';
         echo '<label>';
         echo '<input type="radio" name="rrze_notices_settings[enabled]" value="1" ', checked('1', $this->networkOptions['enabled'], false), '>', esc_html__('Notices is enabled.', 'rrze-notices');
         echo '</label><br>';
@@ -157,6 +158,7 @@ class Settings
     public function renderAccessField(): void
     {
         echo '<fieldset>';
+        echo '<legend class="screen-reader-text">' . esc_html__('Access', 'rrze-notices') . '</legend>';
         echo '<label>';
         echo '<input name="readonly" type="checkbox" value="manage_network_options" disabled checked="checked">';
         echo __('Superadmins (only networkwide notices)', 'rrze-notices');

@@ -130,24 +130,34 @@ class Notice
         $html .= $this->renderEventDate();
         $html .= $this->renderMessage();
 
-        $noticeActions[] = $this->options['edit_link'] ? $this->options['edit_link'] : '';
-        $noticeActions = array_filter($noticeActions);
-        $html .= sprintf(
-            '<div class="notice-actions">%s</div>',
-            wp_kses(
-                implode('&nbsp;&nbsp;|&nbsp;&nbsp;', $noticeActions),
+        $noticeActions = [];
+        if ($this->options['edit_link']) {
+            $noticeActions[] = $this->options['edit_link'];
+        }
+
+        if ($noticeActions) {
+            $items = '';
+            foreach ($noticeActions as $action) {
+                $items .= '<li>' . $action . '</li>';
+            }
+            $html .= wp_kses(
+                '<ul class="notice-actions">' . $items . '</ul>',
                 [
-                    'a' => ['href' => [], 'class' => []],
+                    'ul'   => ['class' => []],
+                    'li'   => [],
+                    'a'    => ['href' => [], 'class' => []],
                     'span' => ['class' => []],
                 ]
-            )
-        );
+            );
+        }
 
+        $role = $this->isError() ? 'alert' : 'status';
 
         printf(
-            '<div id="%1$s" class="%2$s">%3$s</div>',
+            '<div id="%1$s" class="%2$s" role="%3$s">%4$s</div>',
             'rrze-notices-' . esc_attr($this->id),
             esc_attr($this->getClasses()),
+            esc_attr($role),
             $html
         );
     }

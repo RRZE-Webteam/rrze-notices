@@ -433,7 +433,7 @@ class Post
         delete_transient($transientKey);
 
         printf(
-            '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+            '<div class="notice notice-error is-dismissible" role="alert"><p>%s</p></div>',
             esc_html($message)
         );
     }

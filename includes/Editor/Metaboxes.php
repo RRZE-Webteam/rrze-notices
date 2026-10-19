@@ -209,14 +209,9 @@ class Metaboxes
     {
         $postId = $field->object_id;
         if (!empty($field->value)) {
-            // CMB2 text_datetime_timestamp returns a local-time timestamp.
-            // Convert to UTC for correct expiration checks against time(). 
-            $localTimestamp = (int)$field->value;
-            $gmtTimestamp = $localTimestamp - (int)wp_timezone()->getOffset(
-                    new \DateTimeImmutable('@' . $localTimestamp)
-                );
+            // CMB2 text_datetime_timestamp already returns a UTC Unix timestamp.
             update_post_meta($postId, 'notice_visible_until_gmt',
-                $gmtTimestamp);
+                (int)$field->value);
         } else {
             delete_post_meta($postId, 'notice_visible_until_gmt');
         }

@@ -75,7 +75,16 @@ final class NoticeQuery
 
             switch_to_blog($noticeId->blogId());
 
-            $noticeData = Post::buildNoticeData((int)$entry['post_id']);
+            $post = get_post((int)$entry['post_id']);
+            $noticeData = null;
+            if ($post && $post->post_status === 'publish') {
+                $noticeData = Post::buildNoticeData((int)$entry['post_id']);
+            }
+
+            restore_current_blog();
+
+            // Visibility check runs in the viewer's blog context,
+            // so the current user's roles on THIS site are used.
             if ($noticeData !== null) {
                 $notice = (object)$noticeData;
                 if ($this->isActiveAndVisible($notice)) {

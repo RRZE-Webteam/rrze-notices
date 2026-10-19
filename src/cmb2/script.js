@@ -33,6 +33,7 @@ jQuery( document ).ready( function ( $ ) {
 	 */
 	function setFieldVisibility( fields, visible, animate ) {
 		fields.stop( true, true );
+		fields.attr( 'aria-hidden', String( ! visible ) );
 
 		if ( ! animate ) {
 			fields.toggle( visible );

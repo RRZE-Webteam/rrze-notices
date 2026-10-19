@@ -143,7 +143,7 @@ class NetworkNotices
     {
         $typeClass = 'notice-' . esc_attr($notice['type']);
 
-        echo '<div class="rrze-notices-network-card notice ' . $typeClass . ' notice-alt">';
+        echo '<article class="rrze-notices-network-card notice ' . $typeClass . ' notice-alt">';
 
         // Title
         if (!empty($notice['title'])) {
@@ -155,8 +155,9 @@ class NetworkNotices
         echo '<p class="notice-meta">';
         if ($notice['published']) {
             printf(
-                '%s: %s',
+                '%s: <time datetime="%s">%s</time>',
                 esc_html__('Published', 'rrze-notices'),
+                esc_attr(gmdate('Y-m-d', $notice['published'])),
                 esc_html(wp_date(
                     get_option('date_format'),
                     $notice['published']
@@ -179,6 +180,6 @@ class NetworkNotices
             );
         }
 
-        echo '</div>';
+        echo '</article>';
     }
 }

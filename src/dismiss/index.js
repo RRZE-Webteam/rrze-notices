@@ -7,8 +7,13 @@
  * removes the backdrop when the last error notice is gone.
  */
 document.addEventListener('click', function (event) {
-    const notice = event.target.closest('.rrze-notices.is-dismissible');
-    if (!notice || event.target.closest('a')) {
+    const dismissButton = event.target.closest('.notice-dismiss');
+    if (!dismissButton) {
+        return;
+    }
+
+    const notice = dismissButton.closest('.rrze-notices.is-dismissible');
+    if (!notice) {
         return;
     }
 
@@ -16,6 +21,13 @@ document.addEventListener('click', function (event) {
     if (!match) {
         return;
     }
+
+    // Find next focus target before the notice disappears.
+    const allNotices = document.querySelectorAll('.rrze-notices.is-dismissible');
+    const noticeList = Array.from(allNotices);
+    const currentIndex = noticeList.indexOf(notice);
+    const nextNotice = noticeList[currentIndex + 1] || noticeList[currentIndex - 1];
+    const focusTarget = nextNotice || document.getElementById('wpbody-content');
 
     const body = new URLSearchParams({
         action: 'rrze_notices_dismiss',
@@ -30,4 +42,10 @@ document.addEventListener('click', function (event) {
         body: body.toString(),
     });
 
+    // Move focus after WordPress finishes the fade-out (~300ms).
+    if (focusTarget) {
+        setTimeout(function () {
+            focusTarget.focus();
+        }, 350);
+    }
 });
