@@ -38,6 +38,7 @@ class Post
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
         add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
         add_action('admin_notices', [__CLASS__, 'showValidationNotice']);
+        add_action('post_submitbox_misc_actions', [__CLASS__,  'renderRepublishCheckbox']);
     }
 
     /**
@@ -110,6 +111,15 @@ class Post
 
         if ($post->post_status === 'auto-draft') {
             return;
+        }
+
+        if (
+            !empty($_POST['notice_republish'])
+            && $post->post_status === 'publish'
+        ) {
+            $noticeId = NoticeId::forPost($postId);
+            $dismissal = new Dismiss((string)$noticeId, true);
+            $dismissal->clearForAllUsers();
         }
 
         if (empty(trim($post->post_content))) {
@@ -438,4 +448,39 @@ class Post
         );
     }
 
+    /**
+     * Render a republish checkbox in the Publish metabox.
+     *
+     * Only shown for already-published notices so the editor can
+     * choose whether to reset user dismissals on save.
+     *
+     * @param \WP_Post $post Current post.
+     * @return void
+     */
+    public static function renderRepublishCheckbox(\WP_Post $post):
+    void
+    {
+        if ($post->post_type !== CPTNotice::POST_TYPE) {
+            return;
+        }
+
+        if ($post->post_status !== 'publish') {
+            return;
+        }
+
+        ?>
+        <div class="misc-pub-section">
+            <label>
+                <input type="checkbox"
+                       name="notice_republish"
+                       value="1">
+                <strong><?php esc_html_e('Republish notice', 'rrze-notices');
+                ?></strong>
+            </label>
+            <p class="description" style="margin: 4px 0 0;">
+                <?php esc_html_e('Notice will be shown to all users again.', 'rrze-notices'); ?>
+            </p>
+        </div>
+        <?php
+    }
 }
