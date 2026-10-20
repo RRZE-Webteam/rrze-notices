@@ -3,10 +3,10 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-12 12:49+0000\n"
+"PO-Revision-Date: 2026-10-13 12:48+0000\n"
 "Last-Translator: \n"
-"Language-Team: Deutsch\n"
-"Language: de_DE\n"
+"Language-Team: Deutsch (Sie)\n"
+"Language: de_DE_formal\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -183,7 +183,7 @@ msgstr "Leeren"
 
 #: includes/CPT/Columns.php:247
 msgid "Create and manage dashboard notices for your website."
-msgstr "Erstelle und verwalte Dashboard-Hinweise für deine Website."
+msgstr "Erstellen und verwalten Sie Dashboard Hinweise für Ihre Website."
 
 #: includes/CPT/Post.php:259 includes/Editor/Metaboxes.php:70
 msgid "Critical"
@@ -222,7 +222,7 @@ msgstr "Bearbeiten (netzwerkweit)"
 
 #: includes/Admin/Settings.php:129
 msgid "Enable Notices"
-msgstr "Hinweise aktivieren"
+msgstr "Nachrichten aktivieren"
 
 #: includes/CPT/Post.php:123
 msgid "Event date display was disabled because no start date was set."
@@ -271,7 +271,7 @@ msgstr "Aktuelle netzwerkweite Hinweise"
 
 #. Description of the plugin
 msgid "Management and listing of admin notices."
-msgstr "Verwaltung und Auflistung von Dashboard Hinweisen."
+msgstr "Verwaltung und Auflistung von Hinweisen."
 
 #: includes/Admin/NetworkNotices.php:38 includes/Admin/NetworkNotices.php:39
 msgid "Network Notices"

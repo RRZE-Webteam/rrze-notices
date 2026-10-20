@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-13 12:48+0000\n"
+"PO-Revision-Date: 2026-10-20 08:24+0000\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de_DE_formal\n"
@@ -398,7 +398,7 @@ msgstr ""
 
 #: includes/CPT/Columns.php:58 includes/Editor/Metaboxes.php:64
 msgid "Type"
-msgstr "Art"
+msgstr "Typ"
 
 #: includes/Editor/Metaboxes.php:93
 msgid "User Roles"
