@@ -14,6 +14,16 @@
 }
 
 .rrze-notices.notice {
+    ul {
+        list-style: disc;
+        margin-left: 1.5em;
+    }
+
+    ol {
+        list-style: decimal;
+        margin-left: 1.5em;
+    }
+
     .notice-event-date {
         font-weight: bold;
         color: var(--rrze-notices-text-muted);

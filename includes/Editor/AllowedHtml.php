@@ -40,7 +40,6 @@ class AllowedHtml
             'ul' => [],
             'li' => [],
             'ins' => [],
-            'blockquote' => [],
         ];
 
         return apply_filters('rrze_notices_allowed_html', $allowed);

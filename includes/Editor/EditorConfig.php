@@ -72,7 +72,7 @@ class EditorConfig
             return $settings;
         }
 
-        $settings['toolbar1'] = 'bold,italic,bullist,numlist,blockquote,link';
+        $settings['toolbar1'] = 'bold,italic,bullist,numlist,link';
         $settings['toolbar2'] = '';
         $settings['valid_elements'] = self::buildValidElements();
 
