@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-13 12:44+0000\n"
+"PO-Revision-Date: 2026-10-20 13:17+0000\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch (Sie)\n"
 "Language: de_DE_formal\n"
@@ -14,291 +14,297 @@ msgstr ""
 "X-Generator: Loco https://localise.biz/\n"
 "X-Loco-Version: 2.8.9; wp-7.1.3; php-8.3.30"
 
-#: includes/Editor/Metaboxes.php:124
+#: includes/Editor/Metaboxes.php:127
 msgid "(Date and time)"
 msgstr "(Datum und Uhrzeit)"
 
-#: includes/Editor/Metaboxes.php:116
+#: includes/Editor/Metaboxes.php:119
 msgid "(optional)"
 msgstr "(optional)"
 
-#: includes/Editor/Metaboxes.php:106
+#: includes/Editor/Metaboxes.php:109
 msgid "(required)"
 msgstr "(erforderlich)"
 
-#: includes/Editor/Metaboxes.php:95
+#: includes/Editor/Metaboxes.php:98
 msgid "(Visibility based on user role)"
 msgstr "(Sichtbarkeit basierend auf Benutzerrolle)"
 
-#: includes/Admin/Settings.php:130
+#: includes/Admin/Settings.php:132 includes/Admin/Settings.php:161
 msgid "Access"
 msgstr "Zugriff"
 
-#: includes/Admin/Settings.php:164
+#: includes/Admin/Settings.php:168
 msgid "Administrators (Webmaster can publish notices on their own website)"
 msgstr ""
 "Administratoren (Webmaster können Mitteilungen auf ihrer eigenen Website "
 "veröffentlichen)"
 
-#: includes/CPT/Columns.php:91
+#: includes/CPT/Columns.php:94
 msgid "All"
 msgstr "Alle"
 
-#: includes/Editor/Metaboxes.php:87
+#: includes/Editor/Metaboxes.php:90
 msgid "All Users"
 msgstr "Alle Benutzerrollen"
 
-#: includes/CPT/CPTNotice.php:102
+#: includes/CPT/CPTNotice.php:105
 msgctxt "backend: post type label"
 msgid "Add New"
 msgstr "Erstellen"
 
-#: includes/CPT/CPTNotice.php:107
+#: includes/CPT/CPTNotice.php:110
 msgctxt "backend: post type label"
 msgid "Add New Notice"
 msgstr "Neuen Hinweis erstellen"
 
-#: includes/CPT/CPTNotice.php:147
+#: includes/CPT/CPTNotice.php:150
 msgctxt "backend: post type label"
 msgid "All Notices"
 msgstr "Alle Hinweise"
 
-#: includes/CPT/CPTNotice.php:117
+#: includes/CPT/CPTNotice.php:120
 msgctxt "backend: post type label"
 msgid "Edit Notice"
 msgstr "Hinweis bearbeiten"
 
-#: includes/CPT/CPTNotice.php:172
+#: includes/CPT/CPTNotice.php:175
 msgctxt "backend: post type label"
 msgid "Filter notice list"
 msgstr "Hinweisliste filtern"
 
-#: includes/CPT/CPTNotice.php:162
+#: includes/CPT/CPTNotice.php:165
 msgctxt "backend: post type label"
 msgid "Insert into notice"
 msgstr "In den Hinweis einfügen"
 
-#: includes/CPT/CPTNotice.php:112
+#: includes/CPT/CPTNotice.php:115
 msgctxt "backend: post type label"
 msgid "New Notice"
 msgstr "Neuer Hinweis"
 
-#: includes/CPT/CPTNotice.php:142
+#: includes/CPT/CPTNotice.php:145
 msgctxt "backend: post type label"
 msgid "No notices found in Trash."
 msgstr "Keine Hinweise im Papierkorb gefunden."
 
-#: includes/CPT/CPTNotice.php:137
+#: includes/CPT/CPTNotice.php:140
 msgctxt "backend: post type label"
 msgid "No notices found."
 msgstr "Keine Hinweise gefunden."
 
-#: includes/CPT/CPTNotice.php:152
+#: includes/CPT/CPTNotice.php:155
 msgctxt "backend: post type label"
 msgid "Notice Archives"
 msgstr "Hinweisarchiv"
 
-#: includes/CPT/CPTNotice.php:157
+#: includes/CPT/CPTNotice.php:160
 msgctxt "backend: post type label"
 msgid "Notice Attributes"
 msgstr "Hinweisattribute"
 
-#: includes/CPT/CPTNotice.php:192
+#: includes/CPT/CPTNotice.php:195
 msgctxt "backend: post type label"
 msgid "Notice published privately."
 msgstr "Hinweis privat veröffentlicht."
 
-#: includes/CPT/CPTNotice.php:187
+#: includes/CPT/CPTNotice.php:190
 msgctxt "backend: post type label"
 msgid "Notice published."
 msgstr "Hinweis veröffentlicht."
 
-#: includes/CPT/CPTNotice.php:197
+#: includes/CPT/CPTNotice.php:200
 msgctxt "backend: post type label"
 msgid "Notice reverted to draft."
 msgstr "Der Hinweis wurde auf den Entwurf zurückgesetzt."
 
-#: includes/CPT/CPTNotice.php:202
+#: includes/CPT/CPTNotice.php:205
 msgctxt "backend: post type label"
 msgid "Notice scheduled."
 msgstr "Hinweis geplant."
 
-#: includes/CPT/CPTNotice.php:207
+#: includes/CPT/CPTNotice.php:210
 msgctxt "backend: post type label"
 msgid "Notice updated."
 msgstr "Hinweis aktualisiert."
 
-#: includes/CPT/CPTNotice.php:37
+#: includes/CPT/CPTNotice.php:40
 msgctxt "backend: post type label"
 msgid "Notices"
 msgstr "Hinweise"
 
-#: includes/CPT/CPTNotice.php:182
+#: includes/CPT/CPTNotice.php:185
 msgctxt "backend: post type label"
 msgid "Notices list"
 msgstr "Hinweisliste"
 
-#: includes/CPT/CPTNotice.php:177
+#: includes/CPT/CPTNotice.php:180
 msgctxt "backend: post type label"
 msgid "Notices list navigation"
 msgstr "Hinweisliste-Navigation"
 
-#: includes/CPT/CPTNotice.php:132
+#: includes/CPT/CPTNotice.php:135
 msgctxt "backend: post type label"
 msgid "Search Notices"
 msgstr "Suche nach Hinweisen"
 
-#: includes/CPT/CPTNotice.php:167
+#: includes/CPT/CPTNotice.php:170
 msgctxt "backend: post type label"
 msgid "Uploaded to this notice"
 msgstr "Hochgeladen zu diesem Hinweis"
 
-#: includes/CPT/CPTNotice.php:122
+#: includes/CPT/CPTNotice.php:125
 msgctxt "backend: post type label"
 msgid "View Notice"
 msgstr "Hinweis anzeigen"
 
-#: includes/CPT/CPTNotice.php:127
+#: includes/CPT/CPTNotice.php:130
 msgctxt "backend: post type label"
 msgid "View Notices"
 msgstr "Hinweise anzeigen"
 
-#: includes/CPT/CPTNotice.php:92
+#: includes/CPT/CPTNotice.php:95
 msgctxt "backend: post type label (general name)"
 msgid "Notices"
 msgstr "Hinweise"
 
-#: includes/CPT/CPTNotice.php:97
+#: includes/CPT/CPTNotice.php:100
 msgctxt "backend: post type label (singular name)"
 msgid "Notice"
 msgstr "Hinweis"
 
-#: includes/Editor/Metaboxes.php:88
+#: includes/Editor/Metaboxes.php:91
 msgid "By User Role"
 msgstr "Nach Benutzer-Rolle"
 
-#: includes/Main.php:126
+#: includes/Main.php:145
 msgid "Clear"
 msgstr "Leeren"
 
-#: includes/CPT/Columns.php:247
+#: includes/CPT/Columns.php:255
 msgid "Create and manage dashboard notices for your website."
 msgstr "Erstellen und verwalten Sie Dashboard Hinweise für Ihre Website."
 
-#: includes/CPT/Post.php:259 includes/Editor/Metaboxes.php:70
+#: includes/CPT/Post.php:280 includes/Editor/Metaboxes.php:73
 msgid "Critical"
 msgstr "Kritisch"
 
-#: includes/Main.php:148 includes/CPT/Post.php:51
+#: includes/Main.php:167 includes/CPT/Post.php:55
 msgctxt "custom post status"
 msgid "Expired"
 msgstr "Abgelaufen"
 
-#: includes/Display/Notice.php:231 includes/Display/Notice.php:245
-#: includes/Editor/Metaboxes.php:108 includes/Editor/Metaboxes.php:118
-#: includes/Editor/Metaboxes.php:127
+#: includes/Display/Notice.php:245 includes/Display/Notice.php:259
+#: includes/Editor/Metaboxes.php:111 includes/Editor/Metaboxes.php:121
+#: includes/Editor/Metaboxes.php:130
 msgctxt "date format"
 msgid "d.m.Y"
 msgstr ""
 
 #. 1: start date/time, 2: end date/time
-#: includes/Display/Notice.php:286
+#: includes/Display/Notice.php:300
 #, php-format
 msgctxt "date range"
 msgid "%1$s – %2$s"
-msgstr "%1$s – %2$s Uhr"
+msgstr ""
 
-#: includes/Editor/Metaboxes.php:75
+#: includes/Editor/Metaboxes.php:78
 msgid "Display"
 msgstr "Anzeige"
 
-#: includes/Admin/NetworkNotices.php:176 includes/Display/Display.php:75
+#: includes/Admin/NetworkNotices.php:179 includes/Display/Display.php:78
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: includes/Display/Display.php:74
+#: includes/Display/Display.php:77
 msgid "Edit (Network-Wide)"
 msgstr "Bearbeiten (netzwerkweit)"
 
-#: includes/Admin/Settings.php:129
+#: includes/Admin/Settings.php:131 includes/Admin/Settings.php:143
 msgid "Enable Notices"
 msgstr "Nachrichten aktivieren"
 
-#: includes/CPT/Post.php:123
+#: includes/CPT/Post.php:147
 msgid "Event date display was disabled because no start date was set."
 msgstr ""
 "Die Anzeige des Event-Datums wurde deaktiviert, da kein Startdatum "
 "festgelegt wurde."
 
-#: includes/Editor/Metaboxes.php:114
+#: includes/Editor/Metaboxes.php:117
 msgid "Event End"
 msgstr "Event Ende"
 
-#: includes/Editor/Metaboxes.php:104
+#: includes/Editor/Metaboxes.php:107
 msgid "Event Start"
 msgstr "Event Start"
 
-#: includes/CPT/Post.php:57
+#: includes/CPT/Post.php:61
 #, php-format
 msgid "Expired <span class=\"count\">(%s)</span>"
 msgid_plural "Expired <span class=\"count\">(%s)</span>"
 msgstr[0] "Abgelaufen <span class=\"count\">(%s)</span>"
 msgstr[1] "Abgelaufen <span class=\"count\">(%s)</span>"
 
-#: includes/Admin/Settings.php:127
+#: includes/Admin/Settings.php:129
 msgid "General"
 msgstr "Allgemein"
 
-#: includes/Editor/Metaboxes.php:145
+#: includes/Editor/Metaboxes.php:148
 msgid "Hide Title"
 msgstr "Titel verbergen"
-
-#. Author URI of the plugin
-msgid "https://blogs.fau.de/webworking/"
-msgstr "https://blogs.fau.de/webworking/"
 
 #. URI of the plugin
 msgid "https://github.com/RRZE-Webteam/rrze-notices"
 msgstr ""
 
-#: includes/CPT/Post.php:257 includes/Editor/Metaboxes.php:68
+#. Author URI of the plugin
+msgid "https://www.wordpress.rrze.fau.de"
+msgstr ""
+
+#: includes/CPT/Post.php:278 includes/Editor/Metaboxes.php:71
 msgid "Info"
 msgstr "Info"
 
-#: includes/Admin/NetworkNotices.php:58
+#: includes/Admin/NetworkNotices.php:61
 msgid "Latest Network Notices"
 msgstr "Aktuelle netzwerkweite Hinweise"
 
 #. Description of the plugin
-msgid "Management and listing of admin notices."
+#, fuzzy
+#| msgid "Management and listing of admin notices."
+msgid "Management and listing of admin dashboard notices."
 msgstr "Verwaltung und Auflistung von Hinweisen."
 
-#: includes/Admin/NetworkNotices.php:38 includes/Admin/NetworkNotices.php:39
+#: includes/Admin/NetworkNotices.php:41 includes/Admin/NetworkNotices.php:42
 msgid "Network Notices"
 msgstr "Netzwerk Hinweise"
 
-#: includes/CPT/Columns.php:60 includes/Display/Display.php:87
-#: includes/Editor/Metaboxes.php:152
+#: includes/CPT/Columns.php:63 includes/Display/Display.php:90
+#: includes/Editor/Metaboxes.php:155
 msgid "Network-Wide"
 msgstr "Netzwerkweit"
 
-#: includes/CPT/Columns.php:57
+#: includes/CPT/Columns.php:60
 msgid "Notice"
 msgstr "Hinweis"
 
-#: includes/Editor/Metaboxes.php:43
+#: includes/Editor/Metaboxes.php:46
 msgid "Notice Settings"
 msgstr "Einstellungen"
 
-#: includes/Admin/AdminBar.php:95
+#: includes/CPT/Post.php:481
+msgid "Notice will be shown to all users again."
+msgstr "Hinweis wird allen Benutzern erneut angezeigt"
+
+#: includes/Admin/AdminBar.php:97
 msgid "Notices"
 msgstr "Hinweise"
 
-#: includes/Admin/Settings.php:145
+#: includes/Admin/Settings.php:148
 msgid "Notices is disabled."
 msgstr "Hinweise sind deaktiviert."
 
-#: includes/Admin/Settings.php:142
+#: includes/Admin/Settings.php:145
 msgid "Notices is enabled."
 msgstr "Hinweise sind aktiviert."
 
@@ -308,20 +314,24 @@ msgstr "Hinweise sind aktiviert."
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/Display/Display.php:138
+#: includes/Display/Display.php:141
 msgid "Preview"
 msgstr "Vorschau"
 
-#: includes/Admin/NetworkNotices.php:157
+#: includes/Admin/NetworkNotices.php:159
 msgid "Published"
 msgstr "Veröffentlicht"
 
+#: includes/CPT/Post.php:477
+msgid "Republish notice"
+msgstr "Erneut veröffentlichen"
+
 #. Name of the plugin
-#: includes/Admin/Settings.php:80 includes/Admin/Settings.php:81
+#: includes/Admin/Settings.php:82 includes/Admin/Settings.php:83
 msgid "RRZE Notices"
 msgstr "RRZE Notices"
 
-#: includes/Admin/Settings.php:177
+#: includes/Admin/Settings.php:181
 #| msgid "Notices Network Settings"
 msgid "RRZE Notices Network Settings"
 msgstr "Netzwerk-Einstellungen &rsaquo; RRZE Notices"
@@ -331,33 +341,33 @@ msgid "RRZE Webteam"
 msgstr "RRZE Webteam"
 
 #. 1: date, 2: start time, 3: end time
-#: includes/Display/Notice.php:254
+#: includes/Display/Notice.php:268
 #, php-format
 msgctxt "same day time range"
 msgid "%1$s, %2$s – %3$s"
-msgstr "%1$s, %2$s – %3$s Uhr"
+msgstr ""
 
-#: includes/Admin/Settings.php:181
+#: includes/Admin/Settings.php:185
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
-#: includes/Admin/Settings.php:65
+#: includes/Admin/Settings.php:67
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: includes/Editor/Metaboxes.php:146
+#: includes/Editor/Metaboxes.php:149
 msgid "Show Event Date"
 msgstr "Event Datum anzeigen"
 
 #. 1: date, 2: time
-#: includes/Display/Notice.php:239 includes/Display/Notice.php:262
-#: includes/Display/Notice.php:272 includes/Display/Notice.php:279
+#: includes/Display/Notice.php:253 includes/Display/Notice.php:276
+#: includes/Display/Notice.php:286 includes/Display/Notice.php:293
 #, php-format
 msgctxt "single date with time"
 msgid "%1$s, %2$s"
-msgstr "%1$s, %2$s Uhr"
+msgstr ""
 
-#: includes/Admin/Settings.php:160
+#: includes/Admin/Settings.php:164
 msgid "Superadmins (only networkwide notices)"
 msgstr "Superadministratoren (nur netzwerkweite Mitteilungen)"
 
@@ -381,41 +391,41 @@ msgstr ""
 "Auf dem Server läuft WordPress Version %1$s. Das Plugin benötigt mindestens "
 "WordPress Version %2$s."
 
-#: includes/Admin/NetworkNotices.php:63
+#: includes/Admin/NetworkNotices.php:66
 msgid "There are no active network-wide notices."
 msgstr "Es gibt derzeit keine aktiven netzwerkweiten Hinweise."
 
-#: includes/CPT/Post.php:104
+#: includes/CPT/Post.php:128
 msgid "This notice has no content and will not be displayed."
 msgstr "Diese Meldung enthält keinen Inhalt und wird nicht angezeigt."
 
-#: includes/Display/Notice.php:232 includes/Display/Notice.php:246
-#: includes/Editor/Metaboxes.php:109 includes/Editor/Metaboxes.php:119
-#: includes/Editor/Metaboxes.php:128
+#: includes/Display/Notice.php:246 includes/Display/Notice.php:260
+#: includes/Editor/Metaboxes.php:112 includes/Editor/Metaboxes.php:122
+#: includes/Editor/Metaboxes.php:131
 msgctxt "time format"
 msgid "H:i"
 msgstr ""
 
-#: includes/CPT/Columns.php:58 includes/Editor/Metaboxes.php:64
+#: includes/CPT/Columns.php:61 includes/Editor/Metaboxes.php:67
 msgid "Type"
-msgstr "Art"
+msgstr "Typ"
 
-#: includes/Editor/Metaboxes.php:93
+#: includes/Editor/Metaboxes.php:96
 msgid "User Roles"
 msgstr "Benutzer-Rollen"
 
-#: includes/CPT/Columns.php:59 includes/Editor/Metaboxes.php:83
+#: includes/CPT/Columns.php:62 includes/Editor/Metaboxes.php:86
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
-#: includes/CPT/Columns.php:61
+#: includes/CPT/Columns.php:64
 msgid "Visible Until"
 msgstr "Sichtbar bis"
 
-#: includes/Editor/Metaboxes.php:122
+#: includes/Editor/Metaboxes.php:125
 msgid "Visible until"
 msgstr "Sichtbar bis"
 
-#: includes/CPT/Post.php:258 includes/Editor/Metaboxes.php:69
+#: includes/CPT/Post.php:279 includes/Editor/Metaboxes.php:72
 msgid "Warning"
 msgstr "Warnung"

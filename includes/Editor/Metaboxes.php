@@ -74,6 +74,14 @@ class Metaboxes
                 'error' => __('Critical', 'rrze-notices')
             ],
         ]);
+        // Notice Modal Display
+        $cmb->add_field([
+            'id' => 'notice_modal',
+            'name' => __('Additional confirmation required', 'rrze-notices'),
+            'desc' => __('Blocks the website until the notice is acknowledged.', 'rrze-notices'),
+            'type' => 'checkbox',
+            'classes' => ['notice_modal_field'],
+        ]);
         // Notice Display options
         $cmb->add_field([
             'name' => __('Display', 'rrze-notices'),

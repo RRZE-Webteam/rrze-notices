@@ -54,6 +54,7 @@ class Notice
     private $options = [
         'screens' => [],
         'type' => 'info',
+        'modal' => false,
         'preview' => false,
         'edit_link' => '',
         'is_dismissible' => true,
@@ -116,6 +117,16 @@ class Notice
     }
 
     /**
+     * Whether this notice should be displayed as a modal with backdrop.
+     *
+     * @return bool
+     */
+    public function isModal(): bool
+    {
+        return (bool)$this->options['modal'] && $this->isError();
+    }
+
+    /**
      * Render the notice markup.
      *
      * @return void
@@ -151,15 +162,31 @@ class Notice
             );
         }
 
-        $role = $this->isError() ? 'alert' : 'status';
+        if ($this->isModal()) {
+            $html .= sprintf(
+                '<button type="button" class="rrze-notices-acknowledge button button-primary">%s</button>',
+                esc_html__('Acknowledged', 'rrze-notices')
+            );
 
-        printf(
-            '<div id="%1$s" class="%2$s" role="%3$s">%4$s</div>',
-            'rrze-notices-' . esc_attr($this->id),
-            esc_attr($this->getClasses()),
-            esc_attr($role),
-            $html
-        );
+            echo '<div class="rrze-notices-backdrop" aria-hidden="true"></div>';
+
+            printf(
+                '<div id="%1$s" class="%2$s" role="alertdialog" aria-modal="true" aria-labelledby="%1$s-title">%3$s</div>',
+                'rrze-notices-' . esc_attr($this->id),
+                esc_attr($this->getClasses()),
+                $html
+            );
+        } else {
+            $role = $this->isError() ? 'alert' : 'status';
+
+            printf(
+                '<div id="%1$s" class="%2$s" role="%3$s">%4$s</div>',
+                'rrze-notices-' . esc_attr($this->id),
+                esc_attr($this->getClasses()),
+                esc_attr($role),
+                $html
+            );
+        }
     }
 
     /**
@@ -196,7 +223,7 @@ class Notice
             $classes[] = 'notice-preview';
         }
 
-        if ($this->options['is_dismissible']) {
+        if ($this->options['is_dismissible'] && !$this->isModal()) {
             $classes[] = 'is-dismissible';
         }
 
@@ -206,6 +233,10 @@ class Notice
         $classes[] = 'notice-' . $type;
 
         $classes[] = 'notice-alt';
+
+        if ($this->isModal()) {
+            $classes[] = 'notice-modal';
+        }
 
         return implode(' ', $classes);
     }
@@ -221,11 +252,18 @@ class Notice
             return '';
         }
 
+        $attrs = 'class="notice-title"';
+        if ($this->isModal()) {
+            $attrs .= sprintf(' id="rrze-notices-%s-title"', esc_attr($this->id));
+        }
+
         return sprintf(
-            '<h2 class="notice-title">%s</h2>',
+            '<h2 %s>%s</h2>',
+            $attrs,
             esc_html($this->title)
         );
     }
+
 
     /**
      * Return the event date markup, or an empty string if no

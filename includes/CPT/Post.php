@@ -38,7 +38,7 @@ class Post
         add_filter('map_meta_cap', [__CLASS__, 'mapNoticeCapabilities'], 10, 4);
         add_action('cmb2_save_post_fields', [__CLASS__, 'handleNoticeSave']);
         add_action('admin_notices', [__CLASS__, 'showValidationNotice']);
-        add_action('post_submitbox_misc_actions', [__CLASS__,  'renderRepublishCheckbox']);
+        add_action('post_submitbox_misc_actions', [__CLASS__, 'renderRepublishCheckbox']);
     }
 
     /**
@@ -52,18 +52,18 @@ class Post
             return;
         }
         register_post_status(self::EXPIRED_POST_STATUS, [
-            'label' => _x('Expired', 'custom post status', 'rrze-notices'),
-            'public' => false,
-            'private' => false,
-            'exclude_from_search' => true,
-            'show_in_admin_all_list' => false,
-            'show_in_admin_status_list' => true,
-            'label_count' => _n_noop(
-            /* translators: %s: Number of expired posts. */
-                'Expired <span class="count">(%s)</span>',
-                'Expired <span class="count">(%s)</span>',
-                'rrze-notices'
-            )
+                'label' => _x('Expired', 'custom post status', 'rrze-notices'),
+                'public' => false,
+                'private' => false,
+                'exclude_from_search' => true,
+                'show_in_admin_all_list' => false,
+                'show_in_admin_status_list' => true,
+                'label_count' => _n_noop(
+                /* translators: %s: Number of expired posts. */
+                        'Expired <span class="count">(%s)</span>',
+                        'Expired <span class="count">(%s)</span>',
+                        'rrze-notices'
+                )
         ]);
     }
 
@@ -114,8 +114,8 @@ class Post
         }
 
         if (
-            !empty($_POST['notice_republish'])
-            && $post->post_status === 'publish'
+                !empty($_POST['notice_republish'])
+                && $post->post_status === 'publish'
         ) {
             $noticeId = NoticeId::forPost($postId);
             $dismissal = new Dismiss((string)$noticeId, true);
@@ -124,9 +124,9 @@ class Post
 
         if (empty(trim($post->post_content))) {
             set_transient(
-                'rrze_notices_validation_' . $postId,
-                __('This notice has no content and will not be displayed.', 'rrze-notices'),
-                120
+                    'rrze_notices_validation_' . $postId,
+                    __('This notice has no content and will not be displayed.', 'rrze-notices'),
+                    120
             );
         }
 
@@ -135,7 +135,7 @@ class Post
 
         if (in_array('show_event_date', $display, true)) {
             $eventStart = (int)get_post_meta($postId, 'notice_event_start',
-                true);
+                    true);
             if (!$eventStart) {
                 $display = array_diff($display, ['show_event_date']);
                 update_post_meta($postId, 'notice_display', $display);
@@ -143,9 +143,9 @@ class Post
                 delete_post_meta($postId, 'notice_event_end');
 
                 set_transient(
-                    'rrze_notices_validation_' . $postId,
-                    __('Event date display was disabled because no start date was set.', 'rrze-notices'),
-                    120
+                        'rrze_notices_validation_' . $postId,
+                        __('Event date display was disabled because no start date was set.', 'rrze-notices'),
+                        120
                 );
             }
         } else {
@@ -153,16 +153,16 @@ class Post
             delete_post_meta($postId, 'notice_event_end');
         }
         if (
-            is_super_admin() &&
-            Helper::isPluginActiveForNetwork()
+                is_super_admin() &&
+                Helper::isPluginActiveForNetwork()
         ) {
             $networkOptions = Options::getNetworkOptions();
             $noticeKey = (string)NoticeId::forPost($postId);
 
             if (self::isNetworkWide($postId)) {
                 $networkOptions['network_wide'][$noticeKey] = [
-                    'blog_id' => get_current_blog_id(),
-                    'post_id' => $postId,
+                        'blog_id' => get_current_blog_id(),
+                        'post_id' => $postId,
                 ];
                 update_post_meta($postId, 'notice_network_wide', 'on');
             } else {
@@ -205,27 +205,27 @@ class Post
      * Network-wide notices are restricted to super admins.
      *
      * @param string[] $caps Required primitive capabilities.
-     * @param string   $cap  Capability being checked.
-     * @param int      $userId User ID.
-     * @param array    $args   $args[0] is the post ID for post-specific caps.
+     * @param string $cap Capability being checked.
+     * @param int $userId User ID.
+     * @param array $args $args[0] is the post ID for post-specific caps.
      * @return string[]
      */
     public static function mapNoticeCapabilities(array $caps, string $cap, int $userId, array $args): array
     {
         $noticeCaps = [
-            'edit_notice',
-            'read_notice',
-            'delete_notice',
-            'edit_notices',
-            'edit_others_notices',
-            'publish_notices',
-            'read_private_notices',
-            'delete_notices',
-            'delete_private_notices',
-            'delete_published_notices',
-            'delete_others_notices',
-            'edit_private_notices',
-            'edit_published_notices',
+                'edit_notice',
+                'read_notice',
+                'delete_notice',
+                'edit_notices',
+                'edit_others_notices',
+                'publish_notices',
+                'read_private_notices',
+                'delete_notices',
+                'delete_private_notices',
+                'delete_published_notices',
+                'delete_others_notices',
+                'edit_private_notices',
+                'edit_published_notices',
         ];
 
         // WordPress core meta caps (edit_post, read_post, delete_post)
@@ -237,7 +237,7 @@ class Post
         $isCoreMetaCap = false;
 
         if (!$isNoticeCap && in_array($cap, $coreMetaCaps, true) &&
-            !empty($args[0])) {
+                !empty($args[0])) {
             $post = get_post($args[0]);
             if ($post && $post->post_type === CPTNotice::POST_TYPE) {
                 $isCoreMetaCap = true;
@@ -252,10 +252,10 @@ class Post
         if (!empty($args[0])) {
             $post = get_post($args[0]);
             if (
-                $post
-                && $post->post_type === CPTNotice::POST_TYPE
-                && get_post_meta($post->ID, 'notice_network_wide', true) === 'on'
-                && !is_super_admin($userId)
+                    $post
+                    && $post->post_type === CPTNotice::POST_TYPE
+                    && get_post_meta($post->ID, 'notice_network_wide', true) === 'on'
+                    && !is_super_admin($userId)
             ) {
                 return ['do_not_allow'];
             }
@@ -275,9 +275,9 @@ class Post
     public static function getNoticeTypes(): array
     {
         return [
-            'info' => __('Info', 'rrze-notices'),
-            'warning' => __('Warning', 'rrze-notices'),
-            'error' => __('Critical', 'rrze-notices')
+                'info' => __('Info', 'rrze-notices'),
+                'warning' => __('Warning', 'rrze-notices'),
+                'error' => __('Critical', 'rrze-notices')
         ];
     }
 
@@ -354,15 +354,17 @@ class Post
             return null;
         }
         return [
-            'title' => $post->post_title,
-            'content' => $post->post_content,
-            'type' => self::getNoticeType($postId),
-            'hide_title' => self::shouldHideTitle($postId),
-            'visibility' => self::getVisibilityRoles($postId),
-            'network_wide' => self::isNetworkWide($postId),
-            'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
-            'event_start' => (int)get_post_meta($postId, 'notice_event_start', true),
-            'event_end' => (int)get_post_meta($postId, 'notice_event_end', true), 'visible_until_gmt' => (int)get_post_meta($postId, 'notice_visible_until_gmt', true),
+                'title' => $post->post_title,
+                'content' => $post->post_content,
+                'type' => self::getNoticeType($postId),
+                'modal' => get_post_meta($postId, 'notice_modal', true) === 'on',
+                'hide_title' => self::shouldHideTitle($postId),
+                'visibility' => self::getVisibilityRoles($postId),
+                'network_wide' => self::isNetworkWide($postId),
+                'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
+                'event_start' => (int)get_post_meta($postId, 'notice_event_start', true),
+                'event_end' => (int)get_post_meta($postId, 'notice_event_end', true), 'visible_until_gmt' => (int)get_post_meta($postId, 'notice_visible_until_gmt', true),
+
         ];
     }
 
@@ -378,10 +380,10 @@ class Post
     public static function refreshNoticeLifecycle(): void
     {
         $postIDs = get_posts([
-            'fields' => 'ids',
-            'post_type' => CPTNotice::POST_TYPE,
-            'post_status' => 'publish',
-            'numberposts' => -1,
+                'fields' => 'ids',
+                'post_type' => CPTNotice::POST_TYPE,
+                'post_status' => 'publish',
+                'numberposts' => -1,
         ]);
 
         if (empty($postIDs)) {
@@ -394,15 +396,15 @@ class Post
 
         foreach ($postIDs as $postID) {
             $visibleUntil = (int)get_post_meta($postID,
-                'notice_visible_until_gmt', true);
+                    'notice_visible_until_gmt', true);
 
             if (!$visibleUntil || $now < $visibleUntil) {
                 continue;
             }
 
             wp_update_post([
-                'ID' => $postID,
-                'post_status' => self::EXPIRED_POST_STATUS,
+                    'ID' => $postID,
+                    'post_status' => self::EXPIRED_POST_STATUS,
             ]);
 
             $noticeKey = (string)NoticeId::forPost((int)$postID);
@@ -443,8 +445,8 @@ class Post
         delete_transient($transientKey);
 
         printf(
-            '<div class="notice notice-error is-dismissible" role="alert"><p>%s</p></div>',
-            esc_html($message)
+                '<div class="notice notice-error is-dismissible" role="alert"><p>%s</p></div>',
+                esc_html($message)
         );
     }
 
@@ -475,7 +477,7 @@ class Post
                        name="notice_republish"
                        value="1">
                 <strong><?php esc_html_e('Republish notice', 'rrze-notices');
-                ?></strong>
+                    ?></strong>
             </label>
             <p class="description" style="margin: 4px 0 0;">
                 <?php esc_html_e('Notice will be shown to all users again.', 'rrze-notices'); ?>

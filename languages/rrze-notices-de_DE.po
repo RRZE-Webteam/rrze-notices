@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rrze-notices\n"
 "POT-Creation-Date: 2024-06-26T13:27:03+00:00\n"
-"PO-Revision-Date: 2026-10-20 13:16+0000\n"
+"PO-Revision-Date: 2026-10-21 13:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: Deutsch\n"
 "Language: de_DE\n"
@@ -14,25 +14,33 @@ msgstr ""
 "X-Generator: Loco https://localise.biz/\n"
 "X-Loco-Version: 2.8.9; wp-7.1.3; php-8.3.30"
 
-#: includes/Editor/Metaboxes.php:127
+#: includes/Editor/Metaboxes.php:138
 msgid "(Date and time)"
 msgstr "(Datum und Uhrzeit)"
 
-#: includes/Editor/Metaboxes.php:119
+#: includes/Editor/Metaboxes.php:129
 msgid "(optional)"
 msgstr "(optional)"
 
-#: includes/Editor/Metaboxes.php:109
+#: includes/Editor/Metaboxes.php:118
 msgid "(required)"
 msgstr "(erforderlich)"
 
-#: includes/Editor/Metaboxes.php:98
+#: includes/Editor/Metaboxes.php:107
 msgid "(Visibility based on user role)"
 msgstr "(Sichtbarkeit basierend auf Benutzerrolle)"
 
 #: includes/Admin/Settings.php:132 includes/Admin/Settings.php:161
 msgid "Access"
 msgstr "Zugriff"
+
+#: includes/Display/Notice.php:168
+msgid "Acknowledged"
+msgstr "Verstanden"
+
+#: includes/Editor/Metaboxes.php:80
+msgid "Additional confirmation required"
+msgstr "Zusätzliche Bestätigung erforderlich"
 
 #: includes/Admin/Settings.php:168
 msgid "Administrators (Webmaster can publish notices on their own website)"
@@ -44,7 +52,7 @@ msgstr ""
 msgid "All"
 msgstr "Alle"
 
-#: includes/Editor/Metaboxes.php:90
+#: includes/Editor/Metaboxes.php:99
 msgid "All Users"
 msgstr "Alle Benutzerrollen"
 
@@ -173,11 +181,16 @@ msgctxt "backend: post type label (singular name)"
 msgid "Notice"
 msgstr "Hinweis"
 
-#: includes/Editor/Metaboxes.php:91
+#: includes/Editor/Metaboxes.php:81
+#| msgid "Blocks the dashboard until the notice is acknowledged."
+msgid "Blocks the website until the notice is acknowledged."
+msgstr "Blockiert die Website bis der Hinweis bestätigt wurde."
+
+#: includes/Editor/Metaboxes.php:100
 msgid "By User Role"
 msgstr "Nach Benutzer-Rolle"
 
-#: includes/Main.php:145
+#: includes/Main.php:144
 msgid "Clear"
 msgstr "Leeren"
 
@@ -185,30 +198,30 @@ msgstr "Leeren"
 msgid "Create and manage dashboard notices for your website."
 msgstr "Erstelle und verwalte Dashboard Hinweise für deine Website."
 
-#: includes/CPT/Post.php:280 includes/Editor/Metaboxes.php:73
+#: includes/CPT/Post.php:280 includes/Editor/Metaboxes.php:74
 msgid "Critical"
 msgstr "Kritisch"
 
-#: includes/Main.php:167 includes/CPT/Post.php:55
+#: includes/Main.php:166 includes/CPT/Post.php:55
 msgctxt "custom post status"
 msgid "Expired"
 msgstr "Abgelaufen"
 
-#: includes/Display/Notice.php:245 includes/Display/Notice.php:259
-#: includes/Editor/Metaboxes.php:111 includes/Editor/Metaboxes.php:121
-#: includes/Editor/Metaboxes.php:130
+#: includes/Display/Notice.php:283 includes/Display/Notice.php:297
+#: includes/Editor/Metaboxes.php:121 includes/Editor/Metaboxes.php:132
+#: includes/Editor/Metaboxes.php:142
 msgctxt "date format"
 msgid "d.m.Y"
 msgstr ""
 
 #. 1: start date/time, 2: end date/time
-#: includes/Display/Notice.php:300
+#: includes/Display/Notice.php:338
 #, php-format
 msgctxt "date range"
 msgid "%1$s – %2$s"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:78
+#: includes/Editor/Metaboxes.php:87
 msgid "Display"
 msgstr "Anzeige"
 
@@ -230,11 +243,11 @@ msgstr ""
 "Die Anzeige des Event-Datums wurde deaktiviert, da kein Startdatum "
 "festgelegt wurde."
 
-#: includes/Editor/Metaboxes.php:117
+#: includes/Editor/DateTimeField.php:129 includes/Editor/Metaboxes.php:127
 msgid "Event End"
 msgstr "Event Ende"
 
-#: includes/Editor/Metaboxes.php:107
+#: includes/Editor/DateTimeField.php:128 includes/Editor/Metaboxes.php:116
 msgid "Event Start"
 msgstr "Event Start"
 
@@ -249,7 +262,7 @@ msgstr[1] "Abgelaufen <span class=\"count\">(%s)</span>"
 msgid "General"
 msgstr "Allgemein"
 
-#: includes/Editor/Metaboxes.php:148
+#: includes/Editor/Metaboxes.php:160
 msgid "Hide Title"
 msgstr "Titel verbergen"
 
@@ -261,7 +274,7 @@ msgstr ""
 msgid "https://www.wordpress.rrze.fau.de"
 msgstr ""
 
-#: includes/CPT/Post.php:278 includes/Editor/Metaboxes.php:71
+#: includes/CPT/Post.php:278 includes/Editor/Metaboxes.php:72
 msgid "Info"
 msgstr "Info"
 
@@ -280,7 +293,7 @@ msgid "Network Notices"
 msgstr "Netzwerk Hinweise"
 
 #: includes/CPT/Columns.php:63 includes/Display/Display.php:90
-#: includes/Editor/Metaboxes.php:155
+#: includes/Editor/Metaboxes.php:167
 msgid "Network-Wide"
 msgstr "Netzwerkweit"
 
@@ -288,11 +301,11 @@ msgstr "Netzwerkweit"
 msgid "Notice"
 msgstr "Hinweis"
 
-#: includes/Editor/Metaboxes.php:46
+#: includes/Editor/Metaboxes.php:47
 msgid "Notice Settings"
 msgstr "Einstellungen"
 
-#: includes/CPT/Post.php:481
+#: includes/CPT/Post.php:483
 msgid "Notice will be shown to all users again."
 msgstr "Hinweis wird allen Benutzern erneut angezeigt"
 
@@ -314,7 +327,7 @@ msgstr "Hinweise sind aktiviert."
 msgid "Plugins: %1$s: %2$s"
 msgstr "Plugins: %1$s: %2$s"
 
-#: includes/Display/Display.php:141
+#: includes/Display/Display.php:142
 msgid "Preview"
 msgstr "Vorschau"
 
@@ -322,7 +335,7 @@ msgstr "Vorschau"
 msgid "Published"
 msgstr "Veröffentlicht"
 
-#: includes/CPT/Post.php:477
+#: includes/CPT/Post.php:479
 msgid "Republish notice"
 msgstr "Erneut veröffentlichen"
 
@@ -341,7 +354,7 @@ msgid "RRZE Webteam"
 msgstr "RRZE Webteam"
 
 #. 1: date, 2: start time, 3: end time
-#: includes/Display/Notice.php:268
+#: includes/Display/Notice.php:306
 #, php-format
 msgctxt "same day time range"
 msgid "%1$s, %2$s – %3$s"
@@ -355,13 +368,13 @@ msgstr "Änderungen speichern"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: includes/Editor/Metaboxes.php:149
+#: includes/Editor/Metaboxes.php:161
 msgid "Show Event Date"
 msgstr "Event Datum anzeigen"
 
 #. 1: date, 2: time
-#: includes/Display/Notice.php:253 includes/Display/Notice.php:276
-#: includes/Display/Notice.php:286 includes/Display/Notice.php:293
+#: includes/Display/Notice.php:291 includes/Display/Notice.php:314
+#: includes/Display/Notice.php:324 includes/Display/Notice.php:331
 #, php-format
 msgctxt "single date with time"
 msgid "%1$s, %2$s"
@@ -399,22 +412,20 @@ msgstr "Es gibt derzeit keine aktiven netzwerkweiten Hinweise."
 msgid "This notice has no content and will not be displayed."
 msgstr "Diese Meldung enthält keinen Inhalt und wird nicht angezeigt."
 
-#: includes/Display/Notice.php:246 includes/Display/Notice.php:260
-#: includes/Editor/Metaboxes.php:112 includes/Editor/Metaboxes.php:122
-#: includes/Editor/Metaboxes.php:131
+#: includes/Display/Notice.php:284 includes/Display/Notice.php:298
 msgctxt "time format"
 msgid "H:i"
 msgstr ""
 
-#: includes/CPT/Columns.php:61 includes/Editor/Metaboxes.php:67
+#: includes/CPT/Columns.php:61 includes/Editor/Metaboxes.php:68
 msgid "Type"
 msgstr "Typ"
 
-#: includes/Editor/Metaboxes.php:96
+#: includes/Editor/Metaboxes.php:105
 msgid "User Roles"
 msgstr "Benutzer-Rollen"
 
-#: includes/CPT/Columns.php:62 includes/Editor/Metaboxes.php:86
+#: includes/CPT/Columns.php:62 includes/Editor/Metaboxes.php:95
 msgid "Visibility"
 msgstr "Sichtbarkeit"
 
@@ -422,10 +433,10 @@ msgstr "Sichtbarkeit"
 msgid "Visible Until"
 msgstr "Sichtbar bis"
 
-#: includes/Editor/Metaboxes.php:125
+#: includes/Editor/DateTimeField.php:129 includes/Editor/Metaboxes.php:136
 msgid "Visible until"
 msgstr "Sichtbar bis"
 
-#: includes/CPT/Post.php:279 includes/Editor/Metaboxes.php:72
+#: includes/CPT/Post.php:279 includes/Editor/Metaboxes.php:73
 msgid "Warning"
 msgstr "Warnung"

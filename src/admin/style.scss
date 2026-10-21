@@ -155,3 +155,39 @@
         }
     }
 }
+
+
+// Modal backdrop and notice
+.rrze-notices-backdrop {
+    --rrze-notices-backdrop-bg: rgba(0, 0, 0, 0.6);
+    --rrze-notices-backdrop-z: 999999;
+
+    background: var(--rrze-notices-backdrop-bg);
+    position: fixed;
+    inset: 0;
+    z-index: var(--rrze-notices-backdrop-z);
+}
+
+.rrze-notices.notice-modal {
+    --rrze-notices-modal-z: 1000000;
+    --rrze-notices-modal-max-width: 600px;
+
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: var(--rrze-notices-modal-z);
+    max-width: var(--rrze-notices-modal-max-width);
+    width: calc(100% - 2rem);
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+
+    .rrze-notices-acknowledge {
+        display: block;
+        margin-top: 1rem;
+    }
+}
+
+body.rrze-notices-modal-open {
+    overflow: hidden;
+}

@@ -117,20 +117,19 @@ class Main
             && $post->post_type === CPTNotice::POST_TYPE;
 
         // Dismiss script only on screens where notices are displayed
-        if ($hook === 'index.php' || $isNoticeEditor) {
-            wp_enqueue_script(
-                'rrze-notices-dismiss',
-                plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
-                [],
-                $assetFile['version'] ?? RRZE_NOTICES_VERSION,
-                true
-            );
-            wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('rrze_notices_dismiss'),
-            ]);
 
-        }
+        wp_enqueue_script(
+            'rrze-notices-dismiss',
+            plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
+            [],
+            $assetFile['version'] ?? RRZE_NOTICES_VERSION,
+            true
+        );
+        wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('rrze_notices_dismiss'),
+        ]);
+
 
         if ($isNoticeEditor) {
             $assetFile = include(RRZE_NOTICES_DIR . 'build/cmb2.asset.php');

@@ -56,6 +56,30 @@ jQuery( document ).ready( function ( $ ) {
 
 		setFieldVisibility( roleFields, visibilityType === 'roles', animate );
 	}
+
+	// Modal checkbox – only visible when notice type is "error"
+	const noticeTypeInput = noticeMetabox.find(
+		"input[name='notice_type']"
+	);
+	const modalField = noticeMetabox.find( '.notice_modal_field' );
+
+	updateModalFieldVisibility( false );
+
+	noticeTypeInput.on( 'change', function () {
+		updateModalFieldVisibility( true );
+	} );
+
+	/**
+	 * Show the modal checkbox only when the notice type is "error".
+	 *
+	 * @param {boolean} animate Whether to animate the transition.
+	 * @return {void}
+	 */
+	function updateModalFieldVisibility( animate ) {
+		const selectedType = noticeTypeInput.filter( ':checked' ).val();
+		setFieldVisibility( modalField, selectedType === 'error', animate );
+	}
+
 	const showEventDateInput = noticeMetabox.find(
 		"input[name='notice_display[]'][value='show_event_date']"
 	);

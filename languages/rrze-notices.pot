@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RRZE Notices\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 13:15+0000\n"
+"POT-Creation-Date: 2026-10-21 13:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -16,24 +16,32 @@ msgstr ""
 "X-Loco-Version: 2.8.8; wp-7.1.2; php-8.3.30\n"
 "X-Domain: rrze-notices"
 
-#: includes/Editor/Metaboxes.php:127
+#: includes/Editor/Metaboxes.php:138
 msgid "(Date and time)"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:119
+#: includes/Editor/Metaboxes.php:129
 msgid "(optional)"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:109
+#: includes/Editor/Metaboxes.php:118
 msgid "(required)"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:98
+#: includes/Editor/Metaboxes.php:107
 msgid "(Visibility based on user role)"
 msgstr ""
 
 #: includes/Admin/Settings.php:132 includes/Admin/Settings.php:161
 msgid "Access"
+msgstr ""
+
+#: includes/Display/Notice.php:168
+msgid "Acknowledged"
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:80
+msgid "Additional confirmation required"
 msgstr ""
 
 #: includes/Admin/Settings.php:168
@@ -44,7 +52,7 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:90
+#: includes/Editor/Metaboxes.php:99
 msgid "All Users"
 msgstr ""
 
@@ -173,11 +181,15 @@ msgctxt "backend: post type label (singular name)"
 msgid "Notice"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:91
+#: includes/Editor/Metaboxes.php:81
+msgid "Blocks the website until the notice is acknowledged."
+msgstr ""
+
+#: includes/Editor/Metaboxes.php:100
 msgid "By User Role"
 msgstr ""
 
-#: includes/Main.php:145
+#: includes/Main.php:144
 msgid "Clear"
 msgstr ""
 
@@ -185,30 +197,30 @@ msgstr ""
 msgid "Create and manage dashboard notices for your website."
 msgstr ""
 
-#: includes/CPT/Post.php:280 includes/Editor/Metaboxes.php:73
+#: includes/CPT/Post.php:280 includes/Editor/Metaboxes.php:74
 msgid "Critical"
 msgstr ""
 
-#: includes/Main.php:167 includes/CPT/Post.php:55
+#: includes/Main.php:166 includes/CPT/Post.php:55
 msgctxt "custom post status"
 msgid "Expired"
 msgstr ""
 
-#: includes/Display/Notice.php:245 includes/Display/Notice.php:259
-#: includes/Editor/Metaboxes.php:111 includes/Editor/Metaboxes.php:121
-#: includes/Editor/Metaboxes.php:130
+#: includes/Display/Notice.php:283 includes/Display/Notice.php:297
+#: includes/Editor/Metaboxes.php:121 includes/Editor/Metaboxes.php:132
+#: includes/Editor/Metaboxes.php:142
 msgctxt "date format"
 msgid "d.m.Y"
 msgstr ""
 
 #. 1: start date/time, 2: end date/time
-#: includes/Display/Notice.php:300
+#: includes/Display/Notice.php:338
 #, php-format
 msgctxt "date range"
 msgid "%1$s – %2$s"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:78
+#: includes/Editor/Metaboxes.php:87
 msgid "Display"
 msgstr ""
 
@@ -228,11 +240,11 @@ msgstr ""
 msgid "Event date display was disabled because no start date was set."
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:117
+#: includes/Editor/DateTimeField.php:129 includes/Editor/Metaboxes.php:127
 msgid "Event End"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:107
+#: includes/Editor/DateTimeField.php:128 includes/Editor/Metaboxes.php:116
 msgid "Event Start"
 msgstr ""
 
@@ -247,7 +259,7 @@ msgstr[1] ""
 msgid "General"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:148
+#: includes/Editor/Metaboxes.php:160
 msgid "Hide Title"
 msgstr ""
 
@@ -259,7 +271,7 @@ msgstr ""
 msgid "https://www.wordpress.rrze.fau.de"
 msgstr ""
 
-#: includes/CPT/Post.php:278 includes/Editor/Metaboxes.php:71
+#: includes/CPT/Post.php:278 includes/Editor/Metaboxes.php:72
 msgid "Info"
 msgstr ""
 
@@ -276,7 +288,7 @@ msgid "Network Notices"
 msgstr ""
 
 #: includes/CPT/Columns.php:63 includes/Display/Display.php:90
-#: includes/Editor/Metaboxes.php:155
+#: includes/Editor/Metaboxes.php:167
 msgid "Network-Wide"
 msgstr ""
 
@@ -284,11 +296,11 @@ msgstr ""
 msgid "Notice"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:46
+#: includes/Editor/Metaboxes.php:47
 msgid "Notice Settings"
 msgstr ""
 
-#: includes/CPT/Post.php:481
+#: includes/CPT/Post.php:483
 msgid "Notice will be shown to all users again."
 msgstr ""
 
@@ -310,7 +322,7 @@ msgstr ""
 msgid "Plugins: %1$s: %2$s"
 msgstr ""
 
-#: includes/Display/Display.php:141
+#: includes/Display/Display.php:142
 msgid "Preview"
 msgstr ""
 
@@ -318,7 +330,7 @@ msgstr ""
 msgid "Published"
 msgstr ""
 
-#: includes/CPT/Post.php:477
+#: includes/CPT/Post.php:479
 msgid "Republish notice"
 msgstr ""
 
@@ -336,7 +348,7 @@ msgid "RRZE Webteam"
 msgstr ""
 
 #. 1: date, 2: start time, 3: end time
-#: includes/Display/Notice.php:268
+#: includes/Display/Notice.php:306
 #, php-format
 msgctxt "same day time range"
 msgid "%1$s, %2$s – %3$s"
@@ -350,13 +362,13 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:149
+#: includes/Editor/Metaboxes.php:161
 msgid "Show Event Date"
 msgstr ""
 
 #. 1: date, 2: time
-#: includes/Display/Notice.php:253 includes/Display/Notice.php:276
-#: includes/Display/Notice.php:286 includes/Display/Notice.php:293
+#: includes/Display/Notice.php:291 includes/Display/Notice.php:314
+#: includes/Display/Notice.php:324 includes/Display/Notice.php:331
 #, php-format
 msgctxt "single date with time"
 msgid "%1$s, %2$s"
@@ -390,22 +402,20 @@ msgstr ""
 msgid "This notice has no content and will not be displayed."
 msgstr ""
 
-#: includes/Display/Notice.php:246 includes/Display/Notice.php:260
-#: includes/Editor/Metaboxes.php:112 includes/Editor/Metaboxes.php:122
-#: includes/Editor/Metaboxes.php:131
+#: includes/Display/Notice.php:284 includes/Display/Notice.php:298
 msgctxt "time format"
 msgid "H:i"
 msgstr ""
 
-#: includes/CPT/Columns.php:61 includes/Editor/Metaboxes.php:67
+#: includes/CPT/Columns.php:61 includes/Editor/Metaboxes.php:68
 msgid "Type"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:96
+#: includes/Editor/Metaboxes.php:105
 msgid "User Roles"
 msgstr ""
 
-#: includes/CPT/Columns.php:62 includes/Editor/Metaboxes.php:86
+#: includes/CPT/Columns.php:62 includes/Editor/Metaboxes.php:95
 msgid "Visibility"
 msgstr ""
 
@@ -413,10 +423,10 @@ msgstr ""
 msgid "Visible Until"
 msgstr ""
 
-#: includes/Editor/Metaboxes.php:125
+#: includes/Editor/DateTimeField.php:129 includes/Editor/Metaboxes.php:136
 msgid "Visible until"
 msgstr ""
 
-#: includes/CPT/Post.php:279 includes/Editor/Metaboxes.php:72
+#: includes/CPT/Post.php:279 includes/Editor/Metaboxes.php:73
 msgid "Warning"
 msgstr ""

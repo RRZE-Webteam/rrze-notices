@@ -96,8 +96,9 @@ class Display
             (string)$notice->title,
             (string)$notice->content,
             [
-                'screens' => ['dashboard'],
+                'screens' => (bool)$notice->modal ? [] : ['dashboard'],
                 'type' => (string)$notice->type,
+                'modal' => (bool)$notice->modal,
                 'hide_title' => (bool)$notice->hide_title,
                 'edit_link' => $editLink,
                 'is_dismissible' => true,
@@ -148,6 +149,7 @@ class Display
             [
                 'screens' => [CPTNotice::POST_TYPE],
                 'type' => (string)$notice->type,
+                'modal' => false,
                 'hide_title' => (bool)$notice->hide_title,
                 'edit_link' => $editLink,
                 'preview' => true,
