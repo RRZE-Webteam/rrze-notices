@@ -148,6 +148,10 @@ final class NoticeQuery
      */
     private function isActiveAndVisible(object $notice): bool
     {
+        if (time() >= (int)$notice->visible_until_gmt) {
+            return false;
+        }
+
         return NoticeVisibility::isVisibleToCurrentUser($notice);
     }
 }
