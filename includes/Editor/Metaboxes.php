@@ -207,41 +207,43 @@ class Metaboxes
      */
     public static function saveVisibleUntilField(bool $updated, string $action, \CMB2_Field $field): void
     {
-        $postId = $field->object_id;
+        $local = self::parseLocalTimestamp($field);
+        if (!$local) {
+            delete_post_meta($field->object_id, 'notice_visible_until_gmt');
+            return;
+        }
 
-        // Read the raw date and time from the form input.
+        // True UTC timestamp for expiry checks.
+        update_post_meta($field->object_id, 'notice_visible_until_gmt', $local->getTimestamp());
+    }
+
+    /**
+     * Parse raw form input for a CMB2 datetime field as WordPress local time.
+     *
+     * @param \CMB2_Field $field The CMB2 field.
+     * @return \DateTimeImmutable|null Local datetime, or null if input is missing/invalid.
+     */
+    private static function parseLocalTimestamp(\CMB2_Field $field): ?\DateTimeImmutable
+    {
         $raw = $_POST[$field->id()] ?? null;
         if (
             !is_array($raw)
             || empty($raw['date'])
             || empty($raw['time'])
         ) {
-            delete_post_meta($postId, 'notice_visible_until_gmt');
-            return;
+            return null;
         }
 
         $dateString = sanitize_text_field($raw['date']);
         $timeString = sanitize_text_field($raw['time']);
 
-        // Interpret the input as WordPress local time.
         $local = \DateTimeImmutable::createFromFormat(
             'd.m.Y H:i',
             $dateString . ' ' . $timeString,
             wp_timezone()
         );
-        if (!$local) {
-            delete_post_meta($postId, 'notice_visible_until_gmt');
-            return;
-        }
 
-        // True UTC timestamp for expiry checks.
-        $gmtTimestamp = $local->getTimestamp();
-        update_post_meta($postId, 'notice_visible_until_gmt', $gmtTimestamp);
-
-        // Fix CMB2 display: CMB2 uses date() with UTC timezone,
-        // so we store a shifted value that looks like local time in UTC.
-        $displayTimestamp = $gmtTimestamp + $local->getOffset();
-        update_post_meta($postId, 'notice_visible_until', $displayTimestamp);
+        return $local ?: null;
     }
 
 }
