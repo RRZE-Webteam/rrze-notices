@@ -1,6 +1,6 @@
 'use strict';
 
-/* global jQuery */
+/* global jQuery, rrzeNoticesCmb2 */
 
 /**
  * Initialize conditional visibility for notice CMB2 fields.
@@ -17,11 +17,9 @@ jQuery( document ).ready( function ( $ ) {
 
 	updateRoleFieldVisibility( false );
 
-
 	visibilityTypeInput.on( 'change', function () {
 		updateRoleFieldVisibility( true );
 	} );
-
 
 	/**
 	 * Show or hide fields, optionally using a short transition.
@@ -71,7 +69,6 @@ jQuery( document ).ready( function ( $ ) {
 		updateEventFieldVisibility( true );
 	} );
 
-
 	/**
 	 * Show event date fields only when the event-date checkbox is active.
 	 *
@@ -79,27 +76,30 @@ jQuery( document ).ready( function ( $ ) {
 	 * @return {void}
 	 */
 	function updateEventFieldVisibility( animate ) {
-		setFieldVisibility( eventFields, showEventDateInput.is( ':checked'
-		), animate );
+		setFieldVisibility(
+			eventFields,
+			showEventDateInput.is( ':checked' ),
+			animate
+		);
 	}
 
 	// Clear button for Event End field
 	const endDateInputs = noticeMetabox.find(
-		'.cmb2-id-notice-event-end input[type="text"]'
+		'.cmb2-id-notice-event-end input[type="text"], .cmb2-id-notice-event-end input[type="time"]'
 	);
 	const clearButton = $( '<button/>', {
 		type: 'button',
-		'class': 'button-link rrze-notices-clear-date',
+		class: 'button-link rrze-notices-clear-date',
 		'aria-label': rrzeNoticesCmb2.clearLabel,
 		style: 'margin-left: 8px;',
 
-		html: '<span class="dashicons dashicons-trash" style="font-size: 14px; width: 14px; height: 14px;"></span> ' +
-			rrzeNoticesCmb2.clearLabel
+		html:
+			'<span class="dashicons dashicons-trash" style="font-size: 14px; width: 14px; height: 14px;"></span> ' +
+			rrzeNoticesCmb2.clearLabel,
 	} );
 	endDateInputs.last().after( clearButton );
 
 	clearButton.on( 'click', function () {
 		endDateInputs.val( '' );
 	} );
-
 } );

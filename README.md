@@ -30,6 +30,8 @@ RRZE Notices adds a custom post type called "Notice" to the WordPress admin. Eac
 
 Notices appear as colored bars at the top of the WordPress dashboard. Users can dismiss them individually. A badge in the admin bar shows how many active notices are available.
 
+Event dates and expiration dates use the WordPress timezone configured for the current site. An event date can have an empty time; it is stored as local midnight and displayed as a date only. The visible-until field requires both a date and a time. Opening and closing an empty time input does not select a time.
+
 On a Multisite network the plugin must be activated network-wide. A super admin enables it and chooses whether site admins may create their own notices. Super admins can additionally mark a notice as network-wide so it appears on every site in the network.
 
 ## Requirements
@@ -98,6 +100,12 @@ This filter receives the `wp_kses`-compatible tag/attribute array and must retur
 
 - Issues: https://github.com/RRZE-Webteam/rrze-notices/issues
 - Contact: RRZE Webteam ([webmaster@fau.de](mailto:webmaster@fau.de))
+
+## Development checks
+
+Run the PHP regression checks with `php tests/regression.php`. From a local WordPress installation, run `wp --skip-plugins --skip-themes eval-file tests/datetime-integration.php` to test actual CMB2 save/render cycles. The integration check uses in-memory metadata and does not save posts or change site options.
+
+Notice datetime fields use their own CMB2 type and store absolute Unix timestamps. `notice_visible_until_gmt` remains the expiration key used by existing consumers; the editor uses that value when opening legacy notices. Earlier event timestamps may have been saved with or without another plugin's timezone filter, so their original intended local time cannot be inferred reliably. Existing event dates should be reviewed; no blanket offset migration is performed.
 
 ## License
 

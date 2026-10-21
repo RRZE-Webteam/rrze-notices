@@ -27,6 +27,7 @@ class Metaboxes
     public static function registerHooks(): void
     {
         add_action('cmb2_admin_init', [__CLASS__, 'registerNoticeMetabox']);
+        add_action('cmb2_render_rrze_notices_datetime', [DateTimeField::class, 'render'], 10, 5);
         add_action('cmb2_save_field_notice_visibility', [__CLASS__, 'saveNoticeVisibilityField'], 10, 3);
         add_action('cmb2_save_field_notice_visible_until', [__CLASS__, 'saveVisibleUntilField'], 10, 3);
     }
@@ -107,9 +108,10 @@ class Metaboxes
             'name' => __('Event Start', 'rrze-notices')
                 . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
                 . __('(required)', 'rrze-notices') . '</span>',
-            'type' => 'text_datetime_timestamp',
+            'type' => 'rrze_notices_datetime',
+            'sanitization_cb' => [DateTimeField::class, 'sanitize'],
             'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
-            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
+            'time_format' => 'H:i',
         ]);
         // Event end date and time
         $cmb->add_field([
@@ -117,18 +119,20 @@ class Metaboxes
             'name' => __('Event End', 'rrze-notices')
                 . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
                 . __('(optional)', 'rrze-notices') . '</span>',
-            'type' => 'text_datetime_timestamp',
+            'type' => 'rrze_notices_datetime',
+            'sanitization_cb' => [DateTimeField::class, 'sanitize'],
             'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
-            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
+            'time_format' => 'H:i',
         ]);
         $cmb->add_field([
             'name' => __('Visible until', 'rrze-notices')
                 . '<br><span style="font-weight: normal;color: #666;font-size: 13px;">'
                 . __('(Date and time)', 'rrze-notices') . '</span>',
             'id' => 'notice_visible_until',
-            'type' => 'text_datetime_timestamp',
+            'type' => 'rrze_notices_datetime',
+            'sanitization_cb' => [DateTimeField::class, 'sanitize'],
             'date_format' => _x('d.m.Y', 'date format', 'rrze-notices'),
-            'time_format' => _x('H:i', 'time format', 'rrze-notices'),
+            'time_format' => 'H:i',
             'attributes' => [
                 'required' => 'required'
             ],
@@ -207,43 +211,14 @@ class Metaboxes
      */
     public static function saveVisibleUntilField(bool $updated, string $action, \CMB2_Field $field): void
     {
-        $local = self::parseLocalTimestamp($field);
-        if (!$local) {
+        $timestamp = (int)$field->value();
+        if (!$timestamp) {
             delete_post_meta($field->object_id, 'notice_visible_until_gmt');
             return;
         }
 
-        // True UTC timestamp for expiry checks.
-        update_post_meta($field->object_id, 'notice_visible_until_gmt', $local->getTimestamp());
-    }
-
-    /**
-     * Parse raw form input for a CMB2 datetime field as WordPress local time.
-     *
-     * @param \CMB2_Field $field The CMB2 field.
-     * @return \DateTimeImmutable|null Local datetime, or null if input is missing/invalid.
-     */
-    private static function parseLocalTimestamp(\CMB2_Field $field): ?\DateTimeImmutable
-    {
-        $raw = $_POST[$field->id()] ?? null;
-        if (
-            !is_array($raw)
-            || empty($raw['date'])
-            || empty($raw['time'])
-        ) {
-            return null;
-        }
-
-        $dateString = sanitize_text_field($raw['date']);
-        $timeString = sanitize_text_field($raw['time']);
-
-        $local = \DateTimeImmutable::createFromFormat(
-            'd.m.Y H:i',
-            $dateString . ' ' . $timeString,
-            wp_timezone()
-        );
-
-        return $local ?: null;
+        // Reuse the sanitized instant instead of parsing the request a second time.
+        update_post_meta($field->object_id, 'notice_visible_until_gmt', $timestamp);
     }
 
 }

@@ -43,6 +43,17 @@ function wp_timezone(): DateTimeZone
     return new DateTimeZone(wp_timezone_string());
 }
 
+/**
+ * Remove request slashes for datetime parsing tests.
+ *
+ * @param string $value Submitted string.
+ * @return string Unslashed input.
+ */
+function wp_unslash(string $value): string
+{
+    return stripslashes($value);
+}
+
 function wp_strip_all_tags(string $value, bool $removeBreaks = false): string
 {
     $value = strip_tags($value);
@@ -96,9 +107,11 @@ require_once dirname(__DIR__) . '/includes/Helper.php';
 require_once dirname(__DIR__) . '/includes/Admin/Users.php';
 require_once dirname(__DIR__) . '/includes/Display/NoticeId.php';
 require_once dirname(__DIR__) . '/includes/Display/NoticeVisibility.php';
+require_once dirname(__DIR__) . '/includes/Editor/DateTimeField.php';
 
 use RRZE\Notices\Display\NoticeId;
 use RRZE\Notices\Display\NoticeVisibility;
+use RRZE\Notices\Editor\DateTimeField;
 
 function assertSameValue(mixed $expected, mixed $actual, string $message): void
 {
@@ -138,5 +151,58 @@ assertSameValue(
     'The all-users visibility option must not require a role.'
 );
 
+
+$fieldArgs = ['id' => 'notice_event_start', 'date_format' => 'd.m.Y'];
+$originalPhpTimezone = date_default_timezone_get();
+foreach (['UTC', 'America/New_York', 'Europe/Berlin'] as $phpTimezone) {
+    date_default_timezone_set($phpTimezone);
+    foreach ([
+        ['21.10.2026', '12:00', '2026-10-21T10:00:00Z'],
+        ['21.01.2026', '12:00', '2026-01-21T11:00:00Z'],
+        ['29.03.2026', '01:30', '2026-03-29T00:30:00Z'],
+        ['29.03.2026', '03:30', '2026-03-29T01:30:00Z'],
+        ['25.10.2026', '01:30', '2026-10-24T23:30:00Z'],
+        ['25.10.2026', '03:30', '2026-10-25T02:30:00Z'],
+        ['21.10.2026', '', '2026-10-20T22:00:00Z'],
+    ] as [$date, $time, $expected]) {
+        $actual = DateTimeField::sanitize(['date' => $date, 'time' => $time], $fieldArgs);
+        assertSameValue(
+            (new DateTimeImmutable($expected))->getTimestamp(),
+            $actual,
+            'Date input must use the site timezone and reset seconds, independently of PHP timezone.'
+        );
+    }
+}
+date_default_timezone_set($originalPhpTimezone);
+
+foreach ([
+    ['date' => '', 'time' => ''],
+    ['date' => '', 'time' => '12:00'],
+    ['date' => '31.02.2026', 'time' => '12:00'],
+    ['date' => '21.10.2026', 'time' => '24:00'],
+    ['date' => '29.03.2026', 'time' => '02:30'],
+    ['date' => ['21.10.2026'], 'time' => '12:00'],
+    ['date' => '21.10.2026', 'time' => ['12:00']],
+    ['date' => "21.10.2026\0", 'time' => '12:00'],
+    null,
+    '',
+] as $input) {
+    assertSameValue('', DateTimeField::sanitize($input, $fieldArgs), 'Empty or invalid input must not invent a timestamp.');
+}
+
+$expiryArgs = ['id' => 'notice_visible_until', 'date_format' => 'd.m.Y'];
+assertSameValue('', DateTimeField::sanitize(['date' => '21.10.2026', 'time' => ''], $expiryArgs), 'Expiry requires an explicit time.');
+assertSameValue(
+    1792533600,
+    DateTimeField::sanitize(['date' => '21.10.2026', 'time' => '00:00'], $expiryArgs),
+    'Explicit midnight remains a valid expiry.'
+);
+assertSameValue(1792576800, DateTimeField::sanitize('1792576800', $fieldArgs), 'Existing timestamps must not receive another offset.');
+
+$testTimezone = 'UTC';
+assertSameValue(1792584000, DateTimeField::sanitize(['date' => '21.10.2026', 'time' => '12:00'], $fieldArgs), 'UTC sites must retain their own timezone.');
+$testTimezone = 'Asia/Kolkata';
+assertSameValue(1792564200, DateTimeField::sanitize(['date' => '21.10.2026', 'time' => '12:00'], $fieldArgs), 'Fractional-hour timezones must be supported.');
+$testTimezone = 'Europe/Berlin';
 
 echo "All regression checks passed.\n";

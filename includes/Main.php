@@ -138,7 +138,7 @@ class Main
                 'rrze-notices-cmb2',
                 plugins_url('build/cmb2.js', RRZE_NOTICES_FILE),
                 $assetFile['dependencies'] ?? [],
-                RRZE_NOTICES_VERSION,
+                $assetFile['version'] ?? RRZE_NOTICES_VERSION,
                 true
             );
             wp_localize_script('rrze-notices-cmb2', 'rrzeNoticesCmb2', [
