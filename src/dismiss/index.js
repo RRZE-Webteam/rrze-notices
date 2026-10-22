@@ -63,12 +63,19 @@ document.addEventListener('click', function (event) {
 
     sendDismissRequest(match[1]);
 
+    notice.remove();
+
+    // If another modal remains, re-initialize for that one.
+    if (getActiveModal()) {
+        initModalNotices();
+        return;
+    }
+
     const backdrop = document.querySelector('.rrze-notices-backdrop');
     if (backdrop) {
         backdrop.remove();
     }
 
-    notice.remove();
     document.body.classList.remove('rrze-notices-modal-open');
     document.removeEventListener('keydown', trapFocus, true);
 
@@ -99,6 +106,16 @@ function sendDismissRequest(noticeId) {
 }
 
 /**
+ * Return the topmost notice modal in the current document.
+ *
+ * @returns {HTMLElement|null} Last modal in DOM order, or null.
+ */
+function getActiveModal() {
+    const modals = document.querySelectorAll('.rrze-notices.notice-modal');
+    return modals.length ? modals[modals.length - 1] : null;
+}
+
+/**
  * Initialize modal notices on page load.
  *
  * Adds the body scroll lock, hides the WordPress dismiss button
@@ -106,7 +123,7 @@ function sendDismissRequest(noticeId) {
  * activates the keyboard focus trap.
  */
 function initModalNotices() {
-    const modal = document.querySelector('.rrze-notices.notice-modal');
+    const modal = getActiveModal();
     if (!modal) {
         return;
     }
@@ -132,7 +149,7 @@ function trapFocus(event) {
         return;
     }
 
-    const modal = document.querySelector('.rrze-notices.notice-modal');
+    const modal = getActiveModal();
     if (!modal) {
         return;
     }

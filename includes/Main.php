@@ -116,13 +116,19 @@ class Main
             && $post
             && $post->post_type === CPTNotice::POST_TYPE;
 
+        $dismissAssetPath = RRZE_NOTICES_DIR . 'build/dismiss.asset.php';
+        $dismissAsset = file_exists($dismissAssetPath)
+            ? include $dismissAssetPath
+            : [];
+
         wp_enqueue_script(
             'rrze-notices-dismiss',
             plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
-            [],
-            $assetFile['version'] ?? RRZE_NOTICES_VERSION,
+            $dismissAsset['dependencies'] ?? [],
+            $dismissAsset['version'] ?? RRZE_NOTICES_VERSION,
             true
         );
+
         wp_localize_script('rrze-notices-dismiss', 'rrzeNoticesDismiss', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('rrze_notices_dismiss'),

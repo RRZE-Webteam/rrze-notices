@@ -73,15 +73,16 @@ final class NoticeQuery
                 continue;
             }
 
-            switch_to_blog($noticeId->blogId());
-
-            $post = get_post((int)$entry['post_id']);
             $noticeData = null;
-            if ($post && $post->post_status === 'publish') {
-                $noticeData = Post::buildNoticeData((int)$entry['post_id']);
+            switch_to_blog($noticeId->blogId());
+            try {
+                $post = get_post((int)$entry['post_id']);
+                if ($post && $post->post_status === 'publish') {
+                    $noticeData = Post::buildNoticeData((int)$entry['post_id']);
+                }
+            } finally {
+                restore_current_blog();
             }
-
-            restore_current_blog();
 
             // Visibility check runs in the viewer's blog context,
             // so the current user's roles on THIS site are used.
@@ -96,7 +97,6 @@ final class NoticeQuery
                 }
             }
 
-            restore_current_blog();
         }
 
         return $matches;
@@ -148,7 +148,8 @@ final class NoticeQuery
      */
     private function isActiveAndVisible(object $notice): bool
     {
-        if (time() >= (int)$notice->visible_until_gmt) {
+        $expiresAt = (int)($notice->visible_until_gmt ?? 0);
+        if ($expiresAt > 0 && time() >= $expiresAt) {
             return false;
         }
 
