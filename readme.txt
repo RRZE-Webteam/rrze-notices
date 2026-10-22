@@ -2,7 +2,7 @@
 Contributors: rrzewebteam
 Tags: notices, admin notices, dashboard, multisite
 Requires at least: 6.5
-Tested up to: 7.1.3
+Tested up to: 7.1.
 Requires PHP: 8.2
 Stable tag: 4.0.0
 License: GPLv3

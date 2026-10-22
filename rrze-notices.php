@@ -9,13 +9,13 @@ declare(strict_types=1);
   Version:         4.0.0
   Author:          RRZE Webteam
   Author URI:      https://www.wordpress.rrze.fau.de
-  License:         GNU General Public License Version 3
+  License:         GPLv3
   License URI:     https://www.gnu.org/licenses/gpl-3.0.html
   Domain Path:     /languages
   Text Domain:     rrze-notices
   Requires at least: 6.5
   Requires PHP:      8.2
-  Tested up to:      7.1.3
+  Tested up to:      7.1
   */
 
 namespace RRZE\Notices;

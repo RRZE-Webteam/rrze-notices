@@ -33,3 +33,7 @@ wp-config-local.php
 *.log
 *.tmp
 /coverage/
+
+# Translation editor backups (Poedit)
+ *.po~
+ *.pot~
