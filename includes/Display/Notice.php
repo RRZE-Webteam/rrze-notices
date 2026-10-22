@@ -248,7 +248,8 @@ class Notice
      */
     public function renderTitle(): string
     {
-        if (!$this->title || $this->options['hide_title']) {
+        if (!$this->title || ($this->options['hide_title'] && !$this->isModal()))
+        {
             return '';
         }
 
