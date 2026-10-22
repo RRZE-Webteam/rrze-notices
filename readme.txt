@@ -26,6 +26,7 @@ can choose whether site admins may also create notices on their own sites.
 **Features:**
 
 * Three notice types: Info, Warning, and Critical
+* Modal confirmation for critical notices — blocks the admin area until acknowledged
 * Role-based visibility — target all users or specific roles
 * Per-user dismissal via AJAX
 * Network-wide notices visible across all sites (super admins only)
@@ -97,3 +98,4 @@ network-wide notices are only available on Multisite installations.
 * Added uninstall.php for clean removal
 * Added read-only network notices overview for site admins
 * Added admin bar badge with notice count and dropdown
+* Added modal confirmation mode for critical notices

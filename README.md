@@ -16,6 +16,7 @@ https://www.wp.rrze.fau.de/plugins/benutzer-und-zugriffsverwaltung/rrze-notices/
 ## Features
 
 - Three notice types: Info, Warning, and Critical
+- Modal confirmation for critical notices — blocks the admin area with an overlay until the user acknowledges the message
 - Role-based visibility — target all users, specific roles, or standard roles for network-wide notices
 - Per-user dismissal via AJAX — each user can hide a notice independently
 - Network-wide notices visible across all sites (super admins only)
@@ -29,6 +30,8 @@ https://www.wp.rrze.fau.de/plugins/benutzer-und-zugriffsverwaltung/rrze-notices/
 RRZE Notices adds a custom post type called "Notice" to the WordPress admin. Each notice has a title, a short message, a type (Info, Warning, or Critical), an optional expiration date, and visibility settings that control which user roles can see it.
 
 Notices appear as colored bars at the top of the WordPress dashboard. Users can dismiss them individually. A badge in the admin bar shows how many active notices are available.
+
+Critical notices can optionally require confirmation. When enabled, the notice appears as a full-screen modal overlay that blocks the entire admin area until the user clicks "Acknowledged". This is useful for urgent messages that must not be overlooked.
 
 Event dates and expiration dates use the WordPress timezone configured for the current site. An event date can have an empty time; it is stored as local midnight and displayed as a date only. The visible-until field requires both a date and a time. Opening and closing an empty time input does not select a time.
 
@@ -76,6 +79,7 @@ RRZE Notices is designed for WordPress Multisite. It can be activated on a singl
 - Dismiss buttons are keyboard-operable and use the standard WordPress dismiss pattern.
 - Notice types are distinguished by border color and a text label, not by color alone.
 - The admin bar dropdown is navigable with keyboard.
+- Modal notices use `role="alertdialog"` with `aria-modal="true"`, a keyboard focus trap, and a visible confirmation button.
 
 ## External Dependencies
 

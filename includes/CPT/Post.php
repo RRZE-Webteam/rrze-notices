@@ -363,7 +363,8 @@ class Post
                 'network_wide' => self::isNetworkWide($postId),
                 'admin_link' => admin_url('post.php?post=' . $postId . '&action=edit'),
                 'event_start' => (int)get_post_meta($postId, 'notice_event_start', true),
-                'event_end' => (int)get_post_meta($postId, 'notice_event_end', true), 'visible_until_gmt' => (int)get_post_meta($postId, 'notice_visible_until_gmt', true),
+                'event_end' => (int)get_post_meta($postId, 'notice_event_end', true),
+                'visible_until_gmt' => (int)get_post_meta($postId, 'notice_visible_until_gmt', true),
 
         ];
     }

@@ -15,6 +15,7 @@ declare(strict_types=1);
   Text Domain:     rrze-notices
   Requires at least: 6.5
   Requires PHP:      8.2
+  Tested up to:      7.1.3
   */
 
 namespace RRZE\Notices;

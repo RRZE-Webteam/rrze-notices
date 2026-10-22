@@ -116,8 +116,6 @@ class Main
             && $post
             && $post->post_type === CPTNotice::POST_TYPE;
 
-        // Dismiss script only on screens where notices are displayed
-
         wp_enqueue_script(
             'rrze-notices-dismiss',
             plugins_url('build/dismiss.js', RRZE_NOTICES_FILE),
