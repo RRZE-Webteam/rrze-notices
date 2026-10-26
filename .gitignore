@@ -1,17 +1,39 @@
-### vscode ###
-.vscode/
+
 ### NetBeans ###
 **/nbproject/
-### PhpStorm ###
-.idea/
-### macOS ###
-.DS_Store
+
 ### Node ###
 node_modules/
-package-lock.json
-### Composer ###
-composer.lock
-### WordPress ###
-*.pot
-### Tmp ###
-_tmp/
+
+# LLM tool configuration is a personal/workstation concern, never a plugin
+# artifact. The RRZE LLM specification requires these to live only in each
+# developer's global tool config (e.g. ~/.claude/CLAUDE.md) and explicitly
+# forbids duplicating the RRZE standard into a per-plugin copy
+# (LLM-Spezifikation-Dauerhafte-Anweisungen.md). A project-local file is
+# only ever allowed for genuine plugin-specific instructions, never as a
+# place to store or mirror the standard — and even then it stays out of
+# this repository unless the team explicitly decides otherwise.
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.cursor/rules/
+
+# Local IDE / OS artifacts
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local environment / credentials — never commit these regardless
+.env
+.env.*
+wp-config-local.php
+
+# Logs, temp, coverage
+*.log
+*.tmp
+/coverage/
+
+# Translation editor backups (Poedit)
+ *.po~
+ *.pot~

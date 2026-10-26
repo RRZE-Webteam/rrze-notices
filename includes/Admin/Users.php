@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace RRZE\Notices\Admin;
+
+defined('ABSPATH') || exit;
+
+use WP_Roles;
+
+/**
+ * Role list for the notice visibility selector.
+ *
+ * Returns all site roles or only WordPress built-in roles
+ * (for network-wide notices where custom roles may not exist).
+ */
+class Users
+{
+    /**
+     * WordPress roles supported by the visibility UI.
+     *
+     * @var string[]
+     */
+    public const BUILT_IN_ROLES = ['subscriber', 'contributor', 'author', 'editor', 'administrator'];
+
+    /**
+     * Get roles that may be targeted by a notice.
+     *
+     * @param bool $translated Return translated role labels when true.
+     * @param bool $builtInOnly Restrict results to WordPress built-in roles.
+     * @return array<string, string> Role slug to display-label map.
+     */
+    public static function getRoles(bool $translated = true, bool $builtInOnly = false): array
+    {
+        $wpRoles = wp_roles(); //WP help function
+        $roles = $wpRoles->get_names();
+        if ($translated) {
+            $roles = array_map('translate_user_role', $roles);
+        }
+        if ($builtInOnly) {
+            $roles = array_intersect_key($roles, array_flip(static::BUILT_IN_ROLES));
+        }
+        return $roles;
+    }
+}

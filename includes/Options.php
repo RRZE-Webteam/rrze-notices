@@ -1,58 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RRZE\Notices;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Provides normalized network option values.
+ *
+ * WordPress stores network options as serialized data that may be
+ * incomplete or outdated. This class merges stored values with
+ * safe defaults so the rest of the plugin always gets a complete array.
+ */
 class Options
 {
-    public const OPTION_NAME = 'rrze_notices';
+    /** @var string Network option key. */
+    public const NETWORK_OPTION_NAME = 'rrze_notices_site';
 
-    public const SITE_OPTION_NAME = 'rrze_notices_site';
-
-    protected static function deafaultOptions()
-    {
-        return [];
-    }
-
-    protected static function defaultSiteOptiones()
+    /**
+     * Return defaults for network-wide options.
+     *
+     * @return array{enabled:int, access:string, network_wide:array<string, array<string, mixed>>}
+     */
+    private static function defaultNetworkOptions(): array
     {
         return [
             'enabled' => 0,
-            'access' => 'manage_network_options',
+            'access' => 'manage_options',
             'network_wide' => []
         ];
     }
 
-    public static function getOptions()
+    /**
+     * Get normalized options shared by the multisite network.
+     *
+     * @return array {enabled:int, access:string, network_wide:array<string, array<string, mixed>>}
+     */
+    public static function getNetworkOptions(): array
     {
-        $defaults = self::deafaultOptions();
+        $defaults = self::defaultNetworkOptions();
 
-        $options = (array) get_option(static::OPTION_NAME);
+        $options = (array)get_site_option(static::NETWORK_OPTION_NAME);
         $options = wp_parse_args($options, $defaults);
         $options = array_intersect_key($options, $defaults);
 
-        return (object) $options;
+        return $options;
     }
 
-    public static function getSiteOptions()
+    /**
+     * Get the network option key.
+     *
+     * @return string
+     */
+    public static function getNetworkOptionName(): string
     {
-        $defaults = self::defaultSiteOptiones();
-
-        $options = (array) get_site_option(static::SITE_OPTION_NAME);
-        $options = wp_parse_args($options, $defaults);
-        $options = array_intersect_key($options, $defaults);
-
-        return (object) $options;
-    }
-
-    public static function getOptionName()
-    {
-        return static::OPTION_NAME;
-    }
-
-    public static function getSiteOptionName()
-    {
-        return static::SITE_OPTION_NAME;
+        return static::NETWORK_OPTION_NAME;
     }
 }
