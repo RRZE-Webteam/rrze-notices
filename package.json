@@ -19,7 +19,7 @@
     },
     "compatibility": {
         "wprequires": "6.5",
-        "wptestedup": "7.1.",
+        "wptestedup": "7.1",
         "phprequires": "8.2"
     },
     "devDependencies": {

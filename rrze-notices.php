@@ -9,7 +9,7 @@ declare(strict_types=1);
   Version:         4.0.0
   Author:          RRZE Webteam
   Author URI:      https://www.wordpress.rrze.fau.de
-  License:         GPLv3
+  License:         GPL-3.0-or-later
   License URI:     https://www.gnu.org/licenses/gpl-3.0.html
   Domain Path:     /languages
   Text Domain:     rrze-notices
