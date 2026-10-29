@@ -35,5 +35,5 @@ wp-config-local.php
 /coverage/
 
 # Translation editor backups (Poedit)
- *.po~
- *.pot~
+*.po~
+*.pot~

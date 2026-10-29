@@ -1,6 +1,6 @@
 {
     "name": "rrze-notices",
-    "version": "4.0.0",
+    "version": "4.0.0-1",
     "description": "Dashboard notices for WordPress Multisite with role-based visibility.",
     "license": "GPL-3.0-or-later",
     "private": true,
@@ -29,8 +29,15 @@
         "extends @wordpress/browserslist-config"
     ],
     "scripts": {
+        "version:dev": "node scripts/build-version.js dev",
+        "version:prod": "node scripts/build-version.js prod",
+        "version:release": "node scripts/build-version.js release",
+        "version:major": "node scripts/build-version.js major",
         "start": "wp-scripts start",
         "build": "wp-scripts build",
+        "dev": "wp-scripts build && npm run version:dev",
+        "prod": "wp-scripts build && npm run version:prod",
+        "release": "wp-scripts build && npm run version:release",
         "format": "wp-scripts format src",
         "lint:js": "wp-scripts lint-js src",
         "check-engines": "wp-scripts check-engines",

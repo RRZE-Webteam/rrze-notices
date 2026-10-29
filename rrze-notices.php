@@ -6,7 +6,7 @@ declare(strict_types=1);
   Plugin Name:     RRZE Notices
   Plugin URI:      https://github.com/RRZE-Webteam/rrze-notices
   Description:     Management and listing of admin dashboard notices.
-  Version:         4.0.0
+  Version:         4.0.0-1
   Author:          RRZE Webteam
   Author URI:      https://www.wordpress.rrze.fau.de
   License:         GPL-3.0-or-later
@@ -30,7 +30,7 @@ const RRZE_PHP_VERSION = '8.2';
 /** @var string Minimum supported WordPress version. */
 const RRZE_WP_VERSION = '6.5';
 
-define('RRZE_NOTICES_VERSION', '4.0.0');
+define('RRZE_NOTICES_VERSION', '4.0.0-1');
 define('RRZE_NOTICES_FILE', __FILE__);
 define('RRZE_NOTICES_DIR', plugin_dir_path(__FILE__));
 define('RRZE_NOTICES_URL', plugin_dir_url(__FILE__));
